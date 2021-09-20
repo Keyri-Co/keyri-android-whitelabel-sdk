@@ -1,0 +1,23 @@
+package com.keyri
+
+import android.app.Application
+import com.example.keyrisdk.KeyriConfig
+import com.example.keyrisdk.KeyriSdk
+
+class KeyriApp : Application() {
+
+    override fun onCreate() {
+        super.onCreate()
+
+        KeyriSdk.initialize(this, getKeyriConfig())
+    }
+
+    private fun getKeyriConfig() =
+        KeyriConfig(
+            BuildConfig.KEYRI_ID,
+            BuildConfig.KEYRI_NAME,
+            BuildConfig.KEYRI_CALLBACK_URL,
+            BuildConfig.KEYRI_LOGO_URL
+        )
+
+}

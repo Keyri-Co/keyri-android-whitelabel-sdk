@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".auth.AuthActivity">
+
+    <FrameLayout
+        android:id="@+id/panelContent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp">
+
+        <com.budiyev.android.codescanner.CodeScannerView
+            android:id="@+id/scannerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="invisible"
+            app:autoFocusButtonColor="@android:color/white"
+            app:autoFocusButtonVisible="true"
+            app:flashButtonColor="@android:color/white"
+            app:flashButtonVisible="true"
+            app:frameAspectRatioHeight="1"
+            app:frameAspectRatioWidth="1"
+            app:frameColor="@android:color/white"
+            app:frameCornersRadius="0dp"
+            app:frameCornersSize="50dp"
+            app:frameSize="0.75"
+            app:frameThickness="2dp"
+            app:maskColor="#77000000" />
+
+        <LinearLayout
+            android:id="@+id/actionsPanel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="center">
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/btSignup"
+                style="@style/KeyriButton"
+                android:layout_marginTop="24dp"
+                android:text="@string/signup_button_label" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/btLogin"
+                style="@style/KeyriButton"
+                android:layout_marginTop="8dp"
+                android:text="@string/login_button_label" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/btSignupMobile"
+                style="@style/KeyriButton"
+                android:layout_marginTop="24dp"
+                android:text="@string/mobile_signup_button_label" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/btLoginMobile"
+                style="@style/KeyriButton"
+                android:layout_marginTop="8dp"
+                android:text="@string/mobile_login_button_label" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/btAccounts"
+                style="@style/KeyriButton"
+                android:layout_marginTop="24dp"
+                android:text="@string/accounts_button_label" />
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+    <include layout="@layout/layout_progress" />
+
+</LinearLayout>
