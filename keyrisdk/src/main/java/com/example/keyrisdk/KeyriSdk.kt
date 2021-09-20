@@ -61,15 +61,15 @@ object KeyriSdk {
             .signup(username, sessionId, service, custom)
     }
 
-    suspend fun login(username: String, sessionId: String, service: Service, custom: String?) {
+    suspend fun login(account: PublicAccount, sessionId: String, service: Service, custom: String?) {
         assertInitialized()
 
-        val account = keyriSdkGraph
+        val acc = keyriSdkGraph
             .getStorageService()
             .getAccounts(service.serviceId)
-            .firstOrNull { it.username == username } ?: throw AccountNotFoundException
+            .firstOrNull { it.username == account.username } ?: throw AccountNotFoundException
 
-        keyriSdkGraph.getUserService().login(sessionId, account)
+        keyriSdkGraph.getUserService().login(sessionId, acc)
     }
 
     suspend fun mobileSignup(username: String, custom: String?): AuthMobileResponse {

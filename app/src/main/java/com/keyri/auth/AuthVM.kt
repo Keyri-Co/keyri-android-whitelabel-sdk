@@ -7,6 +7,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.keyrisdk.KeyriSdk
+import com.example.keyrisdk.exception.AccountNotFoundException
 import com.example.keyrisdk.exception.KeyriSdkException
 import com.hadilq.liveevent.LiveEvent
 import com.keyri.R
@@ -32,12 +33,13 @@ class AuthVM(private val app: Application): AndroidViewModel(app) {
                     KeyriSdk.signup(session.username, sessionId, session.service,
                         CUSTOM_DATA_SIGNUP
                     )
-                    authenticatedLD.value = true
                 } else {
-                    KeyriSdk.login(session.username, sessionId, session.service,
+                    val account = KeyriSdk.accounts().firstOrNull() ?: throw AccountNotFoundException
+                    KeyriSdk.login(account, sessionId, session.service,
                         CUSTOM_DATA_LOGIN
                     )
                 }
+                authenticatedLD.value = true
             } catch (e: Throwable) {
                 Log.d("Keyri", "Authentication exception $e")
                 if (e is KeyriSdkException) {
