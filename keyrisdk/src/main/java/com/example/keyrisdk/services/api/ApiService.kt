@@ -21,5 +21,10 @@ interface ApiService {
     @POST("api/sdk/whitelabel-init")
     suspend fun init(@Body request: InitRequest): Response<InitResponse>
 
+    @GET("service/{serviceId}/permissions")
+    suspend fun getPermissions(
+        @Path("serviceId") serviceId: String,
+        @Query("queryPermissions[]") permissions: List<String>
+    ): Response<PermissionsResponse>
 
 }

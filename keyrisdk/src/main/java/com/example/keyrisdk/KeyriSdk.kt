@@ -1,5 +1,6 @@
 package com.example.keyrisdk
 
+import android.annotation.SuppressLint
 import android.app.Application
 import com.example.keyrisdk.di.DaggerKeyriSdkGraph
 import com.example.keyrisdk.di.KeyriSdkGraph
@@ -9,6 +10,7 @@ import com.example.keyrisdk.entity.Service
 import com.example.keyrisdk.entity.Session
 import com.example.keyrisdk.exception.AccountNotFoundException
 import com.example.keyrisdk.exception.NotInitializedException
+import com.example.keyrisdk.exception.PermissionsException
 import com.example.keyrisdk.exception.WrongConfigException
 import com.example.keyrisdk.services.api.AuthMobileResponse
 import com.example.keyrisdk.services.api.InitRequest
@@ -53,6 +55,7 @@ object KeyriSdk {
      */
     suspend fun onReadSessionId(sessionId: String): Session {
         assertInitialized()
+
         loadServiceIfNeeded()
         val service = this.service ?: throw IllegalStateException()
 
@@ -72,6 +75,9 @@ object KeyriSdk {
     suspend fun login(account: PublicAccount, sessionId: String, service: Service, custom: String?) {
         assertInitialized()
 
+        loadServiceIfNeeded()
+        assertPermissionGranted(KeyriPermission.LOGIN)
+
         val acc = keyriSdkGraph
             .getStorageService()
             .getAccounts(service.serviceId)
@@ -82,6 +88,7 @@ object KeyriSdk {
 
     suspend fun mobileSignup(username: String, custom: String?): AuthMobileResponse {
         assertInitialized()
+
         loadServiceIfNeeded()
         val service = this.service ?: throw IllegalStateException()
 
@@ -92,6 +99,7 @@ object KeyriSdk {
 
     suspend fun mobileLogin(account: PublicAccount): AuthMobileResponse {
         assertInitialized()
+
         loadServiceIfNeeded()
         val service = this.service ?: throw IllegalStateException()
 
@@ -102,8 +110,11 @@ object KeyriSdk {
 
     suspend fun accounts(): List<PublicAccount> {
         assertInitialized()
+
         loadServiceIfNeeded()
         val service = this.service ?: throw IllegalStateException()
+
+        assertPermissionGranted(KeyriPermission.LOGIN)
 
         return keyriSdkGraph
             .getStorageService()
@@ -131,6 +142,19 @@ object KeyriSdk {
         if (keyriSdkGraph.getStorageService().getDeviceId() == null) {
             keyriSdkGraph.getStorageService().setDeviceId(Utils.getRandomString(32))
         }
+    }
+
+    @SuppressLint("DefaultLocale")
+    private suspend fun assertPermissionGranted(permission: KeyriPermission) {
+        val serviceId = service?.serviceId ?: throw IllegalStateException()
+
+        val permissionName = permission.name.toLowerCase()
+        val response = makeApiCall { keyriSdkGraph.getApiService().getPermissions(serviceId, listOf(permissionName)) }.body()!!
+        val granted: Boolean = when(permission) {
+            KeyriPermission.ACCOUNTS -> response.accounts == true
+            KeyriPermission.LOGIN -> response.login == true
+        }
+        if (!granted) throw PermissionsException
     }
 
 }
