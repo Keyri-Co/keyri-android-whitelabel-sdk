@@ -18,4 +18,8 @@ interface ApiService {
         @Body request: AuthMobileRequest
     ): Response<AuthMobileResponse>
 
+    @POST("api/sdk/whitelabel-init")
+    suspend fun init(@Body request: InitRequest): Response<InitResponse>
+
+
 }

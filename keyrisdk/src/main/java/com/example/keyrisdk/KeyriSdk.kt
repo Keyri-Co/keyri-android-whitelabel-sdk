@@ -11,6 +11,8 @@ import com.example.keyrisdk.exception.AccountNotFoundException
 import com.example.keyrisdk.exception.NotInitializedException
 import com.example.keyrisdk.exception.WrongConfigException
 import com.example.keyrisdk.services.api.AuthMobileResponse
+import com.example.keyrisdk.services.api.InitRequest
+import com.example.keyrisdk.utils.Utils
 import com.example.keyrisdk.utils.makeApiCall
 
 /**
@@ -21,6 +23,8 @@ object KeyriSdk {
     private var initialized = false
     private lateinit var config: KeyriConfig
     private lateinit var keyriSdkGraph: KeyriSdkGraph
+
+    private var service: Service? = null
 
     internal val app
         get() = keyriSdkGraph.getContext()
@@ -38,6 +42,8 @@ object KeyriSdk {
             .keyriSdkModule(KeyriSdkModule(app))
             .build()
 
+        generateDeviceIdIfNeeded()
+
         initialized = true
     }
 
@@ -47,9 +53,11 @@ object KeyriSdk {
      */
     suspend fun onReadSessionId(sessionId: String): Session {
         assertInitialized()
+        loadServiceIfNeeded()
+        val service = this.service ?: throw IllegalStateException()
 
         val session = makeApiCall { keyriSdkGraph.getApiService().getSession(sessionId) }.body()!!
-        if (session.service.serviceId != config.id) throw WrongConfigException
+        if (session.service.serviceId != service.serviceId) throw WrongConfigException
         return session
     }
 
@@ -58,7 +66,7 @@ object KeyriSdk {
 
         keyriSdkGraph
             .getUserService()
-            .signup(username, sessionId, service, custom)
+            .signup(username, sessionId, service, custom, config.publicKey)
     }
 
     suspend fun login(account: PublicAccount, sessionId: String, service: Service, custom: String?) {
@@ -69,13 +77,14 @@ object KeyriSdk {
             .getAccounts(service.serviceId)
             .firstOrNull { it.username == account.username } ?: throw AccountNotFoundException
 
-        keyriSdkGraph.getUserService().login(sessionId, acc)
+        keyriSdkGraph.getUserService().login(sessionId, acc, config.publicKey)
     }
 
     suspend fun mobileSignup(username: String, custom: String?): AuthMobileResponse {
         assertInitialized()
+        loadServiceIfNeeded()
+        val service = this.service ?: throw IllegalStateException()
 
-        val service = Service(config.id, config.name, config.logoUrl)
         return keyriSdkGraph
             .getUserService()
             .signupMobile(username, service, config.callbackUrl, custom)
@@ -83,19 +92,22 @@ object KeyriSdk {
 
     suspend fun mobileLogin(account: PublicAccount): AuthMobileResponse {
         assertInitialized()
+        loadServiceIfNeeded()
+        val service = this.service ?: throw IllegalStateException()
 
-        val service = Service(config.id, config.name, config.logoUrl)
         return keyriSdkGraph
             .getUserService()
             .loginMobile(account, service, config.callbackUrl)
     }
 
-    fun accounts(): List<PublicAccount> {
+    suspend fun accounts(): List<PublicAccount> {
         assertInitialized()
+        loadServiceIfNeeded()
+        val service = this.service ?: throw IllegalStateException()
 
         return keyriSdkGraph
             .getStorageService()
-            .getAccounts(config.id)
+            .getAccounts(service.serviceId)
             .map { PublicAccount(it.username, it.custom) }
     }
 
@@ -104,6 +116,21 @@ object KeyriSdk {
      */
     private fun assertInitialized() {
         if (!initialized) throw NotInitializedException
+    }
+
+    private suspend fun loadServiceIfNeeded() {
+        if (service != null) return
+        val deviceId = keyriSdkGraph.getStorageService().getDeviceId() ?: throw IllegalStateException()
+
+        val request = InitRequest(deviceId, config.appKey)
+        val response = makeApiCall { keyriSdkGraph.getApiService().init(request) }.body()!!
+        service = response.service
+    }
+
+    private fun generateDeviceIdIfNeeded() {
+        if (keyriSdkGraph.getStorageService().getDeviceId() == null) {
+            keyriSdkGraph.getStorageService().setDeviceId(Utils.getRandomString(32))
+        }
     }
 
 }

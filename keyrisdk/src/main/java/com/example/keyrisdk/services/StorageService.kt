@@ -1,5 +1,8 @@
 package com.example.keyrisdk.services
 
+import android.content.Context
+import androidx.core.content.edit
+import androidx.preference.PreferenceManager
 import com.example.keyrisdk.db.UserDao
 import com.example.keyrisdk.entity.Account
 import com.example.keyrisdk.services.crypto.CryptoService
@@ -9,9 +12,18 @@ import com.example.keyrisdk.services.crypto.CryptoService
  * Encrypts sensitive data before storing
  */
 class StorageService(
+    context: Context,
     private val userDao: UserDao,
     private val cryptoService: CryptoService
 ) {
+
+    private val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+
+    private fun applyString(key: String, value: String) {
+        prefs.edit(commit = true) {
+            putString(key, value)
+        }
+    }
 
     /**
      * Stores account in local storage with encrypted userId
@@ -31,5 +43,15 @@ class StorageService(
             .map {
                 it.copy(userId = cryptoService.decryptAes(it.userId))
             }
+
+    fun getDeviceId() = prefs.getString(KEY_DEVICE_ID, null)
+
+    fun setDeviceId(deviceId: String) {
+        applyString(KEY_DEVICE_ID, deviceId)
+    }
+
+    companion object {
+        const val KEY_DEVICE_ID = "key_device_id"
+    }
 
 }

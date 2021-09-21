@@ -15,10 +15,9 @@ android {
         versionCode 1
         versionName "1.0"
 
-        buildConfigField "String", "KEYRI_ID", "\"60f180ac10cdf71478f462c7\""
-        buildConfigField "String", "KEYRI_NAME", "\"Keyri Service Manager\""
+        buildConfigField "String", "APP_KEY", "\"raB7SFWt27VoKqkPhaUrmWAsCJIO8Moj\""
+        buildConfigField "String", "PUBLIC_KEY", "\"00uVMpjv0sxLPMovInfRCB5kSX3WPKpx9RKNe3HFnTE=\""
         buildConfigField "String", "KEYRI_CALLBACK_URL", "\"http://18.234.201.114:5000/users/session-mobile\""
-        buildConfigField "String", "KEYRI_LOGO_URL", "\"https://users-images-keyri.s3.amazonaws.com/serviceLogo/logo-c5518e8f40d7b09d8e7d30282ac8c603.png\""
     }
 
     buildTypes {

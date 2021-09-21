@@ -18,13 +18,13 @@ class UserService(
     private val cryptoService: CryptoService
 ) {
 
-    suspend fun signup(username: String, sessionId: String, service: Service, custom: String?) {
+    suspend fun signup(username: String, sessionId: String, service: Service, custom: String?, publicKey: String?) {
         val account = createAccount(service.serviceId, username, custom)
-        sessionService.verifyUserSession(account.userId, sessionId)
+        sessionService.verifyUserSession(account.userId, sessionId, publicKey)
     }
 
-    suspend fun login(sessionId: String, account: Account) {
-        sessionService.verifyUserSession(account.userId, sessionId)
+    suspend fun login(sessionId: String, account: Account, publicKey: String?) {
+        sessionService.verifyUserSession(account.userId, sessionId, publicKey)
     }
 
     suspend fun signupMobile(

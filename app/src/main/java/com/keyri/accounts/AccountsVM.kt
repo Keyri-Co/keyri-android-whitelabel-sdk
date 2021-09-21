@@ -41,9 +41,27 @@ class AccountsVM(private val app: Application): AndroidViewModel(app) {
         mode = args?.getSerializable(EXTRA_MODE) as? AccountsMode
             ?: throw IllegalStateException()
 
-        accountsLD.value = KeyriSdk.accounts()
+        loadAccounts()
 
         initialized = true
+    }
+
+    private fun loadAccounts() {
+        viewModelScope.launch {
+            loadingLD.value = true
+            try {
+                accountsLD.value = KeyriSdk.accounts()
+            } catch (e: Throwable) {
+                Log.d("Keyri", "Failed to load accounts $e")
+                if (e is KeyriSdkException) {
+                    messageLD.value = app.getString(e.errorMessage)
+                } else {
+                    messageLD.value = app.getString(R.string.error_general)
+                }
+            }
+            loadingLD.value = false
+        }
+
     }
 
     fun processUserAccount(account: PublicAccount) {

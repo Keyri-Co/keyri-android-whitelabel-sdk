@@ -71,7 +71,7 @@ class KeyriSdkModule(private val app: Application) {
     @Provides
     @Singleton
     fun provideStorageService(userDao: UserDao, cryptoService: CryptoService) =
-        StorageService(userDao, cryptoService)
+        StorageService(app, userDao, cryptoService)
 
     @Provides
     @Singleton

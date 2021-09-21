@@ -16,7 +16,7 @@ class SessionService(
     /**
      * User verification
      */
-    suspend fun verifyUserSession(userId: String, sessionId: String) {
+    suspend fun verifyUserSession(userId: String, sessionId: String, publicKey: String?) {
         val sessionKey = Utils.getRandomString(32)
         sessions[sessionKey] = userId
 
