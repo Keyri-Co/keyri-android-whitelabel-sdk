@@ -40,7 +40,11 @@ class SocketService(url: String) {
 
                 socket.on(EVENT_CONNECT) {
                     Log.d(TAG, "Connected")
-                    continuation.resume(Unit)
+                    try {
+                        continuation.resume(Unit)
+                    } catch (e: Throwable) {
+                        /* do nothing */
+                    }
                 }
                 socket.on(EVENT_CONNECT_ERROR) {
                     Log.d(TAG, "Failed to connect")

@@ -59,6 +59,8 @@ object KeyriSdk {
         loadServiceIfNeeded()
         val service = this.service ?: throw IllegalStateException()
 
+        assertPermissionGranted(KeyriPermission.SESSION)
+
         val session = makeApiCall { keyriSdkGraph.getApiService().getSession(sessionId) }.body()!!
         if (session.service.serviceId != service.serviceId) throw WrongConfigException
         return session
@@ -66,6 +68,8 @@ object KeyriSdk {
 
     suspend fun signup(username: String, sessionId: String, service: Service, custom: String?) {
         assertInitialized()
+
+        assertPermissionGranted(KeyriPermission.SIGNUP)
 
         keyriSdkGraph
             .getUserService()
@@ -76,6 +80,7 @@ object KeyriSdk {
         assertInitialized()
 
         loadServiceIfNeeded()
+
         assertPermissionGranted(KeyriPermission.LOGIN)
 
         val acc = keyriSdkGraph
@@ -92,6 +97,8 @@ object KeyriSdk {
         loadServiceIfNeeded()
         val service = this.service ?: throw IllegalStateException()
 
+        assertPermissionGranted(KeyriPermission.MOBILE_SIGNUP)
+
         return keyriSdkGraph
             .getUserService()
             .signupMobile(username, service, config.callbackUrl, custom)
@@ -102,6 +109,8 @@ object KeyriSdk {
 
         loadServiceIfNeeded()
         val service = this.service ?: throw IllegalStateException()
+
+        assertPermissionGranted(KeyriPermission.MOBILE_LOGIN)
 
         return keyriSdkGraph
             .getUserService()
@@ -114,7 +123,7 @@ object KeyriSdk {
         loadServiceIfNeeded()
         val service = this.service ?: throw IllegalStateException()
 
-        assertPermissionGranted(KeyriPermission.LOGIN)
+        assertPermissionGranted(KeyriPermission.ACCOUNTS)
 
         return keyriSdkGraph
             .getStorageService()
@@ -148,11 +157,15 @@ object KeyriSdk {
     private suspend fun assertPermissionGranted(permission: KeyriPermission) {
         val serviceId = service?.serviceId ?: throw IllegalStateException()
 
-        val permissionName = permission.name.toLowerCase()
+        val permissionName = permission.id
         val response = makeApiCall { keyriSdkGraph.getApiService().getPermissions(serviceId, listOf(permissionName)) }.body()!!
         val granted: Boolean = when(permission) {
+            KeyriPermission.SESSION -> response.session == true
             KeyriPermission.ACCOUNTS -> response.accounts == true
             KeyriPermission.LOGIN -> response.login == true
+            KeyriPermission.SIGNUP -> response.signup == true
+            KeyriPermission.MOBILE_LOGIN -> response.mobileLogin == true
+            KeyriPermission.MOBILE_SIGNUP -> response.mobileSignup == true
         }
         if (!granted) throw PermissionsException
     }
