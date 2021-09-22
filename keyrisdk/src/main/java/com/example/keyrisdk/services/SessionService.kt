@@ -27,7 +27,9 @@ class SessionService(
         val decryptedSessionKey = cryptoService.decryptAes(verificationResult.sessionKey)
         val verifiedUserId = sessions[decryptedSessionKey] ?: return
 
-        val result = cryptoService.encryptCryptoBoxEasy(verifiedUserId, verificationResult.publicKey)
+        //val pk = publicKey ?:verificationResult.publicKey
+        val pk = verificationResult.publicKey
+        val result = cryptoService.encryptCryptoBoxEasy(verifiedUserId, pk)
         val cipherText = result.first
         val nonce = result.second
 
