@@ -88,7 +88,7 @@ object KeyriSdk {
             .getAccounts(service.serviceId)
             .firstOrNull { it.username == account.username } ?: throw AccountNotFoundException
 
-        keyriSdkGraph.getUserService().login(sessionId, acc, config.publicKey)
+        keyriSdkGraph.getUserService().login(sessionId, acc, config.publicKey, custom)
     }
 
     suspend fun mobileSignup(username: String, custom: String?): AuthMobileResponse {

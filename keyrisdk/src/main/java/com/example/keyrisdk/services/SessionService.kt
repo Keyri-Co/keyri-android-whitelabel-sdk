@@ -5,6 +5,8 @@ import com.example.keyrisdk.services.socket.SocketService
 import com.example.keyrisdk.services.socket.messages.ValidateMessage
 import com.example.keyrisdk.services.socket.messages.VerifyApproveMessage
 import com.example.keyrisdk.utils.Utils
+import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
 
 class SessionService(
     private val socketService: SocketService,
@@ -16,25 +18,46 @@ class SessionService(
     /**
      * User verification
      */
-    suspend fun verifyUserSession(userId: String, sessionId: String, publicKey: String?) {
+    suspend fun verifyUserSession(
+        userId: String,
+        sessionId: String,
+        publicKey: String?,
+        usePublicKey: Boolean,
+        custom: String?
+    ) {
         val sessionKey = Utils.getRandomString(32)
         sessions[sessionKey] = userId
 
         val encryptedSessionKey = cryptoService.encryptAes(sessionKey)
         val validationMessage = ValidateMessage(sessionId, encryptedSessionKey)
+        val extraHeader = cryptoService.encryptAes(userId).take(15)
+        socketService.reconnect(extraHeader)
         val verificationResult = socketService.sendVerificationEvent(validationMessage)
 
         val decryptedSessionKey = cryptoService.decryptAes(verificationResult.sessionKey)
         val verifiedUserId = sessions[decryptedSessionKey] ?: return
 
-        //val pk = publicKey ?:verificationResult.publicKey
-        val pk = verificationResult.publicKey
-        val result = cryptoService.encryptCryptoBoxEasy(verifiedUserId, pk)
-        val cipherText = result.first
-        val nonce = result.second
+        val verificationDto = VerificationMessage(verifiedUserId, custom, System.currentTimeMillis().toString())
+        val message = Gson().toJson(verificationDto)
 
-        val confirmationMessage = VerifyApproveMessage(cipherText, nonce, cryptoService.getCryptoBoxPublicKey())
+        val encryptedMessage = cryptoService.encryptSeal(message, publicKey ?: verificationResult.publicKey)
+        val signedMessage = cryptoService.createSignature(message)
+
+        val publicKeyForVerification = if (usePublicKey) cryptoService.getCryptoBoxPublicKey() else null
+        val confirmationMessage = VerifyApproveMessage(encryptedMessage, signedMessage, publicKeyForVerification)
         socketService.sendConfirmationEvent(confirmationMessage)
     }
+
+    data class VerificationMessage(
+
+        @SerializedName("userId")
+        val userId: String,
+
+        @SerializedName("custom")
+        val custom: String?,
+
+        @SerializedName("timestamp")
+        val timestamp: String,
+    )
 
 }

@@ -10,6 +10,7 @@ import com.example.keyrisdk.utils.toStringBase64
 import com.goterl.lazysodium.LazySodiumAndroid
 import com.goterl.lazysodium.SodiumAndroid
 import com.goterl.lazysodium.interfaces.Box
+import com.goterl.lazysodium.interfaces.Sign
 import java.nio.charset.StandardCharsets
 import java.security.KeyPairGenerator
 import java.security.KeyStore
@@ -70,7 +71,7 @@ class CryptoService(context: Context) {
     private fun createCryptoBoxIfNeeded() {
         if (cryptoBoxHolder.getCryptoBox() != null) return
 
-        val cryptoBox = createCryptoBox()
+        val cryptoBox = createCryptoSignPair()
         val encryptedCryptoBox = cryptoBox.copy(
             privateKey = encryptRsa(cryptoBox.privateKey)
         )
@@ -78,13 +79,8 @@ class CryptoService(context: Context) {
         cryptoBoxHolder.setCryptoBox(encryptedCryptoBox)
     }
 
-    /**
-     * Creates keypair for public-key authentication as per X25519
-     */
-    private fun createCryptoBox(): CryptoBox {
-        val sodium = SodiumAndroid()
-        val lazySodium = LazySodiumAndroid(sodium, StandardCharsets.UTF_8)
-        val keyPair = lazySodium.cryptoBoxKeypair()
+    private fun createCryptoSignPair(): CryptoBox {
+        val keyPair = sodium.cryptoSignKeypair()
         val privateKey = keyPair.secretKey.asBytes.toStringBase64()
         val publicKey = keyPair.publicKey.asBytes.toStringBase64()
         return CryptoBox(
@@ -161,7 +157,7 @@ class CryptoService(context: Context) {
      * @return encrypted string converted into Base64
      */
     fun encryptAes(data: String): String {
-        val key = getCryptoBox().privateKey
+        val key = getCryptoBox().privateKey.take(32)
         return encryptAes(key, data)
     }
 
@@ -201,7 +197,7 @@ class CryptoService(context: Context) {
      * @return decrypted string converted into Base64
      */
     fun decryptAes(data: String): String {
-        val key = getCryptoBox().privateKey
+        val key = getCryptoBox().privateKey.take(32)
         return decryptAes(key, data)
     }
 
@@ -234,22 +230,30 @@ class CryptoService(context: Context) {
         return cipher.doFinal(data)
     }
 
-    fun encryptCryptoBoxEasy(message: String, publicKey: String): Pair<String, String> {
-        val cryptoBox = getCryptoBox()
-
-        val privateKeyBytes = cryptoBox.privateKey.toByteArrayFromBase64String()
+    fun encryptSeal(message: String, publicKey: String): String {
         val publicKeyBytes = publicKey.toByteArrayFromBase64String()
-
         val messageBytes = message.toByteArray(Charsets.UTF_8)
         val messageLength = messageBytes.size
-        val cipherText = ByteArray(Box.MACBYTES + messageLength)
-        val nonce = ByteArray(Box.NONCEBYTES)
+        val cipherText = ByteArray(Box.SEALBYTES + messageLength)
+        sodium.cryptoBoxSeal(cipherText, messageBytes, messageLength.toLong(), publicKeyBytes)
+        return cipherText.toStringBase64()
+    }
 
-        sodium.cryptoBoxEasy(cipherText, messageBytes, messageLength.toLong(), nonce, publicKeyBytes, privateKeyBytes)
-        val cipherTextBase64 = cipherText.toStringBase64()
-        val nonceBase64 = nonce.toStringBase64()
+    fun createSignature(message: String): String {
+        val cryptoBox = getCryptoBox()
+        val privateKeyBytes = cryptoBox.privateKey.toByteArrayFromBase64String()
+        val messageBytes = message.toByteArray(Charsets.UTF_8)
+        val signatureBytes = ByteArray(Sign.BYTES + messageBytes.size)
+        sodium.cryptoSign(signatureBytes, messageBytes, messageBytes.size.toLong(), privateKeyBytes)
+        return signatureBytes.toStringBase64()
+    }
 
-        return Pair(cipherTextBase64, nonceBase64)
+    fun verifySignature(signature: String, publicKey: String): String {
+        val publicKeyBytes = publicKey.toByteArrayFromBase64String()
+        val signatureBytes = signature.toByteArrayFromBase64String()
+        val messageBytes = ByteArray(signatureBytes.size - Sign.BYTES)
+        sodium.cryptoSignOpen(messageBytes, signatureBytes, signatureBytes.size.toLong(), publicKeyBytes)
+        return String(messageBytes)
     }
 
     companion object {

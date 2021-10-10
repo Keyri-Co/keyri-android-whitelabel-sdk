@@ -6,6 +6,7 @@ import com.example.keyrisdk.services.socket.messages.ValidateMessage
 import com.example.keyrisdk.services.socket.messages.VerifyApproveMessage
 import com.example.keyrisdk.services.socket.messages.VerifyRequestMessage
 import io.socket.client.IO
+import io.socket.client.Socket
 import io.socket.client.Socket.EVENT_CONNECT
 import io.socket.client.Socket.EVENT_CONNECT_ERROR
 import io.socket.client.SocketOptionBuilder
@@ -16,24 +17,34 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
-class SocketService(url: String) {
+class SocketService(val url: String) {
 
-    private val socket = IO.socket(
-        url, SocketOptionBuilder
-            .builder()
-            .setTransports(arrayOf(WebSocket.NAME))
-            .build()
-    )
+    private lateinit var socket: Socket
+    private var extraHeaders: Map<String, List<String>>? = null
+
+    suspend fun reconnect(extraHeader: String) {
+        extraHeaders = mapOf(EXTRA_HEADER_NAME to listOf(extraHeader))
+        connectIfNeeded(true)
+    }
 
     /**
      * Establishes socket connection if not already connected
      */
-    private suspend fun connectIfNeeded() {
-        if (socket.connected()) return
+    private suspend fun connectIfNeeded(forceReconnect: Boolean = false) {
+        val connected = ::socket.isInitialized && socket.connected()
+        if (connected && !forceReconnect) return
 
         return withTimeout(SOCKET_TIMEOUT) {
             suspendCoroutine { continuation ->
                 Log.d(TAG, "Connecting...")
+
+                socket = IO.socket(
+                    url, SocketOptionBuilder
+                        .builder()
+                        .setTransports(arrayOf(WebSocket.NAME))
+                        .setExtraHeaders(extraHeaders)
+                        .build()
+                )
 
                 socket.disconnect()
                 socket.connect()
@@ -98,6 +109,7 @@ class SocketService(url: String) {
         private const val TAG = "Keyri > SocketService"
         private const val SOCKET_TIMEOUT = 5000L
         private const val CONFIRMATION_EVENT_NAME = "message"
+        private const val EXTRA_HEADER_NAME = "userSuffix"
     }
 
 }

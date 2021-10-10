@@ -20,11 +20,11 @@ class UserService(
 
     suspend fun signup(username: String, sessionId: String, service: Service, custom: String?, publicKey: String?) {
         val account = createAccount(service.serviceId, username, custom)
-        sessionService.verifyUserSession(account.userId, sessionId, publicKey)
+        sessionService.verifyUserSession(account.userId, sessionId, publicKey, true, custom)
     }
 
-    suspend fun login(sessionId: String, account: Account, publicKey: String?) {
-        sessionService.verifyUserSession(account.userId, sessionId, publicKey)
+    suspend fun login(sessionId: String, account: Account, publicKey: String?, custom: String?) {
+        sessionService.verifyUserSession(account.userId, sessionId, publicKey, false, custom)
     }
 
     suspend fun signupMobile(
