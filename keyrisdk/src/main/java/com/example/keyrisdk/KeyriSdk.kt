@@ -155,7 +155,7 @@ object KeyriSdk {
 
     @SuppressLint("DefaultLocale")
     private suspend fun assertPermissionGranted(permission: KeyriPermission) {
-        val serviceId = service?.serviceId ?: throw IllegalStateException()
+        /*val serviceId = service?.serviceId ?: throw IllegalStateException()
 
         val permissionName = permission.id
         val response = makeApiCall { keyriSdkGraph.getApiService().getPermissions(serviceId, listOf(permissionName)) }.body()!!
@@ -167,7 +167,7 @@ object KeyriSdk {
             KeyriPermission.MOBILE_LOGIN -> response.mobileLogin == true
             KeyriPermission.MOBILE_SIGNUP -> response.mobileSignup == true
         }
-        if (!granted) throw PermissionsException
+        if (!granted) throw PermissionsException*/
     }
 
 }
