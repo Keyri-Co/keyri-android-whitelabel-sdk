@@ -14,6 +14,7 @@ interface ApiService {
 
     @POST
     suspend fun authMobile(
+        @HeaderMap headers: Map<String, String>?,
         @Url url: String,
         @Body request: AuthMobileRequest
     ): Response<AuthMobileResponse>

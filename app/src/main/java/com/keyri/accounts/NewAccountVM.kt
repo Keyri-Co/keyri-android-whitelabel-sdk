@@ -28,7 +28,7 @@ class NewAccountVM(private val app: Application): AndroidViewModel(app) {
         viewModelScope.launch {
             loadingLD.value = true
             try {
-                authenticatedLD.value = KeyriSdk.mobileSignup(username, CUSTOM_DATA_SIGNUP)
+                authenticatedLD.value = KeyriSdk.mobileSignup(username, CUSTOM_DATA_SIGNUP, CUSTOM_HEADERS)
             } catch (e: Throwable) {
                 Log.d("Keyri", "Mobile signup exception $e")
                 if (e is KeyriSdkException) {
@@ -43,6 +43,7 @@ class NewAccountVM(private val app: Application): AndroidViewModel(app) {
 
     companion object {
         private const val CUSTOM_DATA_SIGNUP = "test custom signup"
+        private val CUSTOM_HEADERS = mapOf("TestHeader" to "TestHeaderValue")
     }
 
 }

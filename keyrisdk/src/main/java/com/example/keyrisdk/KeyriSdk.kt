@@ -91,7 +91,7 @@ object KeyriSdk {
         keyriSdkGraph.getUserService().login(sessionId, acc, config.publicKey, custom)
     }
 
-    suspend fun mobileSignup(username: String, custom: String?): AuthMobileResponse {
+    suspend fun mobileSignup(username: String, custom: String?, extendedHeaders: Map<String, String> = emptyMap()): AuthMobileResponse {
         assertInitialized()
 
         loadServiceIfNeeded()
@@ -101,10 +101,10 @@ object KeyriSdk {
 
         return keyriSdkGraph
             .getUserService()
-            .signupMobile(username, service, config.callbackUrl, custom)
+            .signupMobile(username, service, extendedHeaders, config.callbackUrl, custom)
     }
 
-    suspend fun mobileLogin(account: PublicAccount): AuthMobileResponse {
+    suspend fun mobileLogin(account: PublicAccount, extendedHeaders: Map<String, String> = emptyMap()): AuthMobileResponse {
         assertInitialized()
 
         loadServiceIfNeeded()
@@ -114,7 +114,7 @@ object KeyriSdk {
 
         return keyriSdkGraph
             .getUserService()
-            .loginMobile(account, service, config.callbackUrl)
+            .loginMobile(account, service, extendedHeaders, config.callbackUrl)
     }
 
     suspend fun accounts(): List<PublicAccount> {

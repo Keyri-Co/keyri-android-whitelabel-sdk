@@ -30,18 +30,20 @@ class UserService(
     suspend fun signupMobile(
         username: String,
         service: Service,
+        extendedHeaders: Map<String, String>,
         callbackUrl: String,
         custom: String?
     ): AuthMobileResponse {
         val account = createAccount(service.serviceId, username, custom)
 
-        val request = AuthMobileRequest(account.userId, username)
-        return makeApiCall { apiService.authMobile(callbackUrl, request) }.body()!!
+        val request = AuthMobileRequest(account.userId, username, cryptoService.getCryptoBoxPublicKey())
+        return makeApiCall { apiService.authMobile(extendedHeaders, callbackUrl, request) }.body()!!
     }
 
     suspend fun loginMobile(
         publicAccount: PublicAccount,
         service: Service,
+        extendedHeaders: Map<String, String>,
         callbackUrl: String
     ): AuthMobileResponse {
         val account = storageService
@@ -49,8 +51,8 @@ class UserService(
             .find { it.username == publicAccount.username }
             ?: throw AccountNotFoundException
 
-        val request = AuthMobileRequest(account.userId, account.username)
-        return makeApiCall { apiService.authMobile(callbackUrl, request) }.body()!!
+        val request = AuthMobileRequest(account.userId, account.username, cryptoService.getCryptoBoxPublicKey())
+        return makeApiCall { apiService.authMobile(extendedHeaders, callbackUrl, request) }.body()!!
     }
 
     private fun createAccount(serviceId: String, username: String, custom: String?) =

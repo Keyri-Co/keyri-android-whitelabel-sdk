@@ -8,6 +8,9 @@ data class AuthMobileRequest(
     val userId: String,
 
     @SerializedName("username")
-    val username: String
+    val username: String,
+
+    @SerializedName("clientPublicKey")
+    val clientPublicKey: String?
 
 )

@@ -70,7 +70,7 @@ class AccountsVM(private val app: Application): AndroidViewModel(app) {
         viewModelScope.launch {
             loadingLD.value = true
             try {
-                authenticatedLD.value = KeyriSdk.mobileLogin(account)
+                authenticatedLD.value = KeyriSdk.mobileLogin(account, CUSTOM_HEADERS)
             } catch (e: Throwable) {
                 Log.d("Keyri", "Mobile login exception $e")
                 if (e is KeyriSdkException) {
@@ -81,6 +81,10 @@ class AccountsVM(private val app: Application): AndroidViewModel(app) {
             }
             loadingLD.value = false
         }
+    }
+
+    companion object {
+        private val CUSTOM_HEADERS = mapOf("TestHeader" to "TestHeaderValue")
     }
 
 }
