@@ -49,6 +49,11 @@ dependencies {
     implementation "androidx.appcompat:appcompat:$appcompat"
     implementation "androidx.core:core-ktx:$corektx"
 
+    implementation "androidx.activity:activity:$activity"
+    implementation "androidx.activity:activity-ktx:$activity"
+
+    implementation "com.github.hadilq.liveevent:liveevent:$liveevent"
+
     implementation "com.google.dagger:dagger:$dagger"
     kapt "com.google.dagger:dagger-compiler:$dagger"
 
@@ -71,4 +76,6 @@ dependencies {
     implementation ('io.socket:socket.io-client:2.0.1') {
         exclude group: 'org.json', module: 'json'
     }
+
+    implementation "com.budiyev.android:code-scanner:$qrCodeScanner"
 }

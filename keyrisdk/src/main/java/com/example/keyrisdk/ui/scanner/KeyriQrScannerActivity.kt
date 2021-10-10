@@ -1,4 +1,4 @@
-package com.keyri.auth
+package com.example.keyrisdk.ui.scanner
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -14,18 +14,13 @@ import androidx.lifecycle.Observer
 import com.budiyev.android.codescanner.CodeScanner
 import com.budiyev.android.codescanner.DecodeCallback
 import com.budiyev.android.codescanner.ErrorCallback
-import com.example.keyrisdk.KeyriSdk
-import com.keyri.HomeActivity
-import com.keyri.R
-import com.keyri.accounts.AccountsActivity
-import com.keyri.accounts.AccountsMode
-import com.keyri.accounts.NewAccountActivity
-import kotlinx.android.synthetic.main.activity_auth.*
-import kotlinx.android.synthetic.main.layout_progress.*
+import com.example.keyrisdk.R
+import kotlinx.android.synthetic.main.keyri_activity_qr_scanner.*
+import kotlinx.android.synthetic.main.keyri_layout_progress.*
 
-class AuthActivity : AppCompatActivity() {
+class KeyriQrScannerActivity : AppCompatActivity() {
 
-    private val viewModel by viewModels<AuthVM>()
+    private val viewModel by viewModels<KeyriQrScannerVM>()
 
     private var isCodeScannerActive = false
     private lateinit var codeScanner: CodeScanner
@@ -41,40 +36,14 @@ class AuthActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_auth)
+        setContentView(R.layout.keyri_activity_qr_scanner)
 
         viewModel.message().observe(this, Observer(::onMessage))
         viewModel.loading().observe(this, Observer(::onLoading))
-        viewModel.authenticated().observe(this, Observer {
-            HomeActivity.openHomeActivity(this)
-        })
+        viewModel.completed().observe(this, Observer { finish() })
+        viewModel.initialize(intent?.extras)
 
-        initializeUi()
-    }
-
-    private fun initializeUi() {
         initializeCodeScanner()
-
-        btAuthQr.setOnClickListener {
-            KeyriSdk.authWithScanner(
-                this, CUSTOM,
-                KeyriSdk.QrAuthCallbacks({
-                    HomeActivity.openHomeActivity(this)
-                }, {
-                    onMessage(getString(R.string.not_authenticated))
-                })
-            )
-        }
-        btSignup.setOnClickListener { openScanner() }
-        btLogin.setOnClickListener { openScanner() }
-
-        btSignupMobile.setOnClickListener { NewAccountActivity.openNewAccountActivity(this) }
-        btLoginMobile.setOnClickListener { openAccountsActivity(AccountsMode.LOGIN) }
-        btAccounts.setOnClickListener { openAccountsActivity(AccountsMode.ACCOUNTS) }
-    }
-
-    private fun openAccountsActivity(mode: AccountsMode) {
-        AccountsActivity.openAccountsActivity(this, mode)
     }
 
     private fun initializeCodeScanner() {
@@ -84,7 +53,6 @@ class AuthActivity : AppCompatActivity() {
             isCodeScannerActive = false
             runOnUiThread {
                 scannerView.visibility = View.INVISIBLE
-                actionsPanel.visibility = View.VISIBLE
                 viewModel.authenticate(it.text)
             }
         }
@@ -92,10 +60,11 @@ class AuthActivity : AppCompatActivity() {
             isCodeScannerActive = false
             runOnUiThread {
                 scannerView.visibility = View.INVISIBLE
-                actionsPanel.visibility = View.VISIBLE
                 Log.d("Keyri", "Camera initialization error: ${it.message}")
             }
         }
+
+        openScanner()
     }
 
     private fun openScanner() {
@@ -106,7 +75,6 @@ class AuthActivity : AppCompatActivity() {
 
         isCodeScannerActive = true
         scannerView.visibility = View.VISIBLE
-        actionsPanel.visibility = View.INVISIBLE
         codeScanner.startPreview()
     }
 
@@ -115,7 +83,6 @@ class AuthActivity : AppCompatActivity() {
 
         if (isCodeScannerActive) {
             scannerView.visibility = View.VISIBLE
-            actionsPanel.visibility = View.INVISIBLE
             codeScanner.startPreview()
         }
     }
@@ -140,12 +107,9 @@ class AuthActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        if (isCodeScannerActive) {
-            codeScanner.releaseResources()
-            scannerView.visibility = View.INVISIBLE
-            actionsPanel.visibility = View.VISIBLE
-        } else
-            super.onBackPressed()
+        codeScanner.releaseResources()
+        viewModel.cancelAuth()
+        super.onBackPressed()
     }
 
     private fun hasCameraPermission() =
@@ -160,7 +124,7 @@ class AuthActivity : AppCompatActivity() {
     }
 
     companion object {
-        private const val CUSTOM = "test custom data"
+        const val ARG_CUSTOM = "ARG_CUSTOM"
     }
 
 }

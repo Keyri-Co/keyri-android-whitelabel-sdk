@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Keyri Demo app</string>
     <string name="error_general">Something went wrong</string>
+    <string name="auth_with_qr_label">Auth with QR</string>
     <string name="signup_button_label">Sign up</string>
     <string name="mobile_signup_button_label">Sign up (mobile)</string>
     <string name="login_button_label">Login</string>
@@ -11,4 +12,5 @@
     <string name="account_label">Your accounts</string>
     <string name="no_accounts_label">You don\'t have accounts</string>
     <string name="username_label">Username</string>
+    <string name="not_authenticated">Authentication has failed or cancelled</string>
 </resources>
