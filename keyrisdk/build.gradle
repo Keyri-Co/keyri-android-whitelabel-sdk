@@ -23,9 +23,8 @@ android {
             buildConfigField "String", "WS_URL", "\"wss://dev-api.keyri.co\""
         }
         release {
-            // TODO Replace with prod config
-            buildConfigField "String", "API_URL", "\"https://dev-api.keyri.co\""
-            buildConfigField "String", "WS_URL", "\"wss://dev-api.keyri.co\""
+            buildConfigField "String", "API_URL", "\"https://api.keyri.co/api\""
+            buildConfigField "String", "WS_URL", "\"wss://api.keyri.co\""
 
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
