@@ -19,12 +19,15 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField "String", "API_URL", "\"https://dev-api.keyri.co\""
-            buildConfigField "String", "WS_URL", "\"wss://dev-api.keyri.co\""
+            buildConfigField "String", "API_URL", "\"https://api.keyri.co\""
+            buildConfigField "String", "WS_URL", "\"https://api.keyri.co\""
+
+            /*buildConfigField "String", "API_URL", "\"https://dev-api.keyri.co\""
+            buildConfigField "String", "WS_URL", "\"wss://dev-api.keyri.co\""*/
         }
         release {
-            buildConfigField "String", "API_URL", "\"https://api.keyri.co/api\""
-            buildConfigField "String", "WS_URL", "\"wss://api.keyri.co\""
+            buildConfigField "String", "API_URL", "\"https://api.keyri.co\""
+            buildConfigField "String", "WS_URL", "\"https://api.keyri.co\""
 
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'

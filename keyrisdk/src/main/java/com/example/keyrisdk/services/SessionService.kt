@@ -40,7 +40,9 @@ class SessionService(
         val verificationDto = VerificationMessage(verifiedUserId, custom, System.currentTimeMillis().toString())
         val message = Gson().toJson(verificationDto)
 
-        val encryptedMessage = cryptoService.encryptSeal(message, publicKey ?: verificationResult.publicKey)
+        // TODO handle when user-provided publicKey and server publicKey are both null
+        val targetPublicKey = publicKey ?: verificationResult.publicKey ?: throw IllegalStateException()
+        val encryptedMessage = cryptoService.encryptSeal(message, targetPublicKey)
         val signedMessage = cryptoService.createSignature(message)
 
         val publicKeyForVerification = if (usePublicKey) cryptoService.getCryptoBoxPublicKey() else null

@@ -88,7 +88,7 @@ class SocketService(val url: String) {
         val action = data["action"] as String
         if (action != SocketAction.SESSION_VERIFY_REQUEST.name) return null
 
-        val publicKey = data["publicKey"] as? String ?: return null
+        val publicKey = data.opt("publicKey") as? String?
         val sessionKey = data["sessionKey"] as? String ?: return null
         return VerifyRequestMessage(publicKey, sessionKey)
     }

@@ -15,7 +15,7 @@ android {
         versionCode 1
         versionName "1.0"
 
-        buildConfigField "String", "APP_KEY", "\"raB7SFWt27VoKqkPhaUrmWAsCJIO8Moj\""
+        buildConfigField "String", "APP_KEY", "\"qUQ9DX176JT9JdQwK7N2XhRJ35GfJLzv\""
         buildConfigField "String", "PUBLIC_KEY", "\"00uVMpjv0sxLPMovInfRCB5kSX3WPKpx9RKNe3HFnTE=\""
         buildConfigField "String", "KEYRI_CALLBACK_URL", "\"http://18.234.201.114:5000/users/session-mobile\""
     }

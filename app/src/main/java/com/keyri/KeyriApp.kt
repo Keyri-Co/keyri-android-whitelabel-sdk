@@ -15,8 +15,7 @@ class KeyriApp : Application() {
     private fun getKeyriConfig() =
         KeyriConfig(
             BuildConfig.APP_KEY,
-            /*BuildConfig.PUBLIC_KEY,*/
-            null,
+            BuildConfig.PUBLIC_KEY,
             BuildConfig.KEYRI_CALLBACK_URL
         )
 
