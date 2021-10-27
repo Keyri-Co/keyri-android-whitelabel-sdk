@@ -243,8 +243,8 @@ class CryptoService(context: Context) {
         val cryptoBox = getCryptoBox()
         val privateKeyBytes = cryptoBox.privateKey.toByteArrayFromBase64String()
         val messageBytes = message.toByteArray(Charsets.UTF_8)
-        val signatureBytes = ByteArray(Sign.BYTES + messageBytes.size)
-        sodium.cryptoSign(signatureBytes, messageBytes, messageBytes.size.toLong(), privateKeyBytes)
+        val signatureBytes = ByteArray(Sign.BYTES)
+        sodium.cryptoSignDetached(signatureBytes, messageBytes, messageBytes.size.toLong(), privateKeyBytes)
         return signatureBytes.toStringBase64()
     }
 
