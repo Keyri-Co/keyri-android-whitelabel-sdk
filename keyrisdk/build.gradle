@@ -11,8 +11,6 @@ android {
     defaultConfig {
         minSdkVersion cfg.minSdkVersion
         targetSdkVersion cfg.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
 
         consumerProguardFiles 'consumer-rules.pro'
     }
@@ -47,11 +45,9 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation "androidx.appcompat:appcompat:$appcompat"
     implementation "androidx.core:core-ktx:$corektx"
 
-    implementation "androidx.activity:activity:$activity"
     implementation "androidx.activity:activity-ktx:$activity"
 
     implementation "com.github.hadilq.liveevent:liveevent:$liveevent"
@@ -69,7 +65,6 @@ dependencies {
     implementation "androidx.room:room-ktx:$room"
     kapt "androidx.room:room-compiler:$room"
 
-    implementation "androidx.preference:preference:$preference"
     implementation "androidx.preference:preference-ktx:$preference"
 
     implementation "com.goterl:lazysodium-android:5.0.2@aar"

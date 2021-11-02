@@ -41,21 +41,15 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':keyrisdk')
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-
     implementation "androidx.appcompat:appcompat:$appcompat"
     implementation "androidx.core:core-ktx:$corektx"
 
-    implementation "androidx.activity:activity:$activity"
     implementation "androidx.activity:activity-ktx:$activity"
-    implementation "androidx.fragment:fragment:$fragment"
     implementation "androidx.fragment:fragment-ktx:$fragment"
 
-    implementation "androidx.lifecycle:lifecycle-livedata:$lifecycle"
-    implementation "androidx.lifecycle:lifecycle-viewmodel:$lifecycle"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle"
     implementation "androidx.lifecycle:lifecycle-viewmodel-savedstate:$lifecycle"
-    implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycle"
     implementation "com.github.hadilq.liveevent:liveevent:$liveevent"
 
     implementation "androidx.recyclerview:recyclerview:$recyclerview"
