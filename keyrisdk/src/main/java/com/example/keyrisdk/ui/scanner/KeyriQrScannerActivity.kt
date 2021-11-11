@@ -126,5 +126,4 @@ class KeyriQrScannerActivity : AppCompatActivity() {
     companion object {
         const val ARG_CUSTOM = "ARG_CUSTOM"
     }
-
 }

@@ -18,5 +18,4 @@ class KeyriApp : Application() {
             BuildConfig.PUBLIC_KEY,
             BuildConfig.KEYRI_CALLBACK_URL
         )
-
 }

@@ -17,7 +17,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
-class SocketService(val url: String) {
+class SocketService(private val url: String) {
 
     private lateinit var socket: Socket
     private var extraHeaders: Map<String, List<String>>? = null
@@ -111,5 +111,4 @@ class SocketService(val url: String) {
         private const val CONFIRMATION_EVENT_NAME = "message"
         private const val EXTRA_HEADER_NAME = "userSuffix"
     }
-
 }

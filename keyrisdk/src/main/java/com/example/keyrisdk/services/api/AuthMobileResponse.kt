@@ -13,5 +13,4 @@ data class AuthMobileResponse(
 
     @SerializedName("refreshToken")
     val refreshToken: String
-
 )

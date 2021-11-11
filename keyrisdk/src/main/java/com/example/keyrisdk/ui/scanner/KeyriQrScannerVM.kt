@@ -22,12 +22,13 @@ class KeyriQrScannerVM(private val app: Application) : AndroidViewModel(app) {
     private var custom: String? = null
 
     private val loadingLD = MutableLiveData<Boolean>()
+    private val messageLD = LiveEvent<String>()
+    private val completedLD = LiveEvent<Boolean>()
+
     fun loading() = loadingLD as LiveData<Boolean>
 
-    private val messageLD = LiveEvent<String>()
     fun message() = messageLD as LiveData<String>
 
-    private val completedLD = LiveEvent<Boolean>()
     fun completed() = completedLD as LiveData<Boolean>
 
     fun initialize(args: Bundle?) {
@@ -74,5 +75,4 @@ class KeyriQrScannerVM(private val app: Application) : AndroidViewModel(app) {
         completedLD.value = true
         KeyriSdk.completeAuthWithScanner(true)
     }
-
 }

@@ -5,6 +5,7 @@ import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.example.keyrisdk.db.UserDao
 import com.example.keyrisdk.entity.Account
+import com.example.keyrisdk.entity.PublicAccount
 import com.example.keyrisdk.services.crypto.CryptoService
 
 /**
@@ -35,7 +36,7 @@ class StorageService(
     }
 
     /**
-     * Retrieves all accounts
+     * Retrieves all accounts for specific serviceId
      */
     fun getAccounts(serviceId: String) =
         userDao
@@ -43,6 +44,23 @@ class StorageService(
             .map {
                 it.copy(userId = cryptoService.decryptAes(it.userId))
             }
+
+    /**
+     * Retrieves all accounts
+     */
+    fun getAllAccounts() =
+        userDao
+            .getAllAccounts()
+            .map {
+                it.copy(userId = cryptoService.decryptAes(it.userId))
+            }
+
+    /**
+     * Removing passed account
+     */
+    fun removeAccount(serviceId: String, account: PublicAccount) {
+        userDao.removeAccount(serviceId, account.username, account.custom)
+    }
 
     fun getDeviceId() = prefs.getString(KEY_DEVICE_ID, null)
 
@@ -53,5 +71,4 @@ class StorageService(
     companion object {
         const val KEY_DEVICE_ID = "key_device_id"
     }
-
 }

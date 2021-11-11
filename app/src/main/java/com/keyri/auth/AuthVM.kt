@@ -13,15 +13,16 @@ import com.hadilq.liveevent.LiveEvent
 import com.keyri.R
 import kotlinx.coroutines.launch
 
-class AuthVM(private val app: Application): AndroidViewModel(app) {
+class AuthVM(private val app: Application) : AndroidViewModel(app) {
 
     private val loadingLD = MutableLiveData<Boolean>()
+    private val messageLD = LiveEvent<String>()
+    private val authenticatedLD = LiveEvent<Boolean>()
+
     fun loading() = loadingLD as LiveData<Boolean>
 
-    private val messageLD = LiveEvent<String>()
     fun message() = messageLD as LiveData<String>
 
-    private val authenticatedLD = LiveEvent<Boolean>()
     fun authenticated() = authenticatedLD as LiveData<Boolean>
 
     fun authenticate(sessionId: String) {
@@ -30,12 +31,15 @@ class AuthVM(private val app: Application): AndroidViewModel(app) {
             try {
                 val session = KeyriSdk.onReadSessionId(sessionId)
                 if (session.isNewUser) {
-                    KeyriSdk.signup(session.username, sessionId, session.service,
+                    KeyriSdk.signup(
+                        session.username, sessionId, session.service,
                         CUSTOM_DATA_SIGNUP
                     )
                 } else {
-                    val account = KeyriSdk.accounts().firstOrNull() ?: throw AccountNotFoundException
-                    KeyriSdk.login(account, sessionId, session.service,
+                    val account =
+                        KeyriSdk.accounts().firstOrNull() ?: throw AccountNotFoundException
+                    KeyriSdk.login(
+                        account, sessionId, session.service,
                         CUSTOM_DATA_LOGIN
                     )
                 }
@@ -56,5 +60,4 @@ class AuthVM(private val app: Application): AndroidViewModel(app) {
         private const val CUSTOM_DATA_SIGNUP = "test custom signup"
         private const val CUSTOM_DATA_LOGIN = "test custom login"
     }
-
 }

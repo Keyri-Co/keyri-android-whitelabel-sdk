@@ -12,5 +12,4 @@ data class Session(
 
     @SerializedName("isNewUser")
     val isNewUser: Boolean
-
 )

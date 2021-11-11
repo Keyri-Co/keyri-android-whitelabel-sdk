@@ -9,4 +9,5 @@
     <string name="keyri_err_no_permissions">Permissions are not granted</string>
     <string name="keyri_error_general">Something went wrong</string>
     <string name="keyri_powered_by_keyri">Powered by Keyri</string>
+    <string name="keyri_multiple_accounts_not_allowed">Multiple accounts not allowed</string>
 </resources>

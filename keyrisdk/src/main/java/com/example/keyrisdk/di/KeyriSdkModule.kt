@@ -75,7 +75,11 @@ class KeyriSdkModule(private val app: Application) {
 
     @Provides
     @Singleton
-    fun provideSessionService(storageService: StorageService, socketService: SocketService, cryptoService: CryptoService) = SessionService(socketService, cryptoService)
+    fun provideSessionService(
+        storageService: StorageService,
+        socketService: SocketService,
+        cryptoService: CryptoService
+    ) = SessionService(socketService, cryptoService)
 
     @Provides
     @Singleton
@@ -96,5 +100,4 @@ class KeyriSdkModule(private val app: Application) {
         private const val CONNECT_TIMEOUT = 15L
         private const val READ_TIMEOUT = 60L
     }
-
 }

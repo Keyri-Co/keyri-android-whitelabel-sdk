@@ -43,7 +43,8 @@ class CryptoService(context: Context) {
      * Creates RSA keypair in android keystore
      */
     private fun createRsaKeyPair() {
-        val keyGenerator = KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_RSA, "AndroidKeyStore")
+        val keyGenerator =
+            KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_RSA, "AndroidKeyStore")
         keyGenerator.initialize(
             KeyGenParameterSpec.Builder(
                 KEYPAIR_NAME,
@@ -244,7 +245,12 @@ class CryptoService(context: Context) {
         val privateKeyBytes = cryptoBox.privateKey.toByteArrayFromBase64String()
         val messageBytes = message.toByteArray(Charsets.UTF_8)
         val signatureBytes = ByteArray(Sign.BYTES)
-        sodium.cryptoSignDetached(signatureBytes, messageBytes, messageBytes.size.toLong(), privateKeyBytes)
+        sodium.cryptoSignDetached(
+            signatureBytes,
+            messageBytes,
+            messageBytes.size.toLong(),
+            privateKeyBytes
+        )
         return signatureBytes.toStringBase64()
     }
 
@@ -252,7 +258,12 @@ class CryptoService(context: Context) {
         val publicKeyBytes = publicKey.toByteArrayFromBase64String()
         val signatureBytes = signature.toByteArrayFromBase64String()
         val messageBytes = ByteArray(signatureBytes.size - Sign.BYTES)
-        sodium.cryptoSignOpen(messageBytes, signatureBytes, signatureBytes.size.toLong(), publicKeyBytes)
+        sodium.cryptoSignOpen(
+            messageBytes,
+            signatureBytes,
+            signatureBytes.size.toLong(),
+            publicKeyBytes
+        )
         return String(messageBytes)
     }
 
@@ -266,5 +277,4 @@ class CryptoService(context: Context) {
          */
         private const val KEYPAIR_NAME = "keyri_ks_v01"
     }
-
 }

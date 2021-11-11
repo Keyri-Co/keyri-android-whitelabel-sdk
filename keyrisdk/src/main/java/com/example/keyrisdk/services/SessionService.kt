@@ -31,22 +31,27 @@ class SessionService(
         val encryptedSessionKey = cryptoService.encryptAes(sessionKey)
         val validationMessage = ValidateMessage(sessionId, encryptedSessionKey)
         val extraHeader = cryptoService.encryptAes(userId).take(15)
-        socketService.reconnect(extraHeader)
-        val verificationResult = socketService.sendVerificationEvent(validationMessage)
 
+        socketService.reconnect(extraHeader)
+
+        val verificationResult = socketService.sendVerificationEvent(validationMessage)
         val decryptedSessionKey = cryptoService.decryptAes(verificationResult.sessionKey)
         val verifiedUserId = sessions[decryptedSessionKey] ?: return
 
-        val verificationDto = VerificationMessage(verifiedUserId, custom, System.currentTimeMillis().toString())
+        val verificationDto =
+            VerificationMessage(verifiedUserId, custom, System.currentTimeMillis().toString())
         val message = Gson().toJson(verificationDto)
 
-        // TODO handle when user-provided publicKey and server publicKey are both null
-        val targetPublicKey = publicKey ?: verificationResult.publicKey ?: throw IllegalStateException()
+        val targetPublicKey =
+            publicKey ?: verificationResult.publicKey ?: throw IllegalStateException()
         val encryptedMessage = cryptoService.encryptSeal(message, targetPublicKey)
         val signedMessage = cryptoService.createSignature(message)
 
-        val publicKeyForVerification = if (usePublicKey) cryptoService.getCryptoBoxPublicKey() else null
-        val confirmationMessage = VerifyApproveMessage(encryptedMessage, signedMessage, publicKeyForVerification)
+        val publicKeyForVerification =
+            if (usePublicKey) cryptoService.getCryptoBoxPublicKey() else null
+        val confirmationMessage =
+            VerifyApproveMessage(encryptedMessage, signedMessage, publicKeyForVerification)
+
         socketService.sendConfirmationEvent(confirmationMessage)
     }
 
@@ -61,5 +66,4 @@ class SessionService(
         @SerializedName("timestamp")
         val timestamp: String,
     )
-
 }

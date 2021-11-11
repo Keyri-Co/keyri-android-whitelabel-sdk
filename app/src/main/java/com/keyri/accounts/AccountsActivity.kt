@@ -25,7 +25,7 @@ class AccountsActivity : AppCompatActivity() {
 
         viewModel.message().observe(this, Observer(::onMessage))
         viewModel.loading().observe(this, Observer(::onLoading))
-        viewModel.authenticated().observe(this, Observer { openHomeActivity() })
+        viewModel.authenticated().observe(this) { openHomeActivity() }
         viewModel.accounts().observe(this, Observer(::renderAccounts))
         viewModel.initialize(intent?.extras)
 
@@ -80,5 +80,4 @@ class AccountsActivity : AppCompatActivity() {
             )
         }
     }
-
 }

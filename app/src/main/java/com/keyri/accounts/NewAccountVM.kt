@@ -13,7 +13,7 @@ import com.hadilq.liveevent.LiveEvent
 import com.keyri.R
 import kotlinx.coroutines.launch
 
-class NewAccountVM(private val app: Application): AndroidViewModel(app) {
+class NewAccountVM(private val app: Application) : AndroidViewModel(app) {
 
     private val loadingLD = MutableLiveData<Boolean>()
     fun loading() = loadingLD as LiveData<Boolean>
@@ -28,7 +28,8 @@ class NewAccountVM(private val app: Application): AndroidViewModel(app) {
         viewModelScope.launch {
             loadingLD.value = true
             try {
-                authenticatedLD.value = KeyriSdk.mobileSignup(username, CUSTOM_DATA_SIGNUP, CUSTOM_HEADERS)
+                authenticatedLD.value =
+                    KeyriSdk.mobileSignup(username, CUSTOM_DATA_SIGNUP, CUSTOM_HEADERS)
             } catch (e: Throwable) {
                 Log.d("Keyri", "Mobile signup exception $e")
                 if (e is KeyriSdkException) {
@@ -45,5 +46,4 @@ class NewAccountVM(private val app: Application): AndroidViewModel(app) {
         private const val CUSTOM_DATA_SIGNUP = "test custom signup"
         private val CUSTOM_HEADERS = mapOf("TestHeader" to "TestHeaderValue")
     }
-
 }

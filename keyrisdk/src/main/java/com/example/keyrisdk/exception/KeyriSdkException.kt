@@ -2,9 +2,7 @@ package com.example.keyrisdk.exception
 
 import com.example.keyrisdk.R
 
-sealed class KeyriSdkException(
-    open val errorMessage: Int = R.string.keyri_empty
-) : Throwable()
+sealed class KeyriSdkException(open val errorMessage: Int = R.string.keyri_empty) : Throwable()
 
 object NotInitializedException : KeyriSdkException(R.string.keyri_err_not_initialized)
 
@@ -23,3 +21,5 @@ object WrongConfigException : KeyriSdkException(R.string.keyri_err_wrong_config)
 object AccountNotFoundException : KeyriSdkException(R.string.keyri_err_account_not_found)
 
 object PermissionsException : KeyriSdkException(R.string.keyri_err_no_permissions)
+
+object MultipleAccountsNotAllowed : KeyriSdkException(R.string.keyri_multiple_accounts_not_allowed)

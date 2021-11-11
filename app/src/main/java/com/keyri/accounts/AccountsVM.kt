@@ -16,7 +16,7 @@ import com.keyri.R
 import com.keyri.accounts.AccountsActivity.Companion.EXTRA_MODE
 import kotlinx.coroutines.launch
 
-class AccountsVM(private val app: Application): AndroidViewModel(app) {
+class AccountsVM(private val app: Application) : AndroidViewModel(app) {
 
     private var initialized: Boolean = false
 
@@ -24,22 +24,22 @@ class AccountsVM(private val app: Application): AndroidViewModel(app) {
         private set
 
     private val loadingLD = MutableLiveData<Boolean>()
+    private val messageLD = LiveEvent<String>()
+    private val authenticatedLD = LiveEvent<AuthMobileResponse>()
+    private val accountsLD = MutableLiveData<List<PublicAccount>>()
+
     fun loading() = loadingLD as LiveData<Boolean>
 
-    private val messageLD = LiveEvent<String>()
     fun message() = messageLD as LiveData<String>
 
-    private val authenticatedLD = LiveEvent<AuthMobileResponse>()
     fun authenticated() = authenticatedLD as LiveData<AuthMobileResponse>
 
-    private val accountsLD = MutableLiveData<List<PublicAccount>>()
     fun accounts() = accountsLD as LiveData<List<PublicAccount>>
 
     fun initialize(args: Bundle?) {
         if (initialized) return
 
-        mode = args?.getSerializable(EXTRA_MODE) as? AccountsMode
-            ?: throw IllegalStateException()
+        mode = args?.getSerializable(EXTRA_MODE) as? AccountsMode ?: throw IllegalStateException()
 
         loadAccounts()
 
@@ -86,5 +86,4 @@ class AccountsVM(private val app: Application): AndroidViewModel(app) {
     companion object {
         private val CUSTOM_HEADERS = mapOf("TestHeader" to "TestHeaderValue")
     }
-
 }

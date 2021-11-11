@@ -9,5 +9,4 @@ data class InitRequest(
 
     @SerializedName("mobileAppKey")
     val mobileAppKey: String
-
 )

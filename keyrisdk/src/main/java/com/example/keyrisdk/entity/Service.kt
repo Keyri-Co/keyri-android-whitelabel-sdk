@@ -12,5 +12,4 @@ data class Service(
 
     @SerializedName("logo")
     val logo: String
-
 )
