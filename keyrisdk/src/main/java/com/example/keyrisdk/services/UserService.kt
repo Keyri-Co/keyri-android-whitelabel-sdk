@@ -4,7 +4,7 @@ import com.example.keyrisdk.entity.Account
 import com.example.keyrisdk.entity.PublicAccount
 import com.example.keyrisdk.entity.Service
 import com.example.keyrisdk.exception.AccountNotFoundException
-import com.example.keyrisdk.exception.MultipleAccountsNotAllowed
+import com.example.keyrisdk.exception.MultipleAccountsNotAllowedException
 import com.example.keyrisdk.services.api.ApiService
 import com.example.keyrisdk.services.api.AuthMobileRequest
 import com.example.keyrisdk.services.api.AuthMobileResponse
@@ -30,7 +30,7 @@ class UserService(
         val hasAccounts = storageService.getAllAccounts().isNotEmpty()
 
         if (hasAccounts && !allowMultipleAccounts) {
-            throw MultipleAccountsNotAllowed
+            throw MultipleAccountsNotAllowedException
         }
 
         val account = createAccount(service.serviceId, username, custom)
@@ -52,7 +52,7 @@ class UserService(
         val hasAccounts = storageService.getAllAccounts().isNotEmpty()
 
         if (hasAccounts && !allowMultipleAccounts) {
-            throw MultipleAccountsNotAllowed
+            throw MultipleAccountsNotAllowedException
         }
 
         val account = createAccount(service.serviceId, username, custom)

@@ -72,7 +72,7 @@ object KeyriSdk {
         return session
     }
 
-    @Throws(NotInitializedException::class)
+    @Throws(NotInitializedException::class, MultipleAccountsNotAllowedException::class)
     suspend fun signup(username: String, sessionId: String, service: Service, custom: String?) {
         assertInitialized()
 
@@ -80,7 +80,14 @@ object KeyriSdk {
 
         keyriSdkGraph
             .getUserService()
-            .signup(username, sessionId, service, custom, config.publicKey, config.allowMultipleAccounts)
+            .signup(
+                username,
+                sessionId,
+                service,
+                custom,
+                config.publicKey,
+                config.allowMultipleAccounts
+            )
     }
 
     @Throws(AccountNotFoundException::class, NotInitializedException::class)
@@ -106,7 +113,11 @@ object KeyriSdk {
             .login(sessionId, acc, config.publicKey, custom)
     }
 
-    @Throws(IllegalStateException::class, NotInitializedException::class)
+    @Throws(
+        IllegalStateException::class,
+        NotInitializedException::class,
+        MultipleAccountsNotAllowedException::class
+    )
     suspend fun mobileSignup(
         username: String,
         custom: String?,
@@ -121,7 +132,14 @@ object KeyriSdk {
 
         return keyriSdkGraph
             .getUserService()
-            .signupMobile(username, service, extendedHeaders, config.callbackUrl, custom, config.allowMultipleAccounts)
+            .signupMobile(
+                username,
+                service,
+                extendedHeaders,
+                config.callbackUrl,
+                custom,
+                config.allowMultipleAccounts
+            )
             ?: throw NetworkException
     }
 
@@ -158,6 +176,7 @@ object KeyriSdk {
             .map { PublicAccount(it.username, it.custom) }
     }
 
+    // TODO Test it
     @Throws(IllegalStateException::class, NotInitializedException::class)
     suspend fun removeAccount(account: PublicAccount) {
         assertInitialized()

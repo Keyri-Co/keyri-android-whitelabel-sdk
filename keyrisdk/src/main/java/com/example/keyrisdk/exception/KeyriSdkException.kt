@@ -22,4 +22,4 @@ object AccountNotFoundException : KeyriSdkException(R.string.keyri_err_account_n
 
 object PermissionsException : KeyriSdkException(R.string.keyri_err_no_permissions)
 
-object MultipleAccountsNotAllowed : KeyriSdkException(R.string.keyri_multiple_accounts_not_allowed)
+object MultipleAccountsNotAllowedException : KeyriSdkException(R.string.keyri_multiple_accounts_not_allowed)

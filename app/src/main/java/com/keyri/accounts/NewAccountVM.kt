@@ -10,18 +10,20 @@ import com.example.keyrisdk.KeyriSdk
 import com.example.keyrisdk.exception.KeyriSdkException
 import com.example.keyrisdk.services.api.AuthMobileResponse
 import com.hadilq.liveevent.LiveEvent
+import com.keyri.BuildConfig
 import com.keyri.R
 import kotlinx.coroutines.launch
 
 class NewAccountVM(private val app: Application) : AndroidViewModel(app) {
 
     private val loadingLD = MutableLiveData<Boolean>()
+    private val messageLD = LiveEvent<String>()
+    private val authenticatedLD = LiveEvent<AuthMobileResponse>()
+
     fun loading() = loadingLD as LiveData<Boolean>
 
-    private val messageLD = LiveEvent<String>()
     fun message() = messageLD as LiveData<String>
 
-    private val authenticatedLD = LiveEvent<AuthMobileResponse>()
     fun authenticated() = authenticatedLD as LiveData<AuthMobileResponse>
 
     fun mobileSignup(username: String) {
@@ -31,7 +33,10 @@ class NewAccountVM(private val app: Application) : AndroidViewModel(app) {
                 authenticatedLD.value =
                     KeyriSdk.mobileSignup(username, CUSTOM_DATA_SIGNUP, CUSTOM_HEADERS)
             } catch (e: Throwable) {
-                Log.d("Keyri", "Mobile signup exception $e")
+                if (BuildConfig.DEBUG) {
+                    Log.e("Keyri", "Mobile signup exception $e")
+                }
+
                 if (e is KeyriSdkException) {
                     messageLD.value = app.getString(e.errorMessage)
                 } else {
