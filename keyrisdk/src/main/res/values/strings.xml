@@ -10,4 +10,8 @@
     <string name="keyri_error_general">Something went wrong</string>
     <string name="keyri_powered_by_keyri">Powered by Keyri</string>
     <string name="keyri_multiple_accounts_not_allowed">Multiple accounts not allowed</string>
+    <string name="keyri_no_accounts_create_one">You don\'t have any accounts. Please create one.</string>
+    <string name="keyri_you_already_have_account">You already have an account</string>
+    <string name="keyri_do_you_want_to_replace_account">Do you want to replace it with new one?</string>
+    <string name="keyri_choose_your_account">Choose your account</string>
 </resources>

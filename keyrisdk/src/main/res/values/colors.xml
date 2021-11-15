@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="keyriColorPrimary">#b10fbd</color>
+    <color name="grey_dot">#C4C4C4</color>
+    <color name="grey_divider">#EAEAEA</color>
+    <color name="account_text_color">#636363</color>
 </resources>

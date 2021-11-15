@@ -176,7 +176,6 @@ object KeyriSdk {
             .map { PublicAccount(it.username, it.custom) }
     }
 
-    // TODO Test it
     @Throws(IllegalStateException::class, NotInitializedException::class)
     suspend fun removeAccount(account: PublicAccount) {
         assertInitialized()
