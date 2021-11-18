@@ -50,6 +50,8 @@ class KeyriQrScannerActivity : AppCompatActivity() {
                 if (sessionId != null && username != null) {
                     viewModel.authenticate(sessionId, PublicAccount(username, custom))
                 }
+            } else {
+                openScanner()
             }
         }
 

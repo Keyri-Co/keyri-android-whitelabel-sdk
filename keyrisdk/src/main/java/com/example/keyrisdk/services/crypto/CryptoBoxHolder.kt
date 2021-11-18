@@ -1,25 +1,22 @@
 package com.example.keyrisdk.services.crypto
 
-import android.content.Context
+import android.content.SharedPreferences
 import androidx.core.content.edit
-import androidx.preference.PreferenceManager
 
 /**
  * Crypto box persistent holder.
  */
-class CryptoBoxHolder(context: Context) {
-
-    private val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+class CryptoBoxHolder(private val preferences: SharedPreferences) {
 
     private fun applyString(key: String, value: String) {
-        prefs.edit(commit = true) {
+        preferences.edit(commit = true) {
             putString(key, value)
         }
     }
 
     fun getCryptoBox(): CryptoBox? {
-        val privateKey = prefs.getString(KEY_SC, null) ?: return null
-        val publicKey = prefs.getString(KEY_PK, null) ?: return null
+        val privateKey = preferences.getString(KEY_SC, null) ?: return null
+        val publicKey = preferences.getString(KEY_PK, null) ?: return null
 
         return CryptoBox(privateKey, publicKey)
     }

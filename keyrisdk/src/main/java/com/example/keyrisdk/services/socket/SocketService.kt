@@ -93,6 +93,7 @@ class SocketService(private val url: String) {
         return VerifyRequestMessage(publicKey, sessionKey)
     }
 
+    // TODO Resolve it
     suspend fun sendConfirmationEvent(message: VerifyApproveMessage) {
         connectIfNeeded()
         withTimeout(SOCKET_TIMEOUT) {

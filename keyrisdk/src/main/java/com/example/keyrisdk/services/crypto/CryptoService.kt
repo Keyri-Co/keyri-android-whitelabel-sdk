@@ -1,7 +1,7 @@
 package com.example.keyrisdk.services.crypto
 
 import android.annotation.SuppressLint
-import android.content.Context
+import android.content.SharedPreferences
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import com.example.keyrisdk.utils.fromBase64
@@ -18,11 +18,10 @@ import java.security.PrivateKey
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 
-class CryptoService(context: Context) {
+class CryptoService(preferences: SharedPreferences) {
 
     private val sodium = LazySodiumAndroid(SodiumAndroid(), StandardCharsets.UTF_8)
-    private val cryptoBoxHolder =
-        CryptoBoxHolder(context)
+    private val cryptoBoxHolder = CryptoBoxHolder(preferences)
 
     init {
         createRsaKeyPairIfNeeded()

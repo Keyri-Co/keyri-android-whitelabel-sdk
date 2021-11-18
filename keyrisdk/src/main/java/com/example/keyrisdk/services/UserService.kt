@@ -81,7 +81,7 @@ class UserService(
         return makeApiCall { apiService.authMobile(extendedHeaders, callbackUrl, request) }.body()
     }
 
-    private fun createAccount(serviceId: String, username: String, custom: String?) =
+    private suspend fun createAccount(serviceId: String, username: String, custom: String?) =
         Account(generateUserId(), serviceId, username, custom).also {
             storageService.addAccount(it)
         }

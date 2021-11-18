@@ -2,6 +2,7 @@ package com.example.keyrisdk.di
 
 import android.app.Application
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.room.Room
 import com.example.keyrisdk.BuildConfig
 import com.example.keyrisdk.db.AppDb
@@ -21,12 +22,6 @@ import javax.inject.Singleton
 
 @Module
 class KeyriSdkModule(private val app: Application) {
-
-    @Provides
-    @Singleton
-    fun provideContext(): Context {
-        return app
-    }
 
     @Provides
     @Singleton
@@ -54,35 +49,29 @@ class KeyriSdkModule(private val app: Application) {
 
     @Provides
     @Singleton
-    fun provideAppDb(appContext: Context): AppDb =
-        Room.databaseBuilder(appContext, AppDb::class.java, DB_NAME)
-            .allowMainThreadQueries()
-            .build()
+    fun provideAppDb(): AppDb = Room.databaseBuilder(app, AppDb::class.java, DB_NAME).build()
 
     @Provides
     @Singleton
     fun provideUserDao(db: AppDb) = db.userDao()
 
     @Provides
-    @Singleton
-    fun provideCryptoService() =
-        CryptoService(app)
+    fun provideCryptoService(preferences: SharedPreferences) = CryptoService(preferences)
 
     @Provides
-    @Singleton
-    fun provideStorageService(userDao: UserDao, cryptoService: CryptoService) =
-        StorageService(app, userDao, cryptoService)
+    fun provideStorageService(
+        preferences: SharedPreferences,
+        userDao: UserDao,
+        cryptoService: CryptoService
+    ) = StorageService(preferences, userDao, cryptoService)
 
     @Provides
-    @Singleton
     fun provideSessionService(
-        storageService: StorageService,
         socketService: SocketService,
         cryptoService: CryptoService
     ) = SessionService(socketService, cryptoService)
 
     @Provides
-    @Singleton
     fun provideUserService(
         storageService: StorageService,
         sessionService: SessionService,
@@ -91,11 +80,15 @@ class KeyriSdkModule(private val app: Application) {
     ) = UserService(storageService, sessionService, apiService, cryptoService)
 
     @Provides
+    fun provideSocketService() = SocketService(BuildConfig.WS_URL)
+
+    @Provides
     @Singleton
-    fun provideSocketService() =
-        SocketService(BuildConfig.WS_URL)
+    fun getSharedPreferences(): SharedPreferences =
+        app.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     companion object {
+        private const val PREFS_NAME = "keyri_prefs"
         private const val DB_NAME = "db_keyri_sdk"
         private const val CONNECT_TIMEOUT = 15L
         private const val READ_TIMEOUT = 60L

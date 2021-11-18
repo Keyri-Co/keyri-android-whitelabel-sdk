@@ -29,9 +29,6 @@ object KeyriSdk {
 
     private var service: Service? = null
 
-    internal val app
-        get() = keyriSdkGraph.getContext()
-
     /**
      * Initializes Keyri SDK.
      * Should be called before using other Keyri SDK api methods.
