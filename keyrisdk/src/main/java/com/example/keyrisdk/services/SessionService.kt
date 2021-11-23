@@ -47,6 +47,13 @@ class SessionService(
         val encryptedMessage = cryptoService.encryptSeal(message, targetPublicKey)
         val signedMessage = cryptoService.createSignature(message)
 
+        // TODO Check Android Crypto (is packages supported)
+        // TODO Check Security, behavior changes
+        // TODO If we can do it -> change crypto service
+
+        // TODO Generate secret key for AES
+        // TODO And save to Keystore
+
         val publicKeyForVerification =
             if (usePublicKey) cryptoService.getCryptoBoxPublicKey() else null
         val confirmationMessage =

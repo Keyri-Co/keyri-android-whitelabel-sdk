@@ -24,8 +24,9 @@ class CryptoService(preferences: SharedPreferences) {
     private val cryptoBoxHolder = CryptoBoxHolder(preferences)
 
     init {
-        createRsaKeyPairIfNeeded()
-        createCryptoBoxIfNeeded()
+        // TODO Add createSecretKey() -> For AES
+        createRsaKeyPairIfNeeded() // TODO Will be removed
+        createCryptoBoxIfNeeded() // TODO Will be removed
     }
 
     /**

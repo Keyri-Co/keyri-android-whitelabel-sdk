@@ -12,7 +12,7 @@ import com.example.keyrisdk.R
 import com.example.keyrisdk.entity.PublicAccount
 import com.example.keyrisdk.exception.KeyriSdkException
 import com.example.keyrisdk.exception.ServerErrorException
-import com.hadilq.liveevent.LiveEvent
+import com.example.keyrisdk.utils.LiveEvent
 import kotlinx.coroutines.launch
 
 class KeyriQrChooseAccountVM(private val app: Application) : AndroidViewModel(app) {

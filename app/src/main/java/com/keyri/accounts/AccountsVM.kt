@@ -11,7 +11,7 @@ import com.example.keyrisdk.KeyriSdk
 import com.example.keyrisdk.entity.PublicAccount
 import com.example.keyrisdk.exception.KeyriSdkException
 import com.example.keyrisdk.services.api.AuthMobileResponse
-import com.hadilq.liveevent.LiveEvent
+import com.example.keyrisdk.utils.LiveEvent
 import com.keyri.R
 import com.keyri.accounts.AccountsActivity.Companion.EXTRA_MODE
 import kotlinx.coroutines.launch

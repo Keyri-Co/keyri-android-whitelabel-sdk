@@ -113,6 +113,7 @@ object KeyriSdk {
     @Throws(
         IllegalStateException::class,
         NotInitializedException::class,
+        AuthorizationException::class,
         MultipleAccountsNotAllowedException::class
     )
     suspend fun mobileSignup(
@@ -136,11 +137,14 @@ object KeyriSdk {
                 config.callbackUrl,
                 custom,
                 config.allowMultipleAccounts
-            )
-            ?: throw NetworkException
+            ) ?: throw AuthorizationException
     }
 
-    @Throws(IllegalStateException::class, NotInitializedException::class)
+    @Throws(
+        IllegalStateException::class,
+        NotInitializedException::class,
+        AuthorizationException::class
+    )
     suspend fun mobileLogin(
         account: PublicAccount,
         extendedHeaders: Map<String, String> = emptyMap()
@@ -155,7 +159,7 @@ object KeyriSdk {
         return keyriSdkGraph
             .getUserService()
             .loginMobile(account, service, extendedHeaders, config.callbackUrl)
-            ?: throw NetworkException
+            ?: throw AuthorizationException
     }
 
     @Throws(IllegalStateException::class, NotInitializedException::class)

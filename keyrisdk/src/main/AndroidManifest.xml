@@ -9,10 +9,15 @@
 
         <activity
             android:name=".ui.scanner.KeyriQrScannerActivity"
+            android:exported="true"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
 
         <activity android:name=".ui.choose_account.KeyriQrChooseAccountActivity" />
+
+        <meta-data
+            android:name="com.google.mlkit.vision.DEPENDENCIES"
+            android:value="barcode" />
 
     </application>
 

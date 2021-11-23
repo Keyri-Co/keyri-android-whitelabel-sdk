@@ -17,7 +17,7 @@ suspend fun <T : Any> makeApiCall(call: suspend () -> Response<T>): Response<T> 
             throw when (response.code()) {
                 in 500..599 -> InternalServerException(response.code())
                 else -> {
-                    val errorResponse: String = Gson().fromJson(
+                    val errorResponse: String? = Gson().fromJson(
                         response.errorBody()?.charStream(),
                         object : TypeToken<String?>() {}.type
                     )

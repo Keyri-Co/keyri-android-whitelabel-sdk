@@ -9,8 +9,10 @@ import io.socket.client.IO
 import io.socket.client.Socket
 import io.socket.client.Socket.EVENT_CONNECT
 import io.socket.client.Socket.EVENT_CONNECT_ERROR
+import io.socket.client.Socket.EVENT_DISCONNECT
 import io.socket.client.SocketOptionBuilder
 import io.socket.engineio.client.transports.WebSocket
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withTimeout
 import org.json.JSONObject
 import kotlin.coroutines.resume
@@ -49,17 +51,28 @@ class SocketService(private val url: String) {
                 socket.disconnect()
                 socket.connect()
 
-                socket.on(EVENT_CONNECT) {
-                    Log.d(TAG, "Connected")
-                    try {
-                        continuation.resume(Unit)
-                    } catch (e: Throwable) {
-                        /* do nothing */
+                socket.on(EVENT_DISCONNECT) {
+                    Log.d(TAG, "Disconnect")
+
+                    if (continuation.context.isActive) {
+                        continuation.resumeWithException(NetworkException)
                     }
                 }
+
+                socket.on(EVENT_CONNECT) {
+                    Log.d(TAG, "Connected")
+
+                    if (continuation.context.isActive) {
+                        continuation.resume(Unit)
+                    }
+                }
+
                 socket.on(EVENT_CONNECT_ERROR) {
                     Log.d(TAG, "Failed to connect")
-                    continuation.resumeWithException(NetworkException)
+
+                    if (continuation.context.isActive) {
+                        continuation.resumeWithException(NetworkException)
+                    }
                 }
             }
         }
@@ -77,7 +90,9 @@ class SocketService(private val url: String) {
 
                     val payload = data?.first() as? JSONObject
                     if (payload != null) {
-                        parseVerificationRequest(payload)?.let { continuation.resume(it) }
+                        parseVerificationRequest(payload)
+                            ?.takeIf { continuation.context.isActive }
+                            ?.let { continuation.resume(it) }
                     }
                 }
             }
@@ -93,7 +108,6 @@ class SocketService(private val url: String) {
         return VerifyRequestMessage(publicKey, sessionKey)
     }
 
-    // TODO Resolve it
     suspend fun sendConfirmationEvent(message: VerifyApproveMessage) {
         connectIfNeeded()
         withTimeout(SOCKET_TIMEOUT) {
@@ -101,7 +115,10 @@ class SocketService(private val url: String) {
                 Log.d(TAG, "Sending confirmation")
 
                 socket.emit(CONFIRMATION_EVENT_NAME, message.toSocketData())
-                continuation.resume(null)
+
+                if (continuation.context.isActive) {
+                    continuation.resume(null)
+                }
             }
         }
     }
