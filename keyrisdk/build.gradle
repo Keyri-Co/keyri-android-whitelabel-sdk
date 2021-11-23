@@ -18,11 +18,11 @@ android {
     buildTypes {
         debug {
             // TODO Configure
-//            buildConfigField "String", "API_URL", "\"https://api.keyri.co\""
-//            buildConfigField "String", "WS_URL", "\"https://api.keyri.co\""
+            buildConfigField "String", "API_URL", "\"https://api.keyri.co\""
+            buildConfigField "String", "WS_URL", "\"https://api.keyri.co\""
 
-            buildConfigField "String", "API_URL", "\"https://dev-api.keyri.co\""
-            buildConfigField "String", "WS_URL", "\"wss://dev-api.keyri.co\""
+//            buildConfigField "String", "API_URL", "\"https://dev-api.keyri.co\""
+//            buildConfigField "String", "WS_URL", "\"wss://dev-api.keyri.co\""
         }
         release {
             buildConfigField "String", "API_URL", "\"https://api.keyri.co\""
@@ -66,16 +66,11 @@ dependencies {
     implementation "androidx.room:room-ktx:$room"
     kapt "androidx.room:room-compiler:$room"
 
-    implementation "com.goterl:lazysodium-android:5.0.2@aar"
-    implementation "net.java.dev.jna:jna:5.8.0@aar"
-
     implementation ('io.socket:socket.io-client:2.0.1') {
         exclude group: 'org.json', module: 'json'
     }
 
     implementation "com.google.mlkit:barcode-scanning:$barcode"
-
-    // TODO Change scanner activity UI, icons and actions
 
     // CameraX
     implementation "androidx.camera:camera-core:$cameraX"

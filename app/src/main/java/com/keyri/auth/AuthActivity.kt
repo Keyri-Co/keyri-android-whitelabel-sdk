@@ -24,6 +24,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isGone
 import androidx.lifecycle.Observer
 import com.example.keyrisdk.KeyriSdk
+import com.example.keyrisdk.services.crypto.CryptoService
 import com.google.mlkit.vision.barcode.Barcode
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
@@ -72,8 +73,6 @@ class AuthActivity : AppCompatActivity() {
     private var cameraProvider: ProcessCameraProvider? = null
     private var preview: Preview? = null
 
-    private var isCodeScannerActive = false
-
     private val options by lazy {
         BarcodeScannerOptions.Builder()
             .setBarcodeFormats(Barcode.FORMAT_QR_CODE, Barcode.FORMAT_AZTEC)
@@ -120,6 +119,16 @@ class AuthActivity : AppCompatActivity() {
     }
 
     private fun initializeUi() {
+        // TODO Just for Test, remove later
+        val cs = CryptoService(getSharedPreferences("", Context.MODE_PRIVATE))
+        val signature = cs.createSignature("This  is message!")
+
+        Log.e("SIGNATURE", signature)
+
+        val verified = cs.verifySignature("This  is message!")
+
+        Log.e("VERIFIED", verified.toString())
+
         btAuthQr.setOnClickListener {
             KeyriSdk.authWithScanner(
                 this, CUSTOM,

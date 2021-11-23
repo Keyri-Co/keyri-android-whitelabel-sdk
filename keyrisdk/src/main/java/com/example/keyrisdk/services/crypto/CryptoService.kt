@@ -7,26 +7,21 @@ import android.security.keystore.KeyProperties
 import com.example.keyrisdk.utils.fromBase64
 import com.example.keyrisdk.utils.toByteArrayFromBase64String
 import com.example.keyrisdk.utils.toStringBase64
-import com.goterl.lazysodium.LazySodiumAndroid
-import com.goterl.lazysodium.SodiumAndroid
-import com.goterl.lazysodium.interfaces.Box
-import com.goterl.lazysodium.interfaces.Sign
-import java.nio.charset.StandardCharsets
 import java.security.KeyPairGenerator
 import java.security.KeyStore
 import java.security.PrivateKey
+import java.security.Security
+import java.security.Signature
 import javax.crypto.Cipher
+import javax.crypto.SealedObject
 import javax.crypto.spec.SecretKeySpec
 
 class CryptoService(preferences: SharedPreferences) {
 
-    private val sodium = LazySodiumAndroid(SodiumAndroid(), StandardCharsets.UTF_8)
     private val cryptoBoxHolder = CryptoBoxHolder(preferences)
 
     init {
-        // TODO Add createSecretKey() -> For AES
-        createRsaKeyPairIfNeeded() // TODO Will be removed
-        createCryptoBoxIfNeeded() // TODO Will be removed
+        createRsaKeyPairIfNeeded()
     }
 
     /**
@@ -34,61 +29,38 @@ class CryptoService(preferences: SharedPreferences) {
      */
     private fun createRsaKeyPairIfNeeded() {
         val keyStore = getKeyStore()
-        if (keyStore.containsAlias(KEYPAIR_NAME)) return
-
-        createRsaKeyPair()
+        if (!keyStore.containsAlias(KEYPAIR_NAME)) createEncryptionRsaKeyPair()
     }
 
     /**
      * Creates RSA keypair in android keystore
      */
-    private fun createRsaKeyPair() {
+    private fun createEncryptionRsaKeyPair() {
         val keyGenerator =
             KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_RSA, "AndroidKeyStore")
-        keyGenerator.initialize(
-            KeyGenParameterSpec.Builder(
-                KEYPAIR_NAME,
-                KeyProperties.PURPOSE_ENCRYPT or
-                        KeyProperties.PURPOSE_DECRYPT
-            )
-                .setDigests(
-                    KeyProperties.DIGEST_SHA256,
-                    KeyProperties.DIGEST_SHA512
-                )
-                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_RSA_PKCS1)
-                .build()
+
+        val parameterSpec = KeyGenParameterSpec.Builder(
+            KEYPAIR_NAME,
+            KeyProperties.PURPOSE_ENCRYPT or
+                    KeyProperties.PURPOSE_DECRYPT or
+                    KeyProperties.PURPOSE_SIGN or
+                    KeyProperties.PURPOSE_VERIFY
         )
+            .setDigests(
+                KeyProperties.DIGEST_SHA256,
+                KeyProperties.DIGEST_SHA512
+            )
+            .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_RSA_PKCS1)
+            .setSignaturePaddings(KeyProperties.SIGNATURE_PADDING_RSA_PKCS1)
+            .build()
+
+        keyGenerator.initialize(parameterSpec)
         keyGenerator.generateKeyPair()
     }
 
     private fun getKeyStore() = KeyStore
         .getInstance(ANDROID_KEYSTORE)
         .also { it.load(null) }
-
-    /**
-     * Creates keypair for public-key authentication as per X25519 if it doesn't exist
-     * and stores it into persistent storage (in encrypted form)
-     */
-    private fun createCryptoBoxIfNeeded() {
-        if (cryptoBoxHolder.getCryptoBox() != null) return
-
-        val cryptoBox = createCryptoSignPair()
-        val encryptedCryptoBox = cryptoBox.copy(
-            privateKey = encryptRsa(cryptoBox.privateKey)
-        )
-
-        cryptoBoxHolder.setCryptoBox(encryptedCryptoBox)
-    }
-
-    private fun createCryptoSignPair(): CryptoBox {
-        val keyPair = sodium.cryptoSignKeypair()
-        val privateKey = keyPair.secretKey.asBytes.toStringBase64()
-        val publicKey = keyPair.publicKey.asBytes.toStringBase64()
-        return CryptoBox(
-            privateKey,
-            publicKey
-        )
-    }
 
     /**
      *  Extracts and decrypts a crypto box keypair from persistent storage
@@ -98,6 +70,7 @@ class CryptoService(preferences: SharedPreferences) {
         return cryptoBox.copy(privateKey = decryptRsa(cryptoBox.privateKey))
     }
 
+    // TODO Here we need to use our generated RSA key
     fun getCryptoBoxPublicKey() = getCryptoBox().publicKey
 
     /**
@@ -235,42 +208,51 @@ class CryptoService(preferences: SharedPreferences) {
         val publicKeyBytes = publicKey.toByteArrayFromBase64String()
         val messageBytes = message.toByteArray(Charsets.UTF_8)
         val messageLength = messageBytes.size
-        val cipherText = ByteArray(Box.SEALBYTES + messageLength)
-        sodium.cryptoBoxSeal(cipherText, messageBytes, messageLength.toLong(), publicKeyBytes)
-        return cipherText.toStringBase64()
+        val cipherText = ByteArray(48 + messageLength)
+
+        val provider = Security.getProvider("")
+        val cipher = Cipher.getInstance("", provider)
+
+        val privateKey = getKeyStore().getKey(KEYPAIR_NAME, null) as PrivateKey
+
+        cipher.init(Cipher.ENCRYPT_MODE, privateKey)
+
+        val sealedObject = SealedObject(message, cipher)
+
+        return sealedObject.toString()
     }
 
     fun createSignature(message: String): String {
-        val cryptoBox = getCryptoBox()
-        val privateKeyBytes = cryptoBox.privateKey.toByteArrayFromBase64String()
+        val privateKey = getKeyStore().getKey(KEYPAIR_NAME, null) as PrivateKey
         val messageBytes = message.toByteArray(Charsets.UTF_8)
-        val signatureBytes = ByteArray(Sign.BYTES)
-        sodium.cryptoSignDetached(
-            signatureBytes,
-            messageBytes,
-            messageBytes.size.toLong(),
-            privateKeyBytes
-        )
+        val signature = Signature.getInstance(RSA_SIGNATURE)
+
+        signature.initSign(privateKey)
+        signature.update(messageBytes)
+
+        val signatureBytes = signature.sign()
+
         return signatureBytes.toStringBase64()
     }
 
-    fun verifySignature(signature: String, publicKey: String): String {
-        val publicKeyBytes = publicKey.toByteArrayFromBase64String()
+    fun verifySignature(signature: String): Boolean {
         val signatureBytes = signature.toByteArrayFromBase64String()
-        val messageBytes = ByteArray(signatureBytes.size - Sign.BYTES)
-        sodium.cryptoSignOpen(
-            messageBytes,
-            signatureBytes,
-            signatureBytes.size.toLong(),
-            publicKeyBytes
-        )
-        return String(messageBytes)
+        val messageBytes = ByteArray(signatureBytes.size - 64)
+        val sign = Signature.getInstance(RSA_SIGNATURE)
+        val pubKey = getKeyStore().getCertificate(KEYPAIR_NAME).publicKey
+
+        sign.initVerify(getKeyStore().getCertificate(KEYPAIR_NAME))
+//        sign.initVerify(pubKey)
+        sign.update(messageBytes)
+
+        return sign.verify(signatureBytes)
     }
 
     companion object {
         private const val ANDROID_KEYSTORE = "AndroidKeyStore"
         private const val AES_TRANSFORMATION = "AES/ECB/PKCS7Padding"
         private const val RSA_TRANSFORMATION = "RSA/ECB/PKCS1Padding"
+        private const val RSA_SIGNATURE = "SHA256withRSA"
 
         /**
          * Android keystore name for RSA keypair
@@ -278,3 +260,4 @@ class CryptoService(preferences: SharedPreferences) {
         private const val KEYPAIR_NAME = "keyri_ks_v01"
     }
 }
+
