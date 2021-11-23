@@ -70,7 +70,6 @@ class CryptoService(preferences: SharedPreferences) {
         return cryptoBox.copy(privateKey = decryptRsa(cryptoBox.privateKey))
     }
 
-    // TODO Here we need to use our generated RSA key
     fun getCryptoBoxPublicKey() = getCryptoBox().publicKey
 
     /**
@@ -237,13 +236,10 @@ class CryptoService(preferences: SharedPreferences) {
 
     fun verifySignature(signature: String): Boolean {
         val signatureBytes = signature.toByteArrayFromBase64String()
-        val messageBytes = ByteArray(signatureBytes.size - 64)
         val sign = Signature.getInstance(RSA_SIGNATURE)
         val pubKey = getKeyStore().getCertificate(KEYPAIR_NAME).publicKey
 
-        sign.initVerify(getKeyStore().getCertificate(KEYPAIR_NAME))
-//        sign.initVerify(pubKey)
-        sign.update(messageBytes)
+        sign.initVerify(pubKey)
 
         return sign.verify(signatureBytes)
     }

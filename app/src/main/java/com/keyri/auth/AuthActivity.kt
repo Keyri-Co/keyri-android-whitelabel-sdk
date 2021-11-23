@@ -122,10 +122,7 @@ class AuthActivity : AppCompatActivity() {
         // TODO Just for Test, remove later
         val cs = CryptoService(getSharedPreferences("", Context.MODE_PRIVATE))
         val signature = cs.createSignature("This  is message!")
-
-        Log.e("SIGNATURE", signature)
-
-        val verified = cs.verifySignature("This  is message!")
+        val verified = cs.verifySignature(signature)
 
         Log.e("VERIFIED", verified.toString())
 
