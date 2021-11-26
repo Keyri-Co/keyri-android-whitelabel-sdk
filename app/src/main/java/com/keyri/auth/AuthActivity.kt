@@ -119,12 +119,10 @@ class AuthActivity : AppCompatActivity() {
     }
 
     private fun initializeUi() {
-        // TODO Just for Test, remove later
-        val cs = CryptoService(getSharedPreferences("", Context.MODE_PRIVATE))
-        val signature = cs.createSignature("This  is message!")
-        val verified = cs.verifySignature(signature)
+        val cs = CryptoService()
 
-        Log.e("VERIFIED", verified.toString())
+        cs.verifyECDH()
+        cs.initECDH()
 
         btAuthQr.setOnClickListener {
             KeyriSdk.authWithScanner(

@@ -56,7 +56,7 @@ class KeyriSdkModule(private val app: Application) {
     fun provideUserDao(db: AppDb) = db.userDao()
 
     @Provides
-    fun provideCryptoService(preferences: SharedPreferences) = CryptoService(preferences)
+    fun provideCryptoService() = CryptoService()
 
     @Provides
     fun provideStorageService(

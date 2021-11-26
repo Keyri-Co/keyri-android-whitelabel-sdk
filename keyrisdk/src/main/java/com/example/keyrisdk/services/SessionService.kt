@@ -47,8 +47,7 @@ class SessionService(
         val encryptedMessage = cryptoService.encryptSeal(message, targetPublicKey)
         val signedMessage = cryptoService.createSignature(message)
 
-        val publicKeyForVerification =
-            if (usePublicKey) cryptoService.getCryptoBoxPublicKey() else null
+        val publicKeyForVerification = if (usePublicKey) cryptoService.getPublicKey() else null
         val confirmationMessage =
             VerifyApproveMessage(encryptedMessage, signedMessage, publicKeyForVerification)
 

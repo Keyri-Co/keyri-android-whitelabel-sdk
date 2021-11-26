@@ -56,8 +56,7 @@ class UserService(
         }
 
         val account = createAccount(service.serviceId, username, custom)
-        val request =
-            AuthMobileRequest(account.userId, username, cryptoService.getCryptoBoxPublicKey())
+        val request = AuthMobileRequest(account.userId, username, cryptoService.getPublicKey())
 
         return makeApiCall { apiService.authMobile(extendedHeaders, callbackUrl, request) }.body()
     }
@@ -72,11 +71,8 @@ class UserService(
             .getAccounts(service.serviceId)
             .find { it.username == publicAccount.username } ?: throw AccountNotFoundException
 
-        val request = AuthMobileRequest(
-            account.userId,
-            account.username,
-            cryptoService.getCryptoBoxPublicKey()
-        )
+        val request =
+            AuthMobileRequest(account.userId, account.username, cryptoService.getPublicKey())
 
         return makeApiCall { apiService.authMobile(extendedHeaders, callbackUrl, request) }.body()
     }
