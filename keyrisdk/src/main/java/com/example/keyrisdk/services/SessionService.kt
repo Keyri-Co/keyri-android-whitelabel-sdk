@@ -21,7 +21,6 @@ class SessionService(
     suspend fun verifyUserSession(
         userId: String,
         sessionId: String,
-        publicKey: String?,
         usePublicKey: Boolean,
         custom: String?
     ) {
@@ -42,14 +41,9 @@ class SessionService(
             VerificationMessage(verifiedUserId, custom, System.currentTimeMillis().toString())
         val message = Gson().toJson(verificationDto)
 
-        val targetPublicKey =
-            publicKey ?: verificationResult.publicKey ?: throw IllegalStateException()
-        val encryptedMessage = cryptoService.encryptSeal(message, targetPublicKey)
-        val signedMessage = cryptoService.createSignature(message)
-
+        val encryptedMessage = cryptoService.encryptAes(message)
         val publicKeyForVerification = if (usePublicKey) cryptoService.getPublicKey() else null
-        val confirmationMessage =
-            VerifyApproveMessage(encryptedMessage, signedMessage, publicKeyForVerification)
+        val confirmationMessage = VerifyApproveMessage(encryptedMessage, publicKeyForVerification)
 
         socketService.sendConfirmationEvent(confirmationMessage)
     }
@@ -63,6 +57,6 @@ class SessionService(
         val custom: String?,
 
         @SerializedName("timestamp")
-        val timestamp: String,
+        val timestamp: String
     )
 }

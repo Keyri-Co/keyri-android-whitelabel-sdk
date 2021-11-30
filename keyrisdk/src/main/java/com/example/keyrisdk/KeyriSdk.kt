@@ -42,6 +42,10 @@ object KeyriSdk {
             .keyriSdkModule(KeyriSdkModule(app))
             .build()
 
+        // TODO Need to Fix
+        keyriSdkGraph.getCryptoService()
+            .generateSecret(config.publicKey!!)
+
         generateDeviceIdIfNeeded()
 
         initialized = true
@@ -82,7 +86,6 @@ object KeyriSdk {
                 sessionId,
                 service,
                 custom,
-                config.publicKey,
                 config.allowMultipleAccounts
             )
     }
@@ -107,7 +110,7 @@ object KeyriSdk {
 
         keyriSdkGraph
             .getUserService()
-            .login(sessionId, acc, config.publicKey, custom)
+            .login(sessionId, acc, custom)
     }
 
     @Throws(

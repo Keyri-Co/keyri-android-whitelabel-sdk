@@ -24,7 +24,6 @@ class UserService(
         sessionId: String,
         service: Service,
         custom: String?,
-        publicKey: String?,
         allowMultipleAccounts: Boolean
     ) {
         val hasAccounts = storageService.getAllAccounts().isNotEmpty()
@@ -34,11 +33,11 @@ class UserService(
         }
 
         val account = createAccount(service.serviceId, username, custom)
-        sessionService.verifyUserSession(account.userId, sessionId, publicKey, true, custom)
+        sessionService.verifyUserSession(account.userId, sessionId, true, custom)
     }
 
-    suspend fun login(sessionId: String, account: Account, publicKey: String?, custom: String?) {
-        sessionService.verifyUserSession(account.userId, sessionId, publicKey, false, custom)
+    suspend fun login(sessionId: String, account: Account, custom: String?) {
+        sessionService.verifyUserSession(account.userId, sessionId, false, custom)
     }
 
     suspend fun signupMobile(

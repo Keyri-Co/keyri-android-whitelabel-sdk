@@ -24,7 +24,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isGone
 import androidx.lifecycle.Observer
 import com.example.keyrisdk.KeyriSdk
-import com.example.keyrisdk.services.crypto.CryptoService
 import com.google.mlkit.vision.barcode.Barcode
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
@@ -119,11 +118,6 @@ class AuthActivity : AppCompatActivity() {
     }
 
     private fun initializeUi() {
-        val cs = CryptoService()
-
-        cs.verifyECDH()
-        cs.initECDH()
-
         btAuthQr.setOnClickListener {
             KeyriSdk.authWithScanner(
                 this, CUSTOM,
