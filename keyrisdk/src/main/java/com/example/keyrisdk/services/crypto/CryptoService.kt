@@ -1,43 +1,36 @@
 package com.example.keyrisdk.services.crypto
 
 import android.annotation.SuppressLint
+import android.content.SharedPreferences
 import android.security.keystore.KeyProperties
 import android.security.keystore.KeyProtection
 import android.util.Base64
+import androidx.core.content.edit
 import com.example.keyrisdk.utils.toByteArrayFromBase64String
 import com.example.keyrisdk.utils.toStringBase64
 import java.security.*
 import java.security.spec.ECGenParameterSpec
 import java.security.spec.X509EncodedKeySpec
 import javax.crypto.*
-import javax.crypto.spec.SecretKeySpec
+import com.example.keyrisdk.exception.NotInitializedException
 
-class CryptoService {
+class CryptoService(private val preferences: SharedPreferences) {
 
     private fun getKeyStore() = KeyStore
         .getInstance(ANDROID_KEYSTORE)
         .also { it.load(null) }
 
-    // TODO Temp fot testing, remove later
-    var publicKey = byteArrayOf()
-    var secretKey = byteArrayOf()
+    fun generateECDHSecret(backendPublicKey: String) {
+        if (getKeyStore().containsAlias(AES_KEY_NAME)) return
 
-    fun generateSecret(backendPublicKey: String) {
-        if(publicKey.isEmpty() || secretKey.isEmpty()) {
-            generateECDHSecret(backendPublicKey)
-        }
-    }
-
-    private fun generateECDHSecret(backendPublicKey: String): String {
-        val publicBytes: ByteArray = Base64.decode(backendPublicKey, Base64.NO_WRAP)
+        val publicBytes = Base64.decode(backendPublicKey, Base64.NO_WRAP)
         val pubKeySpec = X509EncodedKeySpec(publicBytes)
         val keyFactory = KeyFactory.getInstance(KeyProperties.KEY_ALGORITHM_EC)
         val publicKey = keyFactory.generatePublic(pubKeySpec)
 
         val kpg = KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_EC)
-        val eCGenParameterSpec = ECGenParameterSpec("prime256v1")
 
-        kpg.initialize(eCGenParameterSpec)
+        kpg.initialize(ECGenParameterSpec("prime256v1"))
 
         val keyPair = kpg.generateKeyPair()
         val keyAgreement = KeyAgreement.getInstance("ECDH")
@@ -46,23 +39,32 @@ class CryptoService {
         keyAgreement.doPhase(publicKey, true)
 
         val secretKey = keyAgreement.generateSecret(KeyProperties.KEY_ALGORITHM_AES)
-        val keyStoreEntry = KeyStore.SecretKeyEntry(secretKey)
+
+        saveSecretKey(secretKey)
+        savePublicKey(keyPair.public)
+    }
+
+    private fun saveSecretKey(secretKey: SecretKey) {
+        val entry = KeyStore.SecretKeyEntry(secretKey)
+        val keyStore = getKeyStore()
         val keyProtection =
             KeyProtection.Builder(KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
-                .setDigests(KeyProperties.DIGEST_MD5)
+                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7)
                 .setBlockModes(KeyProperties.BLOCK_MODE_ECB)
-                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
                 .setRandomizedEncryptionRequired(false)
                 .build()
 
-        // TODO Remove
-        this.secretKey = secretKey.encoded
-        this.publicKey = keyPair.public.encoded
+        keyStore.setEntry(AES_KEY_NAME, entry, keyProtection)
+    }
 
-        // TODO Save as Private, not Secret (need some life-hacks to fix)
-        getKeyStore().setEntry(AES_KEY_NAME, keyStoreEntry, keyProtection)
+    private fun savePublicKey(publicKey: PublicKey) {
+        val secretKey = getSecretKey()
+        val encryptedKey = encryptAes(secretKey, publicKey.encoded)
+        val encryptedKeyString = encryptedKey.toStringBase64()
 
-        return keyPair.public.encoded.toStringBase64()
+        preferences.edit(true) {
+            putString(EC_KEY_NAME, encryptedKeyString)
+        }
     }
 
     /**
@@ -72,10 +74,8 @@ class CryptoService {
      * @return encrypted string converted into Base64
      */
     fun encryptAes(data: String): String {
-//        val secretKeyEntry = getKeyStore().getEntry(AES_KEY_NAME, null) as KeyStore.SecretKeyEntry
-//        val secretKeyBytes = secretKeyEntry.secretKey.encoded
+        val secretKey = getSecretKey()
         val dataBytes = data.encodeToByteArray()
-//        val encrypted = encryptAes(secretKeyBytes, dataBytes)
         val encrypted = encryptAes(secretKey, dataBytes)
 
         return encrypted.toStringBase64()
@@ -89,14 +89,10 @@ class CryptoService {
      * @return encrypted bytes
      */
     @SuppressLint("GetInstance")
-    private fun encryptAes(secretKeyBytes: ByteArray, data: ByteArray): ByteArray {
+    private fun encryptAes(secretKey: SecretKey, data: ByteArray): ByteArray {
         val cipher = Cipher.getInstance(AES_TRANSFORMATION)
-        val key = SecretKeySpec(
-            MessageDigest.getInstance(KeyProperties.DIGEST_MD5).digest(secretKeyBytes),
-            KeyProperties.KEY_ALGORITHM_AES
-        )
 
-        cipher.init(Cipher.ENCRYPT_MODE, key)
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey)
 
         return cipher.doFinal(data)
     }
@@ -108,10 +104,8 @@ class CryptoService {
      * @return decrypted string converted
      */
     fun decryptAes(data: String): String {
-//        val secretKeyEntry = getKeyStore().getEntry(AES_KEY_NAME, null) as KeyStore.SecretKeyEntry
-//        val secretKeyBytes = secretKeyEntry.secretKey.encoded
+        val secretKey = getSecretKey()
         val dataBytes = data.toByteArrayFromBase64String()
-//        val decrypted = decryptAes(secretKeyBytes, dataBytes)
         val decrypted = decryptAes(secretKey, dataBytes)
 
         return decrypted.decodeToString()
@@ -125,28 +119,36 @@ class CryptoService {
      * @return decrypted bytes
      */
     @SuppressLint("GetInstance")
-    private fun decryptAes(secretKeyBytes: ByteArray, data: ByteArray?): ByteArray {
+    private fun decryptAes(secretKey: SecretKey, data: ByteArray?): ByteArray {
         val cipher = Cipher.getInstance(AES_TRANSFORMATION)
-        val key = SecretKeySpec(
-            MessageDigest.getInstance(KeyProperties.DIGEST_MD5).digest(secretKeyBytes),
-            KeyProperties.KEY_ALGORITHM_AES
-        )
 
-        cipher.init(Cipher.DECRYPT_MODE, key)
+        cipher.init(Cipher.DECRYPT_MODE, secretKey)
 
         return cipher.doFinal(data)
     }
 
-    // TODO Need to Refactor
-    fun getPublicKey(): String {
-        return publicKey.toStringBase64()
+    private fun getSecretKey(): SecretKey {
+        val secretKeyEntry = getKeyStore().getEntry(AES_KEY_NAME, null) as KeyStore.SecretKeyEntry
 
-//        return getKeyStore().getCertificate("SHA256withRSA").publicKey.encoded.toStringBase64()
+        return secretKeyEntry.secretKey
+    }
+
+    private fun getEncryptedString(): String? {
+        return preferences.getString(EC_KEY_NAME, null)
+    }
+
+    fun getPublicKey(): String {
+        val secretKeyBytes = getSecretKey()
+        val encryptedKey = getEncryptedString() ?: throw NotInitializedException
+        val key = decryptAes(secretKeyBytes, encryptedKey.encodeToByteArray())
+
+        return key.toStringBase64()
     }
 
     companion object {
         private const val ANDROID_KEYSTORE = "AndroidKeyStore"
-        private const val AES_TRANSFORMATION = "AES/ECB/PKCS5Padding"
-        private const val AES_KEY_NAME = "keyri_ks_v01"
+        private const val AES_TRANSFORMATION = "AES/ECB/PKCS7Padding"
+        private const val AES_KEY_NAME = "AES_KEY_NAME"
+        private const val EC_KEY_NAME = "EC_KEY_NAME"
     }
 }

@@ -18,12 +18,7 @@ class SessionService(
     /**
      * User verification
      */
-    suspend fun verifyUserSession(
-        userId: String,
-        sessionId: String,
-        usePublicKey: Boolean,
-        custom: String?
-    ) {
+    suspend fun verifyUserSession(userId: String, sessionId: String, custom: String?) {
         val sessionKey = Utils.getRandomString(32)
         sessions[sessionKey] = userId
 
@@ -42,7 +37,7 @@ class SessionService(
         val message = Gson().toJson(verificationDto)
 
         val encryptedMessage = cryptoService.encryptAes(message)
-        val publicKeyForVerification = if (usePublicKey) cryptoService.getPublicKey() else null
+        val publicKeyForVerification = cryptoService.getPublicKey()
         val confirmationMessage = VerifyApproveMessage(encryptedMessage, publicKeyForVerification)
 
         socketService.sendConfirmationEvent(confirmationMessage)

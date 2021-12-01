@@ -42,10 +42,7 @@ object KeyriSdk {
             .keyriSdkModule(KeyriSdkModule(app))
             .build()
 
-        // TODO Need to Fix
-        keyriSdkGraph.getCryptoService()
-            .generateSecret(config.publicKey!!)
-
+        initKeys()
         generateDeviceIdIfNeeded()
 
         initialized = true
@@ -211,6 +208,10 @@ object KeyriSdk {
         val request = InitRequest(deviceId, config.appKey)
         val response = makeApiCall { keyriSdkGraph.getApiService().init(request) }.body()
         service = response?.service
+    }
+
+    private fun initKeys() {
+        keyriSdkGraph.getCryptoService().generateECDHSecret(config.publicKey)
     }
 
     private fun generateDeviceIdIfNeeded() {

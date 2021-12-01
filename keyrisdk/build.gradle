@@ -17,7 +17,6 @@ android {
 
     buildTypes {
         debug {
-            // TODO Configure
 //            buildConfigField "String", "API_URL", "\"https://api.keyri.co\""
 //            buildConfigField "String", "WS_URL", "\"https://api.keyri.co\""
 
