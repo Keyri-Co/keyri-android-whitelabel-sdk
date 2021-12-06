@@ -65,10 +65,6 @@ dependencies {
     implementation "androidx.room:room-ktx:$room"
     kapt "androidx.room:room-compiler:$room"
 
-    implementation ('io.socket:socket.io-client:2.0.1') {
-        exclude group: 'org.json', module: 'json'
-    }
-
     implementation "com.google.mlkit:barcode-scanning:$barcode"
 
     // CameraX

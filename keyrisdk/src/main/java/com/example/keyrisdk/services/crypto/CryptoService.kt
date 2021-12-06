@@ -13,6 +13,7 @@ import java.security.spec.ECGenParameterSpec
 import java.security.spec.X509EncodedKeySpec
 import javax.crypto.*
 import com.example.keyrisdk.exception.NotInitializedException
+import javax.crypto.spec.IvParameterSpec
 
 class CryptoService(private val preferences: SharedPreferences) {
 
@@ -50,7 +51,7 @@ class CryptoService(private val preferences: SharedPreferences) {
         val keyProtection =
             KeyProtection.Builder(KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
                 .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7)
-                .setBlockModes(KeyProperties.BLOCK_MODE_ECB)
+                .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
                 .setRandomizedEncryptionRequired(false)
                 .build()
 
@@ -94,6 +95,8 @@ class CryptoService(private val preferences: SharedPreferences) {
 
         cipher.init(Cipher.ENCRYPT_MODE, secretKey)
 
+        saveIV(cipher.iv)
+
         return cipher.doFinal(data)
     }
 
@@ -121,8 +124,10 @@ class CryptoService(private val preferences: SharedPreferences) {
     @SuppressLint("GetInstance")
     private fun decryptAes(secretKey: SecretKey, data: ByteArray?): ByteArray {
         val cipher = Cipher.getInstance(AES_TRANSFORMATION)
+        val iv = getIV()?.toByteArrayFromBase64String() ?: byteArrayOf()
+        val ivParameterSpec = IvParameterSpec(iv)
 
-        cipher.init(Cipher.DECRYPT_MODE, secretKey)
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, ivParameterSpec)
 
         return cipher.doFinal(data)
     }
@@ -137,6 +142,12 @@ class CryptoService(private val preferences: SharedPreferences) {
         return preferences.getString(EC_KEY_NAME, null)
     }
 
+    private fun saveIV(iv: ByteArray) {
+        preferences.edit(true) {
+            putString(IV_KEY_NAME, iv.toStringBase64())
+        }
+    }
+
     fun getPublicKey(): String {
         val secretKeyBytes = getSecretKey()
         val encryptedKey = getEncryptedString() ?: throw NotInitializedException
@@ -145,10 +156,15 @@ class CryptoService(private val preferences: SharedPreferences) {
         return key.toStringBase64()
     }
 
+    fun getIV(): String? {
+        return preferences.getString(IV_KEY_NAME, null)
+    }
+
     companion object {
         private const val ANDROID_KEYSTORE = "AndroidKeyStore"
-        private const val AES_TRANSFORMATION = "AES/ECB/PKCS7Padding"
+        private const val AES_TRANSFORMATION = "AES/CBC/PKCS7Padding"
         private const val AES_KEY_NAME = "AES_KEY_NAME"
         private const val EC_KEY_NAME = "EC_KEY_NAME"
+        private const val IV_KEY_NAME = "IV_KEY_NAME"
     }
 }

@@ -38,7 +38,9 @@ class SessionService(
 
         val encryptedMessage = cryptoService.encryptAes(message)
         val publicKeyForVerification = cryptoService.getPublicKey()
-        val confirmationMessage = VerifyApproveMessage(encryptedMessage, publicKeyForVerification)
+        val initializationVector = cryptoService.getIV()
+        val confirmationMessage =
+            VerifyApproveMessage(encryptedMessage, publicKeyForVerification, initializationVector)
 
         socketService.sendConfirmationEvent(confirmationMessage)
     }
