@@ -92,10 +92,17 @@ class CryptoService(private val preferences: SharedPreferences) {
     @SuppressLint("GetInstance")
     private fun encryptAes(secretKey: SecretKey, data: ByteArray): ByteArray {
         val cipher = Cipher.getInstance(AES_TRANSFORMATION)
+        val iv = getIV()
 
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey)
+        if (iv != null) {
+            val ivParameterSpec = IvParameterSpec(iv.toByteArrayFromBase64String())
 
-        saveIV(cipher.iv)
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivParameterSpec)
+        } else {
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey)
+
+            saveIV(cipher.iv)
+        }
 
         return cipher.doFinal(data)
     }
@@ -122,7 +129,7 @@ class CryptoService(private val preferences: SharedPreferences) {
      * @return decrypted bytes
      */
     @SuppressLint("GetInstance")
-    private fun decryptAes(secretKey: SecretKey, data: ByteArray?): ByteArray {
+    private fun decryptAes(secretKey: SecretKey, data: ByteArray): ByteArray {
         val cipher = Cipher.getInstance(AES_TRANSFORMATION)
         val iv = getIV()?.toByteArrayFromBase64String() ?: byteArrayOf()
         val ivParameterSpec = IvParameterSpec(iv)
@@ -151,7 +158,7 @@ class CryptoService(private val preferences: SharedPreferences) {
     fun getPublicKey(): String {
         val secretKeyBytes = getSecretKey()
         val encryptedKey = getEncryptedString() ?: throw NotInitializedException
-        val key = decryptAes(secretKeyBytes, encryptedKey.encodeToByteArray())
+        val key = decryptAes(secretKeyBytes, encryptedKey.toByteArrayFromBase64String())
 
         return key.toStringBase64()
     }

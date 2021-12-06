@@ -3,10 +3,10 @@ package com.example.keyrisdk.services
 import com.example.keyrisdk.services.crypto.CryptoService
 import com.example.keyrisdk.services.socket.SocketService
 import com.example.keyrisdk.services.socket.messages.ValidateMessage
+import com.example.keyrisdk.services.socket.messages.VerificationMessage
 import com.example.keyrisdk.services.socket.messages.VerifyApproveMessage
 import com.example.keyrisdk.utils.Utils
 import com.google.gson.Gson
-import com.google.gson.annotations.SerializedName
 
 class SessionService(
     private val socketService: SocketService,
@@ -31,9 +31,9 @@ class SessionService(
         val verificationResult = socketService.sendVerificationEvent(validationMessage)
         val decryptedSessionKey = cryptoService.decryptAes(verificationResult.sessionKey)
         val verifiedUserId = sessions[decryptedSessionKey] ?: return
+        val timestamp = System.currentTimeMillis().toString()
 
-        val verificationDto =
-            VerificationMessage(verifiedUserId, custom, System.currentTimeMillis().toString())
+        val verificationDto = VerificationMessage(verifiedUserId, custom, timestamp)
         val message = Gson().toJson(verificationDto)
 
         val encryptedMessage = cryptoService.encryptAes(message)
@@ -44,16 +44,4 @@ class SessionService(
 
         socketService.sendConfirmationEvent(confirmationMessage)
     }
-
-    data class VerificationMessage(
-
-        @SerializedName("userId")
-        val userId: String,
-
-        @SerializedName("custom")
-        val custom: String?,
-
-        @SerializedName("timestamp")
-        val timestamp: String
-    )
 }
