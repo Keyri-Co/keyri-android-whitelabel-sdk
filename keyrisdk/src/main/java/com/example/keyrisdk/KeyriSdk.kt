@@ -49,7 +49,7 @@ object KeyriSdk {
     }
 
     /**
-     * Retrieves user session by given @sessionId
+     * Retrieves user session by given @sessionId.
      * If session doesn't match Keyri configuration, throws WrongConfigException exception
      */
     @Throws(
@@ -211,7 +211,7 @@ object KeyriSdk {
     }
 
     private fun initKeys() {
-        keyriSdkGraph.getCryptoService().generateECDHSecret(config.publicKey)
+        keyriSdkGraph.getCryptoService().generateSecretKey(config.publicKey)
     }
 
     private fun generateDeviceIdIfNeeded() {

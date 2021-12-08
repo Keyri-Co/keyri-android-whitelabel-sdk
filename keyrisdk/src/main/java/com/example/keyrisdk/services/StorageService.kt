@@ -8,8 +8,8 @@ import com.example.keyrisdk.entity.PublicAccount
 import com.example.keyrisdk.services.crypto.CryptoService
 
 /**
- * Local storage powered by Room.
- * Encrypts sensitive data before storing
+ * Local storage powered by Room and Preferences.
+ * Encrypts sensitive data before storing.
  */
 class StorageService(
     private val preferences: SharedPreferences,

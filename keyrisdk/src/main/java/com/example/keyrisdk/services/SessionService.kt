@@ -7,6 +7,7 @@ import com.example.keyrisdk.services.socket.messages.VerificationMessage
 import com.example.keyrisdk.services.socket.messages.VerifyApproveMessage
 import com.example.keyrisdk.utils.Utils
 import com.google.gson.Gson
+import kotlinx.coroutines.flow.*
 
 class SessionService(
     private val socketService: SocketService,
@@ -16,7 +17,11 @@ class SessionService(
     private val sessions = mutableMapOf<String, String>()
 
     /**
-     * User verification
+     * Function for user session verification.
+     *
+     * @userId user id to verify.
+     * @sessionId id of the session to verify.
+     * @custom custom argument.
      */
     suspend fun verifyUserSession(userId: String, sessionId: String, custom: String?) {
         val sessionKey = Utils.getRandomString(32)
@@ -27,9 +32,12 @@ class SessionService(
         val extraHeader = cryptoService.encryptAes(userId).take(15)
 
         socketService.reconnect(extraHeader)
+        socketService.sendVerificationEvent(validationMessage)
 
-        val verificationResult = socketService.sendVerificationEvent(validationMessage)
-        val decryptedSessionKey = cryptoService.decryptAes(verificationResult.sessionKey)
+        val verificationResult = socketService.verifyMessageChannel.consumeAsFlow().first()
+
+        val decryptedSessionKey =
+            cryptoService.decryptAes(verificationResult.getOrThrow().sessionKey)
         val verifiedUserId = sessions[decryptedSessionKey] ?: return
         val timestamp = System.currentTimeMillis().toString()
 

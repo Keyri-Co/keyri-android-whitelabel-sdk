@@ -5,10 +5,14 @@ import com.google.gson.JsonObject
 
 data class ValidateMessage(val sessionId: String, val sessionKey: String) {
 
-    fun toSocketData() = JsonObject()
-        .also {
-            it.addProperty("sessionId", sessionId)
-            it.addProperty("sessionKey", sessionKey)
-            it.addProperty("action", SocketAction.SESSION_VALIDATE.name)
-        }
+    /**
+     * Create [JsonObject] for representing [ValidateMessage].
+     *
+     * @return [JsonObject] validation message.
+     */
+    fun toSocketData() = JsonObject().also {
+        it.addProperty("sessionId", sessionId)
+        it.addProperty("sessionKey", sessionKey)
+        it.addProperty("action", SocketAction.SESSION_VALIDATE.name)
+    }
 }

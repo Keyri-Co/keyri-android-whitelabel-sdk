@@ -9,6 +9,11 @@ data class VerifyApproveMessage(
     val initializationVector: String?
 ) {
 
+    /**
+     * Create [JsonObject] for representing [VerifyApproveMessage].
+     *
+     * @return [JsonObject] verifying approve message.
+     */
     fun toSocketData() = JsonObject()
         .also {
             it.addProperty("cipher", cipher)

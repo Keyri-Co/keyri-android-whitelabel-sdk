@@ -95,6 +95,7 @@ class KeyriQrScannerVM(private val app: Application) : AndroidViewModel(app) {
 
                 completeAuthWithScanner(isFailed = true)
             }
+
             loadingLD.value = false
         }
     }

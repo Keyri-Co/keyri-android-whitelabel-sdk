@@ -104,6 +104,7 @@ class KeyriQrScannerActivity : AppCompatActivity() {
                         ?.let { sessionId ->
                             Log.d("Keyri", "QR processed: $sessionId")
 
+                            cameraProvider?.unbindAll()
                             viewModel.authenticate(sessionId)
                         }
                 }
