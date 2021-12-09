@@ -30,5 +30,4 @@ suspend fun <T : Any> makeApiCall(call: suspend () -> Response<T>): Response<T> 
             throw InternalServerException()
         }
     }
-
 }

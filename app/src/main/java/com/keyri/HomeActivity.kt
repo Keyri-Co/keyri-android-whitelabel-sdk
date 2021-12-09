@@ -25,5 +25,4 @@ class HomeActivity : AppCompatActivity() {
             activity.startActivity(Intent(activity, HomeActivity::class.java))
         }
     }
-
 }

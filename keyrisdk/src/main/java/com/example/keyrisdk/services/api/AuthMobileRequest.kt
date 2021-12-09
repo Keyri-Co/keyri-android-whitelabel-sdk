@@ -12,5 +12,4 @@ data class AuthMobileRequest(
 
     @SerializedName("clientPublicKey")
     val clientPublicKey: String?
-
 )

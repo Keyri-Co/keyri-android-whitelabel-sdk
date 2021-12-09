@@ -21,5 +21,4 @@ data class PermissionsResponse(
 
     @SerializedName("mobileSignUp")
     val mobileSignup: Boolean?
-
 )

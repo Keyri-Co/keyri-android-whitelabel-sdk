@@ -4,6 +4,7 @@ import com.example.keyrisdk.entity.Account
 import com.example.keyrisdk.entity.PublicAccount
 import com.example.keyrisdk.entity.Service
 import com.example.keyrisdk.exception.AccountNotFoundException
+import com.example.keyrisdk.exception.MultipleAccountsNotAllowedException
 import com.example.keyrisdk.services.api.ApiService
 import com.example.keyrisdk.services.api.AuthMobileRequest
 import com.example.keyrisdk.services.api.AuthMobileResponse
@@ -18,7 +19,20 @@ class UserService(
     private val cryptoService: CryptoService
 ) {
 
-    suspend fun signup(username: String, sessionId: String, service: Service, custom: String?, publicKey: String?) {
+    suspend fun signup(
+        username: String,
+        sessionId: String,
+        service: Service,
+        custom: String?,
+        publicKey: String?,
+        allowMultipleAccounts: Boolean
+    ) {
+        val hasAccounts = storageService.getAllAccounts().isNotEmpty()
+
+        if (hasAccounts && !allowMultipleAccounts) {
+            throw MultipleAccountsNotAllowedException
+        }
+
         val account = createAccount(service.serviceId, username, custom)
         sessionService.verifyUserSession(account.userId, sessionId, publicKey, true, custom)
     }
@@ -32,12 +46,20 @@ class UserService(
         service: Service,
         extendedHeaders: Map<String, String>,
         callbackUrl: String,
-        custom: String?
-    ): AuthMobileResponse {
-        val account = createAccount(service.serviceId, username, custom)
+        custom: String?,
+        allowMultipleAccounts: Boolean
+    ): AuthMobileResponse? {
+        val hasAccounts = storageService.getAllAccounts().isNotEmpty()
 
-        val request = AuthMobileRequest(account.userId, username, cryptoService.getCryptoBoxPublicKey())
-        return makeApiCall { apiService.authMobile(extendedHeaders, callbackUrl, request) }.body()!!
+        if (hasAccounts && !allowMultipleAccounts) {
+            throw MultipleAccountsNotAllowedException
+        }
+
+        val account = createAccount(service.serviceId, username, custom)
+        val request =
+            AuthMobileRequest(account.userId, username, cryptoService.getCryptoBoxPublicKey())
+
+        return makeApiCall { apiService.authMobile(extendedHeaders, callbackUrl, request) }.body()
     }
 
     suspend fun loginMobile(
@@ -45,14 +67,18 @@ class UserService(
         service: Service,
         extendedHeaders: Map<String, String>,
         callbackUrl: String
-    ): AuthMobileResponse {
+    ): AuthMobileResponse? {
         val account = storageService
             .getAccounts(service.serviceId)
-            .find { it.username == publicAccount.username }
-            ?: throw AccountNotFoundException
+            .find { it.username == publicAccount.username } ?: throw AccountNotFoundException
 
-        val request = AuthMobileRequest(account.userId, account.username, cryptoService.getCryptoBoxPublicKey())
-        return makeApiCall { apiService.authMobile(extendedHeaders, callbackUrl, request) }.body()!!
+        val request = AuthMobileRequest(
+            account.userId,
+            account.username,
+            cryptoService.getCryptoBoxPublicKey()
+        )
+
+        return makeApiCall { apiService.authMobile(extendedHeaders, callbackUrl, request) }.body()
     }
 
     private fun createAccount(serviceId: String, username: String, custom: String?) =
@@ -60,7 +86,5 @@ class UserService(
             storageService.addAccount(it)
         }
 
-    private fun generateUserId() =
-        cryptoService.encryptAes(Utils.getRandomString(32))
-
+    private fun generateUserId() = cryptoService.encryptAes(Utils.getRandomString(32))
 }

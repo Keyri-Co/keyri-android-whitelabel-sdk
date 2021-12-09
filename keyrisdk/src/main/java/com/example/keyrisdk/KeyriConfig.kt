@@ -6,5 +6,6 @@ package com.example.keyrisdk
 data class KeyriConfig(
     val appKey: String,
     val publicKey: String?,
-    val callbackUrl: String
+    val callbackUrl: String,
+    val allowMultipleAccounts: Boolean = false
 )

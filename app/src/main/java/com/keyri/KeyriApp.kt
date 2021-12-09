@@ -14,9 +14,9 @@ class KeyriApp : Application() {
 
     private fun getKeyriConfig() =
         KeyriConfig(
-            BuildConfig.APP_KEY,
-            BuildConfig.PUBLIC_KEY,
-            BuildConfig.KEYRI_CALLBACK_URL
+            appKey = BuildConfig.APP_KEY,
+            publicKey = BuildConfig.PUBLIC_KEY,
+            callbackUrl = BuildConfig.KEYRI_CALLBACK_URL,
+            allowMultipleAccounts = true
         )
-
 }

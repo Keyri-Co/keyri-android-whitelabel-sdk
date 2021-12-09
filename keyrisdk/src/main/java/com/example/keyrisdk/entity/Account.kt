@@ -19,5 +19,4 @@ data class Account(
 
     @SerializedName("custom")
     val custom: String?
-
 )

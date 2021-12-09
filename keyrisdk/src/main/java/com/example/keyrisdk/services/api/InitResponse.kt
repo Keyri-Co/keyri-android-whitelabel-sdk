@@ -10,5 +10,4 @@ data class InitResponse(
 
     @SerializedName("service")
     val service: Service
-
 )

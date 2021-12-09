@@ -54,6 +54,11 @@ object KeyriSdk {
      * Retrieves user session by given @sessionId
      * If session doesn't match Keyri configuration, throws WrongConfigException exception
      */
+    @Throws(
+        NotInitializedException::class,
+        IllegalStateException::class,
+        WrongConfigException::class
+    )
     suspend fun onReadSessionId(sessionId: String): Session {
         assertInitialized()
 
@@ -62,11 +67,12 @@ object KeyriSdk {
 
         assertPermissionGranted(KeyriPermission.SESSION)
 
-        val session = makeApiCall { keyriSdkGraph.getApiService().getSession(sessionId) }.body()!!
-        if (session.service.serviceId != service.serviceId) throw WrongConfigException
+        val session = makeApiCall { keyriSdkGraph.getApiService().getSession(sessionId) }.body()
+        if (session?.service?.serviceId != service.serviceId) throw WrongConfigException
         return session
     }
 
+    @Throws(NotInitializedException::class, MultipleAccountsNotAllowedException::class)
     suspend fun signup(username: String, sessionId: String, service: Service, custom: String?) {
         assertInitialized()
 
@@ -74,10 +80,23 @@ object KeyriSdk {
 
         keyriSdkGraph
             .getUserService()
-            .signup(username, sessionId, service, custom, config.publicKey)
+            .signup(
+                username,
+                sessionId,
+                service,
+                custom,
+                config.publicKey,
+                config.allowMultipleAccounts
+            )
     }
 
-    suspend fun login(account: PublicAccount, sessionId: String, service: Service, custom: String?) {
+    @Throws(AccountNotFoundException::class, NotInitializedException::class)
+    suspend fun login(
+        account: PublicAccount,
+        sessionId: String,
+        service: Service,
+        custom: String?
+    ) {
         assertInitialized()
 
         loadServiceIfNeeded()
@@ -89,10 +108,21 @@ object KeyriSdk {
             .getAccounts(service.serviceId)
             .firstOrNull { it.username == account.username } ?: throw AccountNotFoundException
 
-        keyriSdkGraph.getUserService().login(sessionId, acc, config.publicKey, custom)
+        keyriSdkGraph
+            .getUserService()
+            .login(sessionId, acc, config.publicKey, custom)
     }
 
-    suspend fun mobileSignup(username: String, custom: String?, extendedHeaders: Map<String, String> = emptyMap()): AuthMobileResponse {
+    @Throws(
+        IllegalStateException::class,
+        NotInitializedException::class,
+        MultipleAccountsNotAllowedException::class
+    )
+    suspend fun mobileSignup(
+        username: String,
+        custom: String?,
+        extendedHeaders: Map<String, String> = emptyMap()
+    ): AuthMobileResponse {
         assertInitialized()
 
         loadServiceIfNeeded()
@@ -102,10 +132,22 @@ object KeyriSdk {
 
         return keyriSdkGraph
             .getUserService()
-            .signupMobile(username, service, extendedHeaders, config.callbackUrl, custom)
+            .signupMobile(
+                username,
+                service,
+                extendedHeaders,
+                config.callbackUrl,
+                custom,
+                config.allowMultipleAccounts
+            )
+            ?: throw NetworkException
     }
 
-    suspend fun mobileLogin(account: PublicAccount, extendedHeaders: Map<String, String> = emptyMap()): AuthMobileResponse {
+    @Throws(IllegalStateException::class, NotInitializedException::class)
+    suspend fun mobileLogin(
+        account: PublicAccount,
+        extendedHeaders: Map<String, String> = emptyMap()
+    ): AuthMobileResponse {
         assertInitialized()
 
         loadServiceIfNeeded()
@@ -116,8 +158,10 @@ object KeyriSdk {
         return keyriSdkGraph
             .getUserService()
             .loginMobile(account, service, extendedHeaders, config.callbackUrl)
+            ?: throw NetworkException
     }
 
+    @Throws(IllegalStateException::class, NotInitializedException::class)
     suspend fun accounts(): List<PublicAccount> {
         assertInitialized()
 
@@ -132,20 +176,37 @@ object KeyriSdk {
             .map { PublicAccount(it.username, it.custom) }
     }
 
+    @Throws(IllegalStateException::class, NotInitializedException::class)
+    suspend fun removeAccount(account: PublicAccount) {
+        assertInitialized()
+
+        loadServiceIfNeeded()
+        val service = this.service ?: throw IllegalStateException()
+
+        assertPermissionGranted(KeyriPermission.ACCOUNTS)
+
+        keyriSdkGraph
+            .getStorageService()
+            .removeAccount(service.serviceId, account)
+    }
+
     /**
      * Checks if Keyri SDK was initialized and throws @NotInitializedException if it wasn't
      */
+    @Throws(NotInitializedException::class)
     private fun assertInitialized() {
         if (!initialized) throw NotInitializedException
     }
 
+    @Throws(IllegalStateException::class)
     private suspend fun loadServiceIfNeeded() {
         if (service != null) return
-        val deviceId = keyriSdkGraph.getStorageService().getDeviceId() ?: throw IllegalStateException()
+        val deviceId =
+            keyriSdkGraph.getStorageService().getDeviceId() ?: throw IllegalStateException()
 
         val request = InitRequest(deviceId, config.appKey)
-        val response = makeApiCall { keyriSdkGraph.getApiService().init(request) }.body()!!
-        service = response.service
+        val response = makeApiCall { keyriSdkGraph.getApiService().init(request) }.body()
+        service = response?.service
     }
 
     private fun generateDeviceIdIfNeeded() {
@@ -155,11 +216,12 @@ object KeyriSdk {
     }
 
     @SuppressLint("DefaultLocale")
+    @Throws(PermissionsException::class)
     private suspend fun assertPermissionGranted(permission: KeyriPermission) {
         /*val serviceId = service?.serviceId ?: throw IllegalStateException()
 
         val permissionName = permission.id
-        val response = makeApiCall { keyriSdkGraph.getApiService().getPermissions(serviceId, listOf(permissionName)) }.body()!!
+        val response = makeApiCall { keyriSdkGraph.getApiService().getPermissions(serviceId, listOf(permissionName)) }.body()
         val granted: Boolean = when(permission) {
             KeyriPermission.SESSION -> response.session == true
             KeyriPermission.ACCOUNTS -> response.accounts == true
@@ -193,6 +255,7 @@ object KeyriSdk {
         val onCompleted: () -> Unit,
         val onFailed: () -> Unit
     )
+
     private var qrAuthCallbacks: QrAuthCallbacks? = null
 
 }

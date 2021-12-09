@@ -20,10 +20,8 @@ class CryptoBoxHolder(context: Context) {
     fun getCryptoBox(): CryptoBox? {
         val privateKey = prefs.getString(KEY_SC, null) ?: return null
         val publicKey = prefs.getString(KEY_PK, null) ?: return null
-        return CryptoBox(
-            privateKey,
-            publicKey
-        )
+
+        return CryptoBox(privateKey, publicKey)
     }
 
     fun setCryptoBox(cryptoBox: CryptoBox) {
@@ -35,5 +33,4 @@ class CryptoBoxHolder(context: Context) {
         const val KEY_SC = "key_sc"
         const val KEY_PK = "key_pk"
     }
-
 }

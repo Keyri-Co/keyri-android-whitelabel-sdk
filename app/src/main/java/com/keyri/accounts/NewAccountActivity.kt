@@ -67,5 +67,4 @@ class NewAccountActivity : AppCompatActivity() {
             activity.startActivity(Intent(activity, NewAccountActivity::class.java))
         }
     }
-
 }

@@ -45,9 +45,7 @@ class AuthActivity : AppCompatActivity() {
 
         viewModel.message().observe(this, Observer(::onMessage))
         viewModel.loading().observe(this, Observer(::onLoading))
-        viewModel.authenticated().observe(this, Observer {
-            HomeActivity.openHomeActivity(this)
-        })
+        viewModel.authenticated().observe(this) { HomeActivity.openHomeActivity(this) }
 
         initializeUi()
     }
@@ -162,5 +160,4 @@ class AuthActivity : AppCompatActivity() {
     companion object {
         private const val CUSTOM = "test custom data"
     }
-
 }
