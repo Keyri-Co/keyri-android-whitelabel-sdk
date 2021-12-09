@@ -24,7 +24,6 @@ class UserService(
         sessionId: String,
         service: Service,
         custom: String?,
-        publicKey: String?,
         allowMultipleAccounts: Boolean
     ) {
         val hasAccounts = storageService.getAllAccounts().isNotEmpty()
@@ -34,11 +33,11 @@ class UserService(
         }
 
         val account = createAccount(service.serviceId, username, custom)
-        sessionService.verifyUserSession(account.userId, sessionId, publicKey, true, custom)
+        sessionService.verifyUserSession(account.userId, sessionId, custom)
     }
 
-    suspend fun login(sessionId: String, account: Account, publicKey: String?, custom: String?) {
-        sessionService.verifyUserSession(account.userId, sessionId, publicKey, false, custom)
+    suspend fun login(sessionId: String, account: Account, custom: String?) {
+        sessionService.verifyUserSession(account.userId, sessionId, custom)
     }
 
     suspend fun signupMobile(
@@ -56,8 +55,7 @@ class UserService(
         }
 
         val account = createAccount(service.serviceId, username, custom)
-        val request =
-            AuthMobileRequest(account.userId, username, cryptoService.getCryptoBoxPublicKey())
+        val request = AuthMobileRequest(account.userId, username, cryptoService.getPublicKey())
 
         return makeApiCall { apiService.authMobile(extendedHeaders, callbackUrl, request) }.body()
     }
@@ -72,16 +70,13 @@ class UserService(
             .getAccounts(service.serviceId)
             .find { it.username == publicAccount.username } ?: throw AccountNotFoundException
 
-        val request = AuthMobileRequest(
-            account.userId,
-            account.username,
-            cryptoService.getCryptoBoxPublicKey()
-        )
+        val request =
+            AuthMobileRequest(account.userId, account.username, cryptoService.getPublicKey())
 
         return makeApiCall { apiService.authMobile(extendedHeaders, callbackUrl, request) }.body()
     }
 
-    private fun createAccount(serviceId: String, username: String, custom: String?) =
+    private suspend fun createAccount(serviceId: String, username: String, custom: String?) =
         Account(generateUserId(), serviceId, username, custom).also {
             storageService.addAccount(it)
         }

@@ -29,9 +29,6 @@ object KeyriSdk {
 
     private var service: Service? = null
 
-    internal val app
-        get() = keyriSdkGraph.getContext()
-
     /**
      * Initializes Keyri SDK.
      * Should be called before using other Keyri SDK api methods.
@@ -45,13 +42,14 @@ object KeyriSdk {
             .keyriSdkModule(KeyriSdkModule(app))
             .build()
 
+        initKeys()
         generateDeviceIdIfNeeded()
 
         initialized = true
     }
 
     /**
-     * Retrieves user session by given @sessionId
+     * Retrieves user session by given @sessionId.
      * If session doesn't match Keyri configuration, throws WrongConfigException exception
      */
     @Throws(
@@ -85,7 +83,6 @@ object KeyriSdk {
                 sessionId,
                 service,
                 custom,
-                config.publicKey,
                 config.allowMultipleAccounts
             )
     }
@@ -110,12 +107,13 @@ object KeyriSdk {
 
         keyriSdkGraph
             .getUserService()
-            .login(sessionId, acc, config.publicKey, custom)
+            .login(sessionId, acc, custom)
     }
 
     @Throws(
         IllegalStateException::class,
         NotInitializedException::class,
+        AuthorizationException::class,
         MultipleAccountsNotAllowedException::class
     )
     suspend fun mobileSignup(
@@ -139,11 +137,14 @@ object KeyriSdk {
                 config.callbackUrl,
                 custom,
                 config.allowMultipleAccounts
-            )
-            ?: throw NetworkException
+            ) ?: throw AuthorizationException
     }
 
-    @Throws(IllegalStateException::class, NotInitializedException::class)
+    @Throws(
+        IllegalStateException::class,
+        NotInitializedException::class,
+        AuthorizationException::class
+    )
     suspend fun mobileLogin(
         account: PublicAccount,
         extendedHeaders: Map<String, String> = emptyMap()
@@ -158,7 +159,7 @@ object KeyriSdk {
         return keyriSdkGraph
             .getUserService()
             .loginMobile(account, service, extendedHeaders, config.callbackUrl)
-            ?: throw NetworkException
+            ?: throw AuthorizationException
     }
 
     @Throws(IllegalStateException::class, NotInitializedException::class)
@@ -207,6 +208,10 @@ object KeyriSdk {
         val request = InitRequest(deviceId, config.appKey)
         val response = makeApiCall { keyriSdkGraph.getApiService().init(request) }.body()
         service = response?.service
+    }
+
+    private fun initKeys() {
+        keyriSdkGraph.getCryptoService().generateSecretKey(config.publicKey)
     }
 
     private fun generateDeviceIdIfNeeded() {

@@ -24,7 +24,7 @@ class NewAccountActivity : AppCompatActivity() {
 
         viewModel.message().observe(this, Observer(::onMessage))
         viewModel.loading().observe(this, Observer(::onLoading))
-        viewModel.authenticated().observe(this, Observer { openHomeActivity() })
+        viewModel.authenticated().observe(this) { openHomeActivity() }
 
         setupUi()
     }

@@ -1,7 +1,8 @@
 <resources>
     <string name="keyri_empty" />
     <string name="keyri_err_not_initialized">Keyri SDK has not been initialized</string>
-    <string name="keyri_err_network">Unable to connect to the server. Check internet connection</string>
+    <string name="keyri_err_network">No internet connection</string>
+    <string name="keyri_err_authorization">Unable to authorize</string>
     <string name="keyri_err_server_unreachable">Unable to connect to the server. Server is unreachable</string>
     <string name="keyri_err_internal_server">Internal server error. Service is unavailable</string>
     <string name="keyri_err_wrong_config">Wrong configuration</string>

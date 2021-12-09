@@ -8,6 +8,8 @@ object NotInitializedException : KeyriSdkException(R.string.keyri_err_not_initia
 
 object NetworkException : KeyriSdkException(R.string.keyri_err_network)
 
+object AuthorizationException : KeyriSdkException(R.string.keyri_err_authorization)
+
 object ServerUnreachableException : KeyriSdkException(R.string.keyri_err_server_unreachable)
 
 data class InternalServerException(val httpCode: Int? = null) :

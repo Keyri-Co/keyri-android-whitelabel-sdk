@@ -6,12 +6,13 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.example.keyrisdk.BuildConfig
 import com.example.keyrisdk.KeyriSdk
 import com.example.keyrisdk.R
 import com.example.keyrisdk.entity.PublicAccount
 import com.example.keyrisdk.exception.KeyriSdkException
 import com.example.keyrisdk.exception.ServerErrorException
-import com.hadilq.liveevent.LiveEvent
+import com.example.keyrisdk.utils.LiveEvent
 import kotlinx.coroutines.launch
 
 class KeyriQrChooseAccountVM(private val app: Application) : AndroidViewModel(app) {
@@ -33,7 +34,9 @@ class KeyriQrChooseAccountVM(private val app: Application) : AndroidViewModel(ap
             try {
                 accountsLD.value = KeyriSdk.accounts()
             } catch (e: Throwable) {
-                Log.d("Keyri", "Authentication exception $e")
+                if (BuildConfig.DEBUG) {
+                    Log.e("Keyri", "Authentication exception $e")
+                }
 
                 messageLD.value = if (e is KeyriSdkException) {
                     if (e is ServerErrorException) {

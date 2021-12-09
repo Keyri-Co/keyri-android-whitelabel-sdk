@@ -3,10 +3,11 @@ package com.example.keyrisdk.services
 import com.example.keyrisdk.services.crypto.CryptoService
 import com.example.keyrisdk.services.socket.SocketService
 import com.example.keyrisdk.services.socket.messages.ValidateMessage
+import com.example.keyrisdk.services.socket.messages.VerificationMessage
 import com.example.keyrisdk.services.socket.messages.VerifyApproveMessage
 import com.example.keyrisdk.utils.Utils
 import com.google.gson.Gson
-import com.google.gson.annotations.SerializedName
+import kotlinx.coroutines.flow.*
 
 class SessionService(
     private val socketService: SocketService,
@@ -16,15 +17,13 @@ class SessionService(
     private val sessions = mutableMapOf<String, String>()
 
     /**
-     * User verification
+     * Function for user session verification.
+     *
+     * @userId user id to verify.
+     * @sessionId id of the session to verify.
+     * @custom custom argument.
      */
-    suspend fun verifyUserSession(
-        userId: String,
-        sessionId: String,
-        publicKey: String?,
-        usePublicKey: Boolean,
-        custom: String?
-    ) {
+    suspend fun verifyUserSession(userId: String, sessionId: String, custom: String?) {
         val sessionKey = Utils.getRandomString(32)
         sessions[sessionKey] = userId
 
@@ -33,37 +32,24 @@ class SessionService(
         val extraHeader = cryptoService.encryptAes(userId).take(15)
 
         socketService.reconnect(extraHeader)
+        socketService.sendVerificationEvent(validationMessage)
 
-        val verificationResult = socketService.sendVerificationEvent(validationMessage)
-        val decryptedSessionKey = cryptoService.decryptAes(verificationResult.sessionKey)
+        val verificationResult = socketService.verifyMessageChannel.consumeAsFlow().first()
+
+        val decryptedSessionKey =
+            cryptoService.decryptAes(verificationResult.getOrThrow().sessionKey)
         val verifiedUserId = sessions[decryptedSessionKey] ?: return
+        val timestamp = System.currentTimeMillis().toString()
 
-        val verificationDto =
-            VerificationMessage(verifiedUserId, custom, System.currentTimeMillis().toString())
+        val verificationDto = VerificationMessage(verifiedUserId, custom, timestamp)
         val message = Gson().toJson(verificationDto)
 
-        val targetPublicKey =
-            publicKey ?: verificationResult.publicKey ?: throw IllegalStateException()
-        val encryptedMessage = cryptoService.encryptSeal(message, targetPublicKey)
-        val signedMessage = cryptoService.createSignature(message)
-
-        val publicKeyForVerification =
-            if (usePublicKey) cryptoService.getCryptoBoxPublicKey() else null
+        val encryptedMessage = cryptoService.encryptAes(message)
+        val publicKeyForVerification = cryptoService.getPublicKey()
+        val initializationVector = cryptoService.getIV()
         val confirmationMessage =
-            VerifyApproveMessage(encryptedMessage, signedMessage, publicKeyForVerification)
+            VerifyApproveMessage(encryptedMessage, publicKeyForVerification, initializationVector)
 
         socketService.sendConfirmationEvent(confirmationMessage)
     }
-
-    data class VerificationMessage(
-
-        @SerializedName("userId")
-        val userId: String,
-
-        @SerializedName("custom")
-        val custom: String?,
-
-        @SerializedName("timestamp")
-        val timestamp: String,
-    )
 }

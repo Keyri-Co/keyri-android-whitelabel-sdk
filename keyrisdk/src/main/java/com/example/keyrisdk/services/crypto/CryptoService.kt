@@ -1,280 +1,168 @@
 package com.example.keyrisdk.services.crypto
 
-import android.annotation.SuppressLint
-import android.content.Context
-import android.security.keystore.KeyGenParameterSpec
+import android.content.SharedPreferences
 import android.security.keystore.KeyProperties
-import com.example.keyrisdk.utils.fromBase64
+import android.security.keystore.KeyProtection
+import android.util.Base64
+import androidx.core.content.edit
 import com.example.keyrisdk.utils.toByteArrayFromBase64String
 import com.example.keyrisdk.utils.toStringBase64
-import com.goterl.lazysodium.LazySodiumAndroid
-import com.goterl.lazysodium.SodiumAndroid
-import com.goterl.lazysodium.interfaces.Box
-import com.goterl.lazysodium.interfaces.Sign
-import java.nio.charset.StandardCharsets
-import java.security.KeyPairGenerator
-import java.security.KeyStore
-import java.security.PrivateKey
-import javax.crypto.Cipher
-import javax.crypto.spec.SecretKeySpec
+import java.security.*
+import java.security.spec.ECGenParameterSpec
+import java.security.spec.X509EncodedKeySpec
+import javax.crypto.*
+import com.example.keyrisdk.exception.NotInitializedException
+import javax.crypto.spec.IvParameterSpec
 
-class CryptoService(context: Context) {
+class CryptoService(private val preferences: SharedPreferences) {
 
-    private val sodium = LazySodiumAndroid(SodiumAndroid(), StandardCharsets.UTF_8)
-    private val cryptoBoxHolder =
-        CryptoBoxHolder(context)
+    /**
+     * Function for generating AES secret key with ECDH key agreement.
+     *
+     * @backendPublicKey base64 string of backend EC public key.
+     */
+    fun generateSecretKey(backendPublicKey: String) {
+        if (getKeyStore().containsAlias(AES_KEY_NAME)) return
 
-    init {
-        createRsaKeyPairIfNeeded()
-        createCryptoBoxIfNeeded()
+        val publicBytes = Base64.decode(backendPublicKey, Base64.NO_WRAP)
+        val pubKeySpec = X509EncodedKeySpec(publicBytes)
+        val keyFactory = KeyFactory.getInstance(KeyProperties.KEY_ALGORITHM_EC)
+        val publicKey = keyFactory.generatePublic(pubKeySpec)
+
+        val kpg = KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_EC)
+
+        kpg.initialize(ECGenParameterSpec("prime256v1"))
+
+        val keyPair = kpg.generateKeyPair()
+        val keyAgreement = KeyAgreement.getInstance("ECDH")
+
+        keyAgreement.init(keyPair.private)
+        keyAgreement.doPhase(publicKey, true)
+
+        val secretKey = keyAgreement.generateSecret(KeyProperties.KEY_ALGORITHM_AES)
+
+        saveSecretKey(secretKey)
+        savePublicKey(keyPair.public)
     }
 
     /**
-     * Creates RSA keypair in android keystore if it doesn't exist
+     * Function for retrieving EC public key. Must be called after [generateSecretKey] invocation.
      */
-    private fun createRsaKeyPairIfNeeded() {
+    fun getPublicKey(): String {
+        val secretKeyBytes = getSecretKey()
+        val encryptedKey = getEncryptedString() ?: throw NotInitializedException
+        val key = decryptAes(secretKeyBytes, encryptedKey.toByteArrayFromBase64String())
+
+        return key.toStringBase64()
+    }
+
+    fun getIV(): String? {
+        return preferences.getString(IV_KEY_NAME, null)
+    }
+
+    /**
+     * Encrypts a string using AES symmetric encryption.
+     *
+     * @data string to encrypt.
+     * @return encrypted string in Base64 encoding.
+     */
+    fun encryptAes(data: String): String {
+        val secretKey = getSecretKey()
+        val dataBytes = data.encodeToByteArray()
+        val encrypted = encryptAes(secretKey, dataBytes)
+
+        return encrypted.toStringBase64()
+    }
+
+    /**
+     * Decrypts a string using AES symmetric encryption.
+     *
+     * @data string to decrypt (Base64 encoding).
+     * @return decrypted string.
+     */
+    fun decryptAes(data: String): String {
+        val secretKey = getSecretKey()
+        val dataBytes = data.toByteArrayFromBase64String()
+        val decrypted = decryptAes(secretKey, dataBytes)
+
+        return decrypted.decodeToString()
+    }
+
+    private fun saveSecretKey(secretKey: SecretKey) {
+        val entry = KeyStore.SecretKeyEntry(secretKey)
         val keyStore = getKeyStore()
-        if (keyStore.containsAlias(KEYPAIR_NAME)) return
+        val keyProtection =
+            KeyProtection.Builder(KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
+                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7)
+                .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
+                .setRandomizedEncryptionRequired(false)
+                .build()
 
-        createRsaKeyPair()
+        keyStore.setEntry(AES_KEY_NAME, entry, keyProtection)
     }
 
-    /**
-     * Creates RSA keypair in android keystore
-     */
-    private fun createRsaKeyPair() {
-        val keyGenerator =
-            KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_RSA, "AndroidKeyStore")
-        keyGenerator.initialize(
-            KeyGenParameterSpec.Builder(
-                KEYPAIR_NAME,
-                KeyProperties.PURPOSE_ENCRYPT or
-                        KeyProperties.PURPOSE_DECRYPT
-            )
-                .setDigests(
-                    KeyProperties.DIGEST_SHA256,
-                    KeyProperties.DIGEST_SHA512
-                )
-                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_RSA_PKCS1)
-                .build()
-        )
-        keyGenerator.generateKeyPair()
+    private fun savePublicKey(publicKey: PublicKey) {
+        val secretKey = getSecretKey()
+        val encryptedKey = encryptAes(secretKey, publicKey.encoded)
+        val encryptedKeyString = encryptedKey.toStringBase64()
+
+        preferences.edit(true) {
+            putString(EC_KEY_NAME, encryptedKeyString)
+        }
+    }
+
+    private fun encryptAes(secretKey: SecretKey, data: ByteArray): ByteArray {
+        val cipher = Cipher.getInstance(AES_TRANSFORMATION)
+        val iv = getIV()
+
+        if (iv != null) {
+            val ivParameterSpec = IvParameterSpec(iv.toByteArrayFromBase64String())
+
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivParameterSpec)
+        } else {
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey)
+
+            saveIV(cipher.iv)
+        }
+
+        return cipher.doFinal(data)
+    }
+
+    private fun decryptAes(secretKey: SecretKey, data: ByteArray): ByteArray {
+        val cipher = Cipher.getInstance(AES_TRANSFORMATION)
+        val iv = getIV()?.toByteArrayFromBase64String() ?: byteArrayOf()
+        val ivParameterSpec = IvParameterSpec(iv)
+
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, ivParameterSpec)
+
+        return cipher.doFinal(data)
+    }
+
+    private fun getSecretKey(): SecretKey {
+        val secretKeyEntry = getKeyStore().getEntry(AES_KEY_NAME, null) as KeyStore.SecretKeyEntry
+
+        return secretKeyEntry.secretKey
+    }
+
+    private fun getEncryptedString(): String? {
+        return preferences.getString(EC_KEY_NAME, null)
+    }
+
+    private fun saveIV(iv: ByteArray) {
+        preferences.edit(true) {
+            putString(IV_KEY_NAME, iv.toStringBase64())
+        }
     }
 
     private fun getKeyStore() = KeyStore
         .getInstance(ANDROID_KEYSTORE)
         .also { it.load(null) }
 
-    /**
-     * Creates keypair for public-key authentication as per X25519 if it doesn't exist
-     * and stores it into persistent storage (in encrypted form)
-     */
-    private fun createCryptoBoxIfNeeded() {
-        if (cryptoBoxHolder.getCryptoBox() != null) return
-
-        val cryptoBox = createCryptoSignPair()
-        val encryptedCryptoBox = cryptoBox.copy(
-            privateKey = encryptRsa(cryptoBox.privateKey)
-        )
-
-        cryptoBoxHolder.setCryptoBox(encryptedCryptoBox)
-    }
-
-    private fun createCryptoSignPair(): CryptoBox {
-        val keyPair = sodium.cryptoSignKeypair()
-        val privateKey = keyPair.secretKey.asBytes.toStringBase64()
-        val publicKey = keyPair.publicKey.asBytes.toStringBase64()
-        return CryptoBox(
-            privateKey,
-            publicKey
-        )
-    }
-
-    /**
-     *  Extracts and decrypts a crypto box keypair from persistent storage
-     */
-    private fun getCryptoBox(): CryptoBox {
-        val cryptoBox = cryptoBoxHolder.getCryptoBox() ?: throw IllegalStateException()
-        return cryptoBox.copy(privateKey = decryptRsa(cryptoBox.privateKey))
-    }
-
-    fun getCryptoBoxPublicKey() = getCryptoBox().publicKey
-
-    /**
-     * Encrypts a string using RSA asymmetric encryption.
-     * @data string to encrypt
-     *
-     * @return encrypted string encoded in Base64
-     */
-    private fun encryptRsa(data: String): String {
-        val plainBytes = data.toByteArray()
-        val encryptedBytes = encryptRsa(plainBytes)
-        return encryptedBytes.toStringBase64()
-    }
-
-    /**
-     * Encrypts given bytes using RSA asymmetric encryption.
-     * @data bytes to encrypt
-     *
-     * @return encrypted bytes
-     */
-    private fun encryptRsa(data: ByteArray): ByteArray {
-        val cipher = Cipher.getInstance(RSA_TRANSFORMATION)
-        val publicKey = getKeyStore().getCertificate(KEYPAIR_NAME).publicKey
-        cipher.init(Cipher.ENCRYPT_MODE, publicKey)
-        return cipher.doFinal(data)
-    }
-
-    /**
-     * Decrypts a string using RSA asymmetric encryption.
-     * @data string to decrypt (encoded in Base64)
-     *
-     * @return decrypted string
-     */
-    private fun decryptRsa(data: String): String {
-        val encryptedBytes = data.toByteArrayFromBase64String()
-        val decryptedBytes = decryptRsa(encryptedBytes)
-        return String(decryptedBytes, Charsets.UTF_8)
-    }
-
-    /**
-     * Decrypts given bytes using RSA asymmetric encryption.
-     * @data bytes to decrypt
-     *
-     * @return decrypted bytes
-     */
-    private fun decryptRsa(data: ByteArray): ByteArray {
-        val cipher = Cipher.getInstance(RSA_TRANSFORMATION)
-        val privateKey = getKeyStore().getKey(KEYPAIR_NAME, null) as PrivateKey
-        cipher.init(Cipher.DECRYPT_MODE, privateKey)
-        return cipher.doFinal(data)
-    }
-
-    /**
-     * Encrypts a string using AES symmetric encryption.
-     * Uses crypto box private key as a secret key
-     * @data string to encrypt
-     *
-     * @return encrypted string converted into Base64
-     */
-    fun encryptAes(data: String): String {
-        val key = getCryptoBox().privateKey.take(32)
-        return encryptAes(key, data)
-    }
-
-    /**
-     * Encrypts a string using AES symmetric encryption.
-     * @key secret key encoded in Base64
-     * @data string to encrypt
-     *
-     * @return encrypted string converted into Base64
-     */
-    private fun encryptAes(key: String, data: String): String {
-        val keyData = key.toByteArrayFromBase64String()
-        val encrypted = encryptAes(keyData, data.toByteArray())
-        return encrypted.toStringBase64()
-    }
-
-    /**
-     * Encrypts given bytes using AES symmetric encryption.
-     * @key secret key
-     * @data bytes to encrypt
-     *
-     * @return encrypted bytes
-     */
-    @SuppressLint("GetInstance")
-    private fun encryptAes(key: ByteArray, data: ByteArray): ByteArray {
-        val cipher = Cipher.getInstance(AES_TRANSFORMATION)
-        val spec = SecretKeySpec(key, KeyProperties.KEY_ALGORITHM_AES)
-        cipher.init(Cipher.ENCRYPT_MODE, spec)
-        return cipher.doFinal(data)
-    }
-
-    /**
-     * Decrypts a string using AES symmetric encryption.
-     * Uses crypto box private key as a secret key
-     * @data string to decrypt
-     *
-     * @return decrypted string converted into Base64
-     */
-    fun decryptAes(data: String): String {
-        val key = getCryptoBox().privateKey.take(32)
-        return decryptAes(key, data)
-    }
-
-    /**
-     * Decrypts a string using AES symmetric encryption.
-     * @key secret key encoded in Base64
-     * @data string to decrypt encoded in Base64
-     *
-     * @return decrypted string
-     */
-    private fun decryptAes(key: String, data: String): String {
-        val keyData = key.toByteArrayFromBase64String()
-        val enc = data.toByteArray().fromBase64()
-        val decrypted = decryptAes(keyData, enc)
-        return String(decrypted)
-    }
-
-    /**
-     * Decrypts given bytes using AES symmetric encryption.
-     * @key secret key
-     * @data bytes to decrypt
-     *
-     * @return decrypted bytes
-     */
-    @SuppressLint("GetInstance")
-    private fun decryptAes(key: ByteArray, data: ByteArray): ByteArray {
-        val spec = SecretKeySpec(key, KeyProperties.KEY_ALGORITHM_AES)
-        val cipher = Cipher.getInstance(AES_TRANSFORMATION)
-        cipher.init(Cipher.DECRYPT_MODE, spec)
-        return cipher.doFinal(data)
-    }
-
-    fun encryptSeal(message: String, publicKey: String): String {
-        val publicKeyBytes = publicKey.toByteArrayFromBase64String()
-        val messageBytes = message.toByteArray(Charsets.UTF_8)
-        val messageLength = messageBytes.size
-        val cipherText = ByteArray(Box.SEALBYTES + messageLength)
-        sodium.cryptoBoxSeal(cipherText, messageBytes, messageLength.toLong(), publicKeyBytes)
-        return cipherText.toStringBase64()
-    }
-
-    fun createSignature(message: String): String {
-        val cryptoBox = getCryptoBox()
-        val privateKeyBytes = cryptoBox.privateKey.toByteArrayFromBase64String()
-        val messageBytes = message.toByteArray(Charsets.UTF_8)
-        val signatureBytes = ByteArray(Sign.BYTES)
-        sodium.cryptoSignDetached(
-            signatureBytes,
-            messageBytes,
-            messageBytes.size.toLong(),
-            privateKeyBytes
-        )
-        return signatureBytes.toStringBase64()
-    }
-
-    fun verifySignature(signature: String, publicKey: String): String {
-        val publicKeyBytes = publicKey.toByteArrayFromBase64String()
-        val signatureBytes = signature.toByteArrayFromBase64String()
-        val messageBytes = ByteArray(signatureBytes.size - Sign.BYTES)
-        sodium.cryptoSignOpen(
-            messageBytes,
-            signatureBytes,
-            signatureBytes.size.toLong(),
-            publicKeyBytes
-        )
-        return String(messageBytes)
-    }
-
     companion object {
         private const val ANDROID_KEYSTORE = "AndroidKeyStore"
-        private const val AES_TRANSFORMATION = "AES/ECB/PKCS7Padding"
-        private const val RSA_TRANSFORMATION = "RSA/ECB/PKCS1Padding"
-
-        /**
-         * Android keystore name for RSA keypair
-         */
-        private const val KEYPAIR_NAME = "keyri_ks_v01"
+        private const val AES_TRANSFORMATION = "AES/CBC/PKCS7Padding"
+        private const val AES_KEY_NAME = "AES_KEY_NAME"
+        private const val EC_KEY_NAME = "EC_KEY_NAME"
+        private const val IV_KEY_NAME = "IV_KEY_NAME"
     }
 }

@@ -16,7 +16,7 @@ import com.example.keyrisdk.exception.KeyriSdkException
 import com.example.keyrisdk.exception.MultipleAccountsNotAllowedException
 import com.example.keyrisdk.exception.ServerErrorException
 import com.example.keyrisdk.ui.scanner.KeyriQrScannerActivity.Companion.ARG_CUSTOM
-import com.hadilq.liveevent.LiveEvent
+import com.example.keyrisdk.utils.LiveEvent
 import kotlinx.coroutines.launch
 
 class KeyriQrScannerVM(private val app: Application) : AndroidViewModel(app) {
@@ -95,6 +95,7 @@ class KeyriQrScannerVM(private val app: Application) : AndroidViewModel(app) {
 
                 completeAuthWithScanner(isFailed = true)
             }
+
             loadingLD.value = false
         }
     }

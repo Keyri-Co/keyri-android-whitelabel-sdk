@@ -5,82 +5,102 @@ import com.example.keyrisdk.exception.NetworkException
 import com.example.keyrisdk.services.socket.messages.ValidateMessage
 import com.example.keyrisdk.services.socket.messages.VerifyApproveMessage
 import com.example.keyrisdk.services.socket.messages.VerifyRequestMessage
-import io.socket.client.IO
-import io.socket.client.Socket
-import io.socket.client.Socket.EVENT_CONNECT
-import io.socket.client.Socket.EVENT_CONNECT_ERROR
-import io.socket.client.SocketOptionBuilder
-import io.socket.engineio.client.transports.WebSocket
-import kotlinx.coroutines.withTimeout
+import com.google.gson.JsonParser
+import kotlinx.coroutines.channels.Channel
+import okhttp3.*
 import org.json.JSONObject
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
+import java.util.concurrent.TimeUnit
+import okhttp3.OkHttpClient
 
-class SocketService(private val url: String) {
+class SocketService(private val url: String) : WebSocketListener() {
 
-    private lateinit var socket: Socket
-    private var extraHeaders: Map<String, List<String>>? = null
+    /**
+     * Channel that receiving VerifyRequestMessage events or Throwable errors.
+     */
+    val verifyMessageChannel = Channel<Result<VerifyRequestMessage>>(1)
 
-    suspend fun reconnect(extraHeader: String) {
-        extraHeaders = mapOf(EXTRA_HEADER_NAME to listOf(extraHeader))
+    private var extraHeader: Pair<String, String>? = null
+
+    private val socketOkHttpClient by lazy {
+        OkHttpClient.Builder()
+            .readTimeout(SOCKET_TIMEOUT, TimeUnit.MILLISECONDS)
+            .build()
+    }
+
+    private val socketRequestBuilder by lazy { Request.Builder().url(url) }
+
+    private var webSocket: WebSocket? = null
+
+    override fun onMessage(webSocket: WebSocket, text: String) {
+        Log.d(TAG, "New message recieved")
+
+        val data = JSONObject(JsonParser().parse(text).asJsonObject.toString())
+
+        parseVerificationRequest(data)?.let { verifyMessageChannel.offer(Result.success(it)) }
+    }
+
+    override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+        Log.e(TAG, "Error: ${t.message}")
+
+        verifyMessageChannel.offer(Result.failure(NetworkException))
+    }
+
+    override fun onOpen(webSocket: WebSocket, response: Response) {
+        Log.d(TAG, "Opened")
+    }
+
+    override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
+        Log.d(TAG, "Closing...")
+    }
+
+    override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
+        Log.d(TAG, "Closed")
+    }
+
+    /**
+     * Function for initialization [SocketService] with extra header and establish [webSocket] connection.
+     *
+     * @extraHeader needed for initialization socket extra header.
+     */
+    fun reconnect(extraHeader: String) {
+        this.extraHeader = EXTRA_HEADER_NAME to extraHeader
+
         connectIfNeeded(true)
     }
 
     /**
-     * Establishes socket connection if not already connected
+     * Use this function to send verification event [ValidateMessage].
+     *
+     * @message validation message to send.
      */
-    private suspend fun connectIfNeeded(forceReconnect: Boolean = false) {
-        val connected = ::socket.isInitialized && socket.connected()
-        if (connected && !forceReconnect) return
+    fun sendVerificationEvent(message: ValidateMessage) {
+        Log.d(TAG, "Sending verification event...")
 
-        return withTimeout(SOCKET_TIMEOUT) {
-            suspendCoroutine { continuation ->
-                Log.d(TAG, "Connecting...")
-
-                socket = IO.socket(
-                    url, SocketOptionBuilder
-                        .builder()
-                        .setTransports(arrayOf(WebSocket.NAME))
-                        .setExtraHeaders(extraHeaders)
-                        .build()
-                )
-
-                socket.disconnect()
-                socket.connect()
-
-                socket.on(EVENT_CONNECT) {
-                    Log.d(TAG, "Connected")
-                    try {
-                        continuation.resume(Unit)
-                    } catch (e: Throwable) {
-                        /* do nothing */
-                    }
-                }
-                socket.on(EVENT_CONNECT_ERROR) {
-                    Log.d(TAG, "Failed to connect")
-                    continuation.resumeWithException(NetworkException)
-                }
-            }
-        }
+        connectIfNeeded()
+        webSocket?.send(message.toSocketData().toString())
     }
 
-    suspend fun sendVerificationEvent(message: ValidateMessage): VerifyRequestMessage {
+    /**
+     * Use this function to send confirmation event [VerifyApproveMessage].
+     *
+     * @message verification message to send.
+     */
+    fun sendConfirmationEvent(message: VerifyApproveMessage) {
+        Log.d(TAG, "Sending confirmation event...")
+
         connectIfNeeded()
-        return withTimeout(SOCKET_TIMEOUT) {
-            suspendCoroutine { continuation ->
-                Log.d(TAG, "Sending verification request")
+        webSocket?.send(message.toSocketData().toString())
+    }
 
-                socket.emit(SocketAction.SESSION_VALIDATE.name, message.toSocketData())
-                socket.on(SocketAction.SESSION_VERIFY_REQUEST.name) { data: Array<out Any>? ->
-                    Log.d(TAG, "verification response received")
+    private fun connectIfNeeded(forceReconnect: Boolean = false) {
+        if (webSocket == null || forceReconnect) {
+            Log.d(TAG, "Connecting...")
 
-                    val payload = data?.first() as? JSONObject
-                    if (payload != null) {
-                        parseVerificationRequest(payload)?.let { continuation.resume(it) }
-                    }
-                }
-            }
+            val request = socketRequestBuilder.apply {
+                extraHeader?.let { (key, value) -> addHeader(key, value) }
+            }.build()
+
+            webSocket = socketOkHttpClient.newWebSocket(request, this)
         }
     }
 
@@ -90,25 +110,13 @@ class SocketService(private val url: String) {
 
         val publicKey = data.opt("publicKey") as? String?
         val sessionKey = data["sessionKey"] as? String ?: return null
+
         return VerifyRequestMessage(publicKey, sessionKey)
-    }
-
-    suspend fun sendConfirmationEvent(message: VerifyApproveMessage) {
-        connectIfNeeded()
-        withTimeout(SOCKET_TIMEOUT) {
-            suspendCoroutine<Void?> { continuation ->
-                Log.d(TAG, "Sending confirmation")
-
-                socket.emit(CONFIRMATION_EVENT_NAME, message.toSocketData())
-                continuation.resume(null)
-            }
-        }
     }
 
     companion object {
         private const val TAG = "Keyri > SocketService"
         private const val SOCKET_TIMEOUT = 5000L
-        private const val CONFIRMATION_EVENT_NAME = "message"
         private const val EXTRA_HEADER_NAME = "userSuffix"
     }
 }
