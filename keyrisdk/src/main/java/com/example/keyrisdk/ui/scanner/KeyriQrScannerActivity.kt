@@ -40,7 +40,7 @@ class KeyriQrScannerActivity : AppCompatActivity() {
 
         viewModel.message().observe(this, Observer(::onMessage))
         viewModel.loading().observe(this, Observer(::onLoading))
-        viewModel.completed().observe(this, Observer { finish() })
+        viewModel.completed().observe(this) { finish() }
         viewModel.initialize(intent?.extras)
 
         initializeCodeScanner()

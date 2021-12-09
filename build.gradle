@@ -14,7 +14,7 @@ ext {
     lifecycle = "2.3.1"
     liveevent = "1.2.0"
     preference = "1.1.1"
-    room = "2.2.6"
+    room = "2.3.0"
     okhttp = "4.8.1"
     okhttplogging = "4.9.0"
     retrofit = "2.9.0"
@@ -24,14 +24,14 @@ ext {
 }
 
 buildscript {
-    ext.kotlin_version = '1.4.32'
+    ext.kotlin_version = '1.5.0'
     repositories {
         google()
         jcenter()
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.5.4'
+        classpath 'com.android.tools.build:gradle:7.0.3'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
@@ -40,7 +40,6 @@ allprojects {
     repositories {
         google()
         jcenter()
-        
     }
 }
 
