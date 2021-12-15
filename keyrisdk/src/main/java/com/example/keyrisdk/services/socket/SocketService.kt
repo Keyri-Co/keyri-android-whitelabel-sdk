@@ -23,7 +23,10 @@ class SocketService(private val url: String) : WebSocketListener() {
 
     private val socketOkHttpClient by lazy {
         OkHttpClient.Builder()
+            .callTimeout(SOCKET_TIMEOUT, TimeUnit.MILLISECONDS)
             .readTimeout(SOCKET_TIMEOUT, TimeUnit.MILLISECONDS)
+            .writeTimeout(SOCKET_TIMEOUT, TimeUnit.MILLISECONDS)
+            .connectTimeout(SOCKET_TIMEOUT, TimeUnit.MILLISECONDS)
             .build()
     }
 

@@ -24,6 +24,7 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import com.example.keyrisdk.R
 import com.example.keyrisdk.entity.PublicAccount
 import com.example.keyrisdk.ui.choose_account.KeyriQrChooseAccountActivity
@@ -101,12 +102,7 @@ class KeyriQrScannerActivity : AppCompatActivity() {
                     barcodes.firstOrNull()
                         ?.displayValue
                         ?.takeIf { viewModel.loading().value != true }
-                        ?.let { sessionId ->
-                            Log.d("Keyri", "QR processed: $sessionId")
-
-                            cameraProvider?.unbindAll()
-                            viewModel.authenticate(sessionId)
-                        }
+                        ?.let(::processScannedData)
                 }
                 .addOnCompleteListener {
                     imageProxy.close()
@@ -248,6 +244,23 @@ class KeyriQrScannerActivity : AppCompatActivity() {
 
     private fun requestCameraPermission() {
         requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+    }
+
+    private fun processScannedData(scannedData: String) {
+        Log.d("Keyri", "QR processed: $scannedData")
+
+        try {
+            // Try to parse link and process it
+            scannedData.toUri()
+                .getQueryParameters("sessionId")
+                ?.firstOrNull()
+                ?.let { sessionId ->
+                    cameraProvider?.unbindAll()
+                    viewModel.authenticate(sessionId)
+                }
+        } catch (e: java.lang.Exception) {
+            Log.d("Keyri", "Not valid link: $scannedData")
+        }
     }
 
     companion object {
