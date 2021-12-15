@@ -3,8 +3,10 @@ package com.keyri.auth
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.hardware.display.DisplayManager
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.DisplayMetrics
@@ -21,6 +23,7 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.core.view.isGone
 import androidx.lifecycle.Observer
 import com.example.keyrisdk.KeyriSdk
@@ -88,11 +91,7 @@ class AuthActivity : AppCompatActivity() {
                     barcodes.firstOrNull()
                         ?.displayValue
                         ?.takeIf { viewModel.loading().value != true }
-                        ?.let { sessionId ->
-                            Log.d("Keyri", "QR processed: $sessionId")
-
-                            viewModel.authenticate(sessionId)
-                        }
+                        ?.let(::processScannedData)
                 }
                 .addOnCompleteListener {
                     imageProxy.close()
@@ -103,12 +102,18 @@ class AuthActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_auth)
+        intent.data?.let(::processLink)
 
         viewModel.message().observe(this, Observer(::onMessage))
         viewModel.loading().observe(this, Observer(::onLoading))
         viewModel.authenticated().observe(this) { HomeActivity.openHomeActivity(this) }
 
         initializeUi()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        processLink(intent.data)
     }
 
     override fun onDestroy() {
@@ -242,6 +247,24 @@ class AuthActivity : AppCompatActivity() {
 
     private fun requestCameraPermission() {
         requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+    }
+
+    private fun processScannedData(scannedData: String) {
+        Log.d("Keyri", "QR processed: $scannedData")
+
+        try {
+            // Try to parse link and process it
+            processLink(scannedData.toUri())
+        } catch (e: java.lang.Exception) {
+            Log.d("Keyri", "Not valid link: $scannedData")
+        }
+    }
+
+    private fun processLink(uri: Uri?) {
+        uri?.getQueryParameters("sessionId")?.firstOrNull()?.let { sessionId ->
+            cameraProvider?.unbindAll()
+            viewModel.authenticate(sessionId)
+        } ?: Log.e("Keyri", "Failed to process link")
     }
 
     companion object {

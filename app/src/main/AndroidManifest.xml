@@ -18,12 +18,31 @@
         <activity
             android:name=".auth.AuthActivity"
             android:exported="true"
+            android:launchMode="singleTask"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="www.keyri.co"
+                    android:pathPrefix="/application"
+                    android:scheme="https" />
+
+                <data
+                    android:host="dev-api.keyri.co"
+                    android:pathPrefix="/application"
+                    android:scheme="http" />
+
             </intent-filter>
         </activity>
 
