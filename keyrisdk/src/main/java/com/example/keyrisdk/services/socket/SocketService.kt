@@ -1,7 +1,7 @@
 package com.example.keyrisdk.services.socket
 
 import android.util.Log
-import com.example.keyrisdk.exception.NetworkException
+import com.example.keyrisdk.exception.AuthorizationException
 import com.example.keyrisdk.services.socket.messages.ValidateMessage
 import com.example.keyrisdk.services.socket.messages.VerifyApproveMessage
 import com.example.keyrisdk.services.socket.messages.VerifyRequestMessage
@@ -45,7 +45,7 @@ class SocketService(private val url: String) : WebSocketListener() {
     override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
         Log.e(TAG, "Error: ${t.message}")
 
-        verifyMessageChannel.offer(Result.failure(NetworkException))
+        verifyMessageChannel.offer(Result.failure(AuthorizationException))
     }
 
     override fun onOpen(webSocket: WebSocket, response: Response) {

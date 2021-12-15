@@ -30,7 +30,6 @@ suspend fun <T : Any> makeApiCall(call: suspend () -> Response<T>): Response<T> 
         return response
     } catch (e: Exception) {
         throw when (e) {
-            is KeyriSdkException -> e
             is IOException -> {
                 when (e) {
                     is UnknownHostException,
