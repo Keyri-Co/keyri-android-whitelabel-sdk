@@ -7,11 +7,10 @@ apply plugin: 'kotlin-kapt'
 def cfg = rootProject.ext.configuration
 
 android {
-    compileSdkVersion cfg.compileSdkVersion
-
     defaultConfig {
         minSdkVersion cfg.minSdkVersion
         targetSdkVersion cfg.targetSdkVersion
+        compileSdkVersion cfg.compileSdkVersion
 
         consumerProguardFiles 'consumer-rules.pro'
     }
@@ -82,14 +81,18 @@ afterEvaluate {
                 from components.release
 
                 groupId = 'com.example.keyrisdk'
-                version = '0.9.4'
+
+                artifactId = 'keyrisdk'
+                version = '0.9.5'
             }
 
             debug(MavenPublication) {
                 from components.debug
 
                 groupId = 'com.example.keyrisdk'
-                version = '0.9.4'
+
+                artifactId = 'keyrisdk-debug'
+                version = '0.9.5'
             }
         }
     }

@@ -6,10 +6,10 @@ import com.example.keyrisdk.services.socket.messages.ValidateMessage
 import com.example.keyrisdk.services.socket.messages.VerifyApproveMessage
 import com.example.keyrisdk.services.socket.messages.VerifyRequestMessage
 import com.google.gson.JsonParser
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.Channel
 import okhttp3.*
 import org.json.JSONObject
-import java.util.concurrent.TimeUnit
 import okhttp3.OkHttpClient
 
 class SocketService(private val url: String) : WebSocketListener() {
@@ -22,12 +22,7 @@ class SocketService(private val url: String) : WebSocketListener() {
     private var extraHeader: Pair<String, String>? = null
 
     private val socketOkHttpClient by lazy {
-        OkHttpClient.Builder()
-            .callTimeout(SOCKET_TIMEOUT, TimeUnit.MILLISECONDS)
-            .readTimeout(SOCKET_TIMEOUT, TimeUnit.MILLISECONDS)
-            .writeTimeout(SOCKET_TIMEOUT, TimeUnit.MILLISECONDS)
-            .connectTimeout(SOCKET_TIMEOUT, TimeUnit.MILLISECONDS)
-            .build()
+        OkHttpClient.Builder().build()
     }
 
     private val socketRequestBuilder by lazy { Request.Builder().url(url) }
@@ -45,7 +40,11 @@ class SocketService(private val url: String) : WebSocketListener() {
     override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
         Log.e(TAG, "Error: ${t.message}")
 
-        verifyMessageChannel.offer(Result.failure(AuthorizationException))
+        try {
+            verifyMessageChannel.offer(Result.failure(NetworkException))
+        } catch (e: TimeoutCancellationException) {
+            Log.e(TAG, e.message.toString())
+        }
     }
 
     override fun onOpen(webSocket: WebSocket, response: Response) {
@@ -119,7 +118,6 @@ class SocketService(private val url: String) : WebSocketListener() {
 
     companion object {
         private const val TAG = "Keyri > SocketService"
-        private const val SOCKET_TIMEOUT = 5000L
         private const val EXTRA_HEADER_NAME = "userSuffix"
     }
 }
