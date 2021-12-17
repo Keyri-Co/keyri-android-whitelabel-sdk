@@ -1,7 +1,7 @@
 package com.example.keyrisdk.services.socket
 
 import android.util.Log
-import com.example.keyrisdk.exception.NetworkException
+import com.example.keyrisdk.exception.AuthorizationException
 import com.example.keyrisdk.services.socket.messages.ValidateMessage
 import com.example.keyrisdk.services.socket.messages.VerifyApproveMessage
 import com.example.keyrisdk.services.socket.messages.VerifyRequestMessage
