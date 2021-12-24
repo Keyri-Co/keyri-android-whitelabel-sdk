@@ -29,6 +29,8 @@
 
     </FrameLayout>
 
-    <include layout="@layout/keyri_layout_progress" />
+    <include
+        android:id="@+id/flProgress"
+        layout="@layout/keyri_layout_progress" />
 
 </LinearLayout>

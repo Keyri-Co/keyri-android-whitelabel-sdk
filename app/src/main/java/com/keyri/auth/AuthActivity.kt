@@ -27,19 +27,16 @@ import androidx.core.net.toUri
 import androidx.core.view.isGone
 import androidx.lifecycle.Observer
 import com.example.keyrisdk.KeyriSdk
-import com.google.mlkit.vision.barcode.Barcode
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
+import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import com.keyri.HomeActivity
 import com.keyri.R
 import com.keyri.accounts.AccountsActivity
 import com.keyri.accounts.AccountsMode
 import com.keyri.accounts.NewAccountActivity
-import kotlinx.android.synthetic.main.activity_auth.*
-import kotlinx.android.synthetic.main.activity_auth.panelContent
-import kotlinx.android.synthetic.main.activity_auth.scannerPreview
-import kotlinx.android.synthetic.main.layout_progress.*
+import com.keyri.databinding.ActivityAuthBinding
 import java.util.concurrent.Executors
 import kotlin.math.abs
 
@@ -99,9 +96,13 @@ class AuthActivity : AppCompatActivity() {
         }
     }
 
+    private lateinit var binding: ActivityAuthBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_auth)
+        binding = ActivityAuthBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
         intent.data?.let(::processLink)
 
         viewModel.message().observe(this, Observer(::onMessage))
@@ -123,22 +124,24 @@ class AuthActivity : AppCompatActivity() {
     }
 
     private fun initializeUi() {
-        btAuthQr.setOnClickListener {
-            KeyriSdk.authWithScanner(
-                this, CUSTOM,
-                KeyriSdk.QrAuthCallbacks({
-                    HomeActivity.openHomeActivity(this)
-                }, {
-                    onMessage(getString(R.string.not_authenticated))
-                })
-            )
-        }
-        btSignup.setOnClickListener { openScanner() }
-        btLogin.setOnClickListener { openScanner() }
+        with(binding) {
+            btAuthQr.setOnClickListener {
+                KeyriSdk.authWithScanner(
+                    this@AuthActivity, CUSTOM,
+                    KeyriSdk.QrAuthCallbacks({
+                        HomeActivity.openHomeActivity(this@AuthActivity)
+                    }, {
+                        onMessage(getString(R.string.not_authenticated))
+                    })
+                )
+            }
+            btSignup.setOnClickListener { openScanner() }
+            btLogin.setOnClickListener { openScanner() }
 
-        btSignupMobile.setOnClickListener { NewAccountActivity.openNewAccountActivity(this) }
-        btLoginMobile.setOnClickListener { openAccountsActivity(AccountsMode.LOGIN) }
-        btAccounts.setOnClickListener { openAccountsActivity(AccountsMode.ACCOUNTS) }
+            btSignupMobile.setOnClickListener { NewAccountActivity.openNewAccountActivity(this@AuthActivity) }
+            btLoginMobile.setOnClickListener { openAccountsActivity(AccountsMode.LOGIN) }
+            btAccounts.setOnClickListener { openAccountsActivity(AccountsMode.ACCOUNTS) }
+        }
     }
 
     private fun openAccountsActivity(mode: AccountsMode) {
@@ -155,13 +158,13 @@ class AuthActivity : AppCompatActivity() {
     }
 
     private fun initCamera() {
-        scannerPreview.isGone = false
-        actionsPanel.isGone = true
+        binding.scannerPreview.isGone = false
+        binding.actionsPanel.isGone = true
 
         displayManager.registerDisplayListener(displayListener, null)
 
-        scannerPreview.post {
-            displayId = scannerPreview.display.displayId
+        binding.scannerPreview.post {
+            displayId = binding.scannerPreview.display.displayId
 
             val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
@@ -174,9 +177,9 @@ class AuthActivity : AppCompatActivity() {
     }
 
     private fun bindCameraUseCases() {
-        val metrics = DisplayMetrics().also { scannerPreview.display.getRealMetrics(it) }
+        val metrics = DisplayMetrics().also { binding.scannerPreview.display.getRealMetrics(it) }
         val screenAspectRatio = aspectRatio(metrics.widthPixels, metrics.heightPixels)
-        val rotation = scannerPreview.display.rotation
+        val rotation = binding.scannerPreview.display.rotation
         val cameraSelector =
             CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
 
@@ -198,7 +201,7 @@ class AuthActivity : AppCompatActivity() {
         try {
             camera = cameraProvider?.bindToLifecycle(this, cameraSelector, preview, imageAnalyzer)
 
-            preview?.setSurfaceProvider(scannerPreview.surfaceProvider)
+            preview?.setSurfaceProvider(binding.scannerPreview.surfaceProvider)
         } catch (exc: Exception) {
             Log.d("Keyri", "Failed to init Camera")
         }
@@ -217,24 +220,28 @@ class AuthActivity : AppCompatActivity() {
     private fun onMessage(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
 
-        scannerPreview.isGone = true
-        actionsPanel.isGone = false
+        with(binding) {
+            scannerPreview.isGone = true
+            actionsPanel.isGone = false
+        }
 
         imageAnalyzer?.clearAnalyzer()
     }
 
     private fun onLoading(isLoading: Boolean) {
-        scannerPreview.isGone = true
-        actionsPanel.isGone = false
+        with(binding) {
+            scannerPreview.isGone = true
+            actionsPanel.isGone = false
 
-        imageAnalyzer?.clearAnalyzer()
+            imageAnalyzer?.clearAnalyzer()
 
-        if (isLoading) {
-            panelContent.visibility = View.GONE
-            progress.visibility = View.VISIBLE
-        } else {
-            panelContent.visibility = View.VISIBLE
-            progress.visibility = View.GONE
+            if (isLoading) {
+                panelContent.visibility = View.GONE
+                flProgress.progress.visibility = View.VISIBLE
+            } else {
+                panelContent.visibility = View.VISIBLE
+                flProgress.progress.visibility = View.GONE
+            }
         }
     }
 

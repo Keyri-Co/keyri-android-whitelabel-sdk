@@ -10,16 +10,20 @@ import androidx.activity.viewModels
 import androidx.lifecycle.Observer
 import com.keyri.HomeActivity
 import com.keyri.R
-import kotlinx.android.synthetic.main.activity_accounts.panelContent
-import kotlinx.android.synthetic.main.activity_new_account.*
-import kotlinx.android.synthetic.main.layout_progress.*
+import com.keyri.databinding.ActivityNewAccountBinding
 
 class NewAccountActivity : AppCompatActivity() {
 
     private val viewModel by viewModels<NewAccountVM>()
 
+    private lateinit var binding: ActivityNewAccountBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        binding = ActivityNewAccountBinding.inflate(layoutInflater)
+
+        setContentView(binding.root)
+
         setContentView(R.layout.activity_new_account)
 
         viewModel.message().observe(this, Observer(::onMessage))
@@ -30,18 +34,18 @@ class NewAccountActivity : AppCompatActivity() {
     }
 
     private fun setupUi() {
-        etUsername.setOnEditorActionListener { _, actionId, _ ->
+        binding.etUsername.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 doMobileSignup()
             }
             false
         }
 
-        btSignupMobile.setOnClickListener { doMobileSignup() }
+        binding.btSignupMobile.setOnClickListener { doMobileSignup() }
     }
 
     private fun doMobileSignup() {
-        viewModel.mobileSignup(etUsername.text.toString())
+        viewModel.mobileSignup(binding.etUsername.text.toString())
     }
 
     private fun onMessage(message: String) {
@@ -49,12 +53,14 @@ class NewAccountActivity : AppCompatActivity() {
     }
 
     private fun onLoading(isLoading: Boolean) {
-        if (isLoading) {
-            panelContent.visibility = View.GONE
-            progress.visibility = View.VISIBLE
-        } else {
-            panelContent.visibility = View.VISIBLE
-            progress.visibility = View.GONE
+        with(binding) {
+            if (isLoading) {
+                panelContent.visibility = View.GONE
+                flProgress.progress.visibility = View.VISIBLE
+            } else {
+                panelContent.visibility = View.VISIBLE
+                flProgress.progress.visibility = View.GONE
+            }
         }
     }
 

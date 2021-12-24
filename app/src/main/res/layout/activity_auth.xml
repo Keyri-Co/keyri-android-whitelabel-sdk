@@ -65,6 +65,8 @@
 
     </FrameLayout>
 
-    <include layout="@layout/layout_progress" />
+    <include
+        android:id="@+id/flProgress"
+        layout="@layout/layout_progress" />
 
 </LinearLayout>

@@ -6,10 +6,8 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.example.keyrisdk.R
+import com.example.keyrisdk.databinding.KeyriActivityQrChooseAccountBinding
 import com.example.keyrisdk.entity.PublicAccount
-import kotlinx.android.synthetic.main.keyri_activity_qr_choose_account.*
-import kotlinx.android.synthetic.main.keyri_layout_progress.*
 
 class KeyriQrChooseAccountActivity : AppCompatActivity() {
 
@@ -31,9 +29,13 @@ class KeyriQrChooseAccountActivity : AppCompatActivity() {
         }
     }
 
+    private lateinit var binding: KeyriActivityQrChooseAccountBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.keyri_activity_qr_choose_account)
+        binding = KeyriActivityQrChooseAccountBinding.inflate(layoutInflater)
+
+        setContentView(binding.root)
         initUI()
         viewModel.accounts().observe(this, ::setAccounts)
         viewModel.message().observe(this, ::onMessage)
@@ -41,7 +43,7 @@ class KeyriQrChooseAccountActivity : AppCompatActivity() {
     }
 
     private fun initUI() {
-        rvAccounts.adapter = adapter
+        binding.rvAccounts.adapter = adapter
         viewModel.getAccounts()
     }
 
@@ -54,12 +56,14 @@ class KeyriQrChooseAccountActivity : AppCompatActivity() {
     }
 
     private fun onLoading(isLoading: Boolean) {
-        if (isLoading) {
-            rlRoot.visibility = View.INVISIBLE
-            progress.visibility = View.VISIBLE
-        } else {
-            rlRoot.visibility = View.VISIBLE
-            progress.visibility = View.INVISIBLE
+        with(binding) {
+            if (isLoading) {
+                rlRoot.visibility = View.INVISIBLE
+                flProgress.progress.visibility = View.VISIBLE
+            } else {
+                rlRoot.visibility = View.VISIBLE
+                flProgress.progress.visibility = View.INVISIBLE
+            }
         }
     }
 

@@ -1,8 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
-apply plugin: 'kotlin-kapt'
 
 def cfg = rootProject.ext.configuration
 
@@ -17,9 +15,6 @@ android {
 
     buildTypes {
         debug {
-//            buildConfigField "String", "API_URL", "\"https://api.keyri.co\""
-//            buildConfigField "String", "WS_URL", "\"https://api.keyri.co\""
-
             buildConfigField "String", "API_URL", "\"https://dev-api.keyri.co\""
             buildConfigField "String", "WS_URL", "\"wss://dev-api.keyri.co\""
         }
@@ -40,6 +35,10 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
+
+    viewBinding {
+        enabled = true
+    }
 }
 
 dependencies {
@@ -51,9 +50,6 @@ dependencies {
 
     implementation "androidx.recyclerview:recyclerview:$recyclerView"
 
-    implementation "com.google.dagger:dagger:$dagger"
-    kapt "com.google.dagger:dagger-compiler:$dagger"
-
     implementation(platform("com.squareup.okhttp3:okhttp-bom:$okHttp"))
     implementation "com.squareup.okhttp3:okhttp"
     implementation "com.squareup.okhttp3:logging-interceptor"
@@ -63,7 +59,7 @@ dependencies {
 
     implementation "androidx.room:room-runtime:$room"
     implementation "androidx.room:room-ktx:$room"
-    kapt "androidx.room:room-compiler:$room"
+    annotationProcessor "androidx.room:room-compiler:$room"
 
     implementation "com.google.mlkit:barcode-scanning:$barcode"
 
@@ -83,7 +79,7 @@ afterEvaluate {
                 groupId = 'com.example.keyrisdk'
 
                 artifactId = 'keyrisdk'
-                version = '0.9.5'
+                version = '0.9.6'
             }
 
             debug(MavenPublication) {
@@ -92,7 +88,7 @@ afterEvaluate {
                 groupId = 'com.example.keyrisdk'
 
                 artifactId = 'keyrisdk-debug'
-                version = '0.9.5'
+                version = '0.9.6'
             }
         }
     }

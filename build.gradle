@@ -9,23 +9,24 @@ ext {
     coreKtx = '1.7.0'
     dagger = '2.28.3'
     activity = '1.4.0'
-    room = '2.3.0'
+    room = '2.4.0'
     okHttp = '4.9.1'
     retrofit = '2.9.0'
     gson = '2.8.6'
     recyclerView = '1.2.1'
-    barcode = '17.0.0'
+    barcode = '17.0.1'
     cameraX = '1.1.0-alpha11'
     cameraXview = '1.0.0-alpha31'
 }
 
 buildscript {
-    ext.kotlin_version = '1.5.0'
+    ext.kotlin_version = '1.6.0'
+
     repositories {
         google()
-        jcenter()
         mavenCentral()
     }
+
     dependencies {
         classpath 'com.android.tools.build:gradle:7.0.4'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
@@ -35,7 +36,7 @@ buildscript {
 allprojects {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
 }
 

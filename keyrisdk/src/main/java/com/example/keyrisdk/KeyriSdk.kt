@@ -2,11 +2,8 @@ package com.example.keyrisdk
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.Application
+import android.content.Context
 import android.content.Intent
-import com.example.keyrisdk.di.DaggerKeyriSdkGraph
-import com.example.keyrisdk.di.KeyriSdkGraph
-import com.example.keyrisdk.di.KeyriSdkModule
 import com.example.keyrisdk.entity.PublicAccount
 import com.example.keyrisdk.entity.Service
 import com.example.keyrisdk.entity.Session
@@ -21,31 +18,14 @@ import com.example.keyrisdk.utils.makeApiCall
 /**
  * Keyri SDK public API
  */
-object KeyriSdk {
-
-    private var initialized = false
-    private lateinit var config: KeyriConfig
-    private lateinit var keyriSdkGraph: KeyriSdkGraph
+class KeyriSdk(private val context: Context, private val config: KeyriConfig) {
 
     private var service: Service? = null
+    private val keyriSdkModule = KeyriSdkModule(context)
 
-    /**
-     * Initializes Keyri SDK.
-     * Should be called before using other Keyri SDK api methods.
-     */
-    fun initialize(app: Application, config: KeyriConfig) {
-
-        if (initialized) return
-
-        this.config = config
-        keyriSdkGraph = DaggerKeyriSdkGraph.builder()
-            .keyriSdkModule(KeyriSdkModule(app))
-            .build()
-
+    init {
         initKeys()
         generateDeviceIdIfNeeded()
-
-        initialized = true
     }
 
     /**
@@ -58,22 +38,18 @@ object KeyriSdk {
         WrongConfigException::class
     )
     suspend fun onReadSessionId(sessionId: String): Session {
-        assertInitialized()
-
         loadServiceIfNeeded()
         val service = this.service ?: throw IllegalStateException()
 
         assertPermissionGranted(KeyriPermission.SESSION)
 
-        val session = makeApiCall { keyriSdkGraph.getApiService().getSession(sessionId) }.body()
+        val session = makeApiCall { keyriSdkModule.getApiService().getSession(sessionId) }.body()
         if (session?.service?.serviceId != service.serviceId) throw WrongConfigException
         return session
     }
 
     @Throws(NotInitializedException::class, MultipleAccountsNotAllowedException::class)
     suspend fun signup(username: String, sessionId: String, service: Service, custom: String?) {
-        assertInitialized()
-
         assertPermissionGranted(KeyriPermission.SIGNUP)
 
         keyriSdkGraph
@@ -94,8 +70,6 @@ object KeyriSdk {
         service: Service,
         custom: String?
     ) {
-        assertInitialized()
-
         loadServiceIfNeeded()
 
         assertPermissionGranted(KeyriPermission.LOGIN)
@@ -121,8 +95,6 @@ object KeyriSdk {
         custom: String?,
         extendedHeaders: Map<String, String> = emptyMap()
     ): AuthMobileResponse {
-        assertInitialized()
-
         loadServiceIfNeeded()
         val service = this.service ?: throw IllegalStateException()
 
@@ -149,8 +121,6 @@ object KeyriSdk {
         account: PublicAccount,
         extendedHeaders: Map<String, String> = emptyMap()
     ): AuthMobileResponse {
-        assertInitialized()
-
         loadServiceIfNeeded()
         val service = this.service ?: throw IllegalStateException()
 
@@ -164,8 +134,6 @@ object KeyriSdk {
 
     @Throws(IllegalStateException::class, NotInitializedException::class)
     suspend fun accounts(): List<PublicAccount> {
-        assertInitialized()
-
         loadServiceIfNeeded()
         val service = this.service ?: throw IllegalStateException()
 
@@ -179,8 +147,6 @@ object KeyriSdk {
 
     @Throws(IllegalStateException::class, NotInitializedException::class)
     suspend fun removeAccount(account: PublicAccount) {
-        assertInitialized()
-
         loadServiceIfNeeded()
         val service = this.service ?: throw IllegalStateException()
 
@@ -189,14 +155,6 @@ object KeyriSdk {
         keyriSdkGraph
             .getStorageService()
             .removeAccount(service.serviceId, account)
-    }
-
-    /**
-     * Checks if Keyri SDK was initialized and throws @NotInitializedException if it wasn't
-     */
-    @Throws(NotInitializedException::class)
-    private fun assertInitialized() {
-        if (!initialized) throw NotInitializedException
     }
 
     @Throws(IllegalStateException::class)
@@ -262,5 +220,4 @@ object KeyriSdk {
     )
 
     private var qrAuthCallbacks: QrAuthCallbacks? = null
-
 }

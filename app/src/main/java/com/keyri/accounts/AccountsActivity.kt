@@ -11,17 +11,20 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.keyrisdk.entity.PublicAccount
 import com.keyri.HomeActivity
 import com.keyri.R
-import kotlinx.android.synthetic.main.activity_accounts.*
-import kotlinx.android.synthetic.main.layout_progress.*
+import com.keyri.databinding.ActivityAccountsBinding
 
 class AccountsActivity : AppCompatActivity() {
 
     private val viewModel by viewModels<AccountsVM>()
     private val adapter by lazy { AccountsAdapter(this) { viewModel.processUserAccount(it) } }
 
+    private lateinit var binding: ActivityAccountsBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_accounts)
+        binding = ActivityAccountsBinding.inflate(layoutInflater)
+
+        setContentView(binding.root)
 
         viewModel.message().observe(this, Observer(::onMessage))
         viewModel.loading().observe(this, Observer(::onLoading))
@@ -33,23 +36,25 @@ class AccountsActivity : AppCompatActivity() {
     }
 
     private fun setupUi() {
-        list.layoutManager = LinearLayoutManager(this)
-        list.adapter = adapter
+        with(binding) {
+            list.layoutManager = LinearLayoutManager(this@AccountsActivity)
+            list.adapter = adapter
+        }
     }
 
     private fun renderAccounts(accounts: List<PublicAccount>) {
         if (accounts.isEmpty()) {
-            tvAccount.text = getString(R.string.no_accounts_label)
+            binding.tvAccount.text = getString(R.string.no_accounts_label)
             return
         }
 
         if (viewModel.mode == AccountsMode.ACCOUNTS) {
-            tvAccount.text = getString(R.string.account_label)
+            binding.tvAccount.text = getString(R.string.account_label)
         } else {
-            tvAccount.text = getString(R.string.select_account_label)
+            binding.tvAccount.text = getString(R.string.select_account_label)
         }
 
-        adapter.setItems(accounts)
+        adapter.submitList(accounts)
     }
 
     private fun onMessage(message: String) {
@@ -57,12 +62,14 @@ class AccountsActivity : AppCompatActivity() {
     }
 
     private fun onLoading(isLoading: Boolean) {
-        if (isLoading) {
-            panelContent.visibility = View.GONE
-            progress.visibility = View.VISIBLE
-        } else {
-            panelContent.visibility = View.VISIBLE
-            progress.visibility = View.GONE
+        with(binding) {
+            if (isLoading) {
+                panelContent.visibility = View.GONE
+                flProgress.progress.visibility = View.VISIBLE
+            } else {
+                panelContent.visibility = View.VISIBLE
+                flProgress.progress.visibility = View.GONE
+            }
         }
     }
 

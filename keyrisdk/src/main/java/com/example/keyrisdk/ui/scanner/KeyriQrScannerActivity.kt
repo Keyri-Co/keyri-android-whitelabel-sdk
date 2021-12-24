@@ -26,14 +26,13 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import com.example.keyrisdk.R
+import com.example.keyrisdk.databinding.KeyriActivityQrScannerBinding
 import com.example.keyrisdk.entity.PublicAccount
 import com.example.keyrisdk.ui.choose_account.KeyriQrChooseAccountActivity
-import com.google.mlkit.vision.barcode.Barcode
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
+import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
-import kotlinx.android.synthetic.main.keyri_activity_qr_scanner.*
-import kotlinx.android.synthetic.main.keyri_layout_progress.*
 import java.util.concurrent.Executors
 import kotlin.math.abs
 
@@ -110,9 +109,13 @@ class KeyriQrScannerActivity : AppCompatActivity() {
         }
     }
 
+    private lateinit var binding: KeyriActivityQrScannerBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.keyri_activity_qr_scanner)
+        binding = KeyriActivityQrScannerBinding.inflate(layoutInflater)
+
+        setContentView(binding.root)
 
         viewModel.message().observe(this, ::onMessage)
         viewModel.loading().observe(this, ::onLoading)
@@ -147,8 +150,8 @@ class KeyriQrScannerActivity : AppCompatActivity() {
     private fun initCamera() {
         displayManager.registerDisplayListener(displayListener, null)
 
-        scannerPreview.post {
-            displayId = scannerPreview.display.displayId
+        binding.scannerPreview.post {
+            displayId = binding.scannerPreview.display.displayId
 
             val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
@@ -161,9 +164,9 @@ class KeyriQrScannerActivity : AppCompatActivity() {
     }
 
     private fun bindCameraUseCases() {
-        val metrics = DisplayMetrics().also { scannerPreview.display.getRealMetrics(it) }
+        val metrics = DisplayMetrics().also { binding.scannerPreview.display.getRealMetrics(it) }
         val screenAspectRatio = aspectRatio(metrics.widthPixels, metrics.heightPixels)
-        val rotation = scannerPreview.display.rotation
+        val rotation = binding.scannerPreview.display.rotation
         val cameraSelector =
             CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
 
@@ -185,7 +188,7 @@ class KeyriQrScannerActivity : AppCompatActivity() {
         try {
             camera = cameraProvider?.bindToLifecycle(this, cameraSelector, preview, imageAnalyzer)
 
-            preview?.setSurfaceProvider(scannerPreview.surfaceProvider)
+            preview?.setSurfaceProvider(binding.scannerPreview.surfaceProvider)
         } catch (exc: Exception) {
             Log.d("Keyri", "Failed to init Camera")
         }
@@ -215,16 +218,18 @@ class KeyriQrScannerActivity : AppCompatActivity() {
     }
 
     private fun onLoading(isLoading: Boolean) {
-        if (isLoading) {
-            panelContent.visibility = View.GONE
-            progress.visibility = View.VISIBLE
+        with(binding) {
+            if (isLoading) {
+                panelContent.visibility = View.GONE
+                flProgress.progress.visibility = View.VISIBLE
 
-            imageAnalyzer?.clearAnalyzer()
-        } else {
-            panelContent.visibility = View.VISIBLE
-            progress.visibility = View.GONE
+                imageAnalyzer?.clearAnalyzer()
+            } else {
+                panelContent.visibility = View.VISIBLE
+                flProgress.progress.visibility = View.GONE
 
-            imageAnalyzer?.setAnalyzer(cameraExecutor, qrAnalyzer)
+                imageAnalyzer?.setAnalyzer(cameraExecutor, qrAnalyzer)
+            }
         }
     }
 
