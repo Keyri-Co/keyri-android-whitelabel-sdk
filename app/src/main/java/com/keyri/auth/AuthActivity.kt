@@ -26,11 +26,13 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.view.isGone
 import androidx.lifecycle.Observer
+import com.example.keyrisdk.KeyriConfig
 import com.example.keyrisdk.KeyriSdk
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import com.keyri.BuildConfig
 import com.keyri.HomeActivity
 import com.keyri.R
 import com.keyri.accounts.AccountsActivity
@@ -126,7 +128,16 @@ class AuthActivity : AppCompatActivity() {
     private fun initializeUi() {
         with(binding) {
             btAuthQr.setOnClickListener {
-                KeyriSdk.authWithScanner(
+                val keyriSdk = KeyriSdk(
+                    application, KeyriConfig(
+                        appKey = BuildConfig.APP_KEY,
+                        publicKey = BuildConfig.PUBLIC_KEY,
+                        callbackUrl = BuildConfig.KEYRI_CALLBACK_URL,
+                        allowMultipleAccounts = true
+                    )
+                )
+
+                keyriSdk.authWithScanner(
                     this@AuthActivity, CUSTOM,
                     KeyriSdk.QrAuthCallbacks({
                         HomeActivity.openHomeActivity(this@AuthActivity)

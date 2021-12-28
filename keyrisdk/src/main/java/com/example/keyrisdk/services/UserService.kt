@@ -33,11 +33,11 @@ class UserService(
         }
 
         val account = createAccount(service.serviceId, username, custom)
-        sessionService.verifyUserSession(account.userId, sessionId, custom)
+        sessionService.verifyUserSession(true, account.userId, sessionId, custom)
     }
 
     suspend fun login(sessionId: String, account: Account, custom: String?) {
-        sessionService.verifyUserSession(account.userId, sessionId, custom)
+        sessionService.verifyUserSession(false, account.userId, sessionId, custom)
     }
 
     suspend fun signupMobile(

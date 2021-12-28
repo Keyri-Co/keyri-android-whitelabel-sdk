@@ -15,7 +15,8 @@ import com.example.keyrisdk.exception.ServerErrorException
 import com.example.keyrisdk.utils.LiveEvent
 import kotlinx.coroutines.launch
 
-class KeyriQrChooseAccountVM(private val app: Application) : AndroidViewModel(app) {
+class KeyriQrChooseAccountVM(private val app: Application, private val keyriSdk: KeyriSdk) :
+    AndroidViewModel(app) {
 
     private val accountsLD = MutableLiveData<List<PublicAccount>>()
     private val loadingLD = MutableLiveData<Boolean>()
@@ -32,7 +33,7 @@ class KeyriQrChooseAccountVM(private val app: Application) : AndroidViewModel(ap
             loadingLD.value = true
 
             try {
-                accountsLD.value = KeyriSdk.accounts()
+                accountsLD.value = keyriSdk.accounts()
             } catch (e: Throwable) {
                 if (BuildConfig.DEBUG) {
                     Log.e("Keyri", "Authentication exception $e")

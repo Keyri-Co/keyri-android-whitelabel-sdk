@@ -59,7 +59,6 @@ dependencies {
 
     implementation "androidx.room:room-runtime:$room"
     implementation "androidx.room:room-ktx:$room"
-    annotationProcessor "androidx.room:room-compiler:$room"
 
     implementation "com.google.mlkit:barcode-scanning:$barcode"
 

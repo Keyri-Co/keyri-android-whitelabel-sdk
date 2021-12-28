@@ -19,7 +19,8 @@ import com.example.keyrisdk.ui.scanner.KeyriQrScannerActivity.Companion.ARG_CUST
 import com.example.keyrisdk.utils.LiveEvent
 import kotlinx.coroutines.launch
 
-class KeyriQrScannerVM(private val app: Application) : AndroidViewModel(app) {
+class KeyriQrScannerVM(private val app: Application, private val keyriSdk: KeyriSdk) :
+    AndroidViewModel(app) {
 
     private var initialized = false
     private var custom: String? = null
@@ -52,11 +53,11 @@ class KeyriQrScannerVM(private val app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             loadingLD.value = true
             try {
-                val session = KeyriSdk.onReadSessionId(sessionId)
+                val session = keyriSdk.onReadSessionId(sessionId)
 
                 if (session.isNewUser) {
                     try {
-                        KeyriSdk.signup(session.username, sessionId, session.service, custom)
+                        keyriSdk.signup(session.username, sessionId, session.service, custom)
                         completeAuthWithScanner(isFailed = false)
                     } catch (e: Throwable) {
                         if (e is MultipleAccountsNotAllowedException) {
@@ -66,7 +67,7 @@ class KeyriQrScannerVM(private val app: Application) : AndroidViewModel(app) {
                         }
                     }
                 } else {
-                    val accounts = KeyriSdk.accounts()
+                    val accounts = keyriSdk.accounts()
 
                     when {
                         accounts.isEmpty() -> throw AccountNotFoundException
@@ -102,8 +103,8 @@ class KeyriQrScannerVM(private val app: Application) : AndroidViewModel(app) {
 
     fun removeExistingAccountAndInitNewSession(sessionId: String) {
         viewModelScope.launch {
-            KeyriSdk.accounts().firstOrNull()?.let { account ->
-                KeyriSdk.removeAccount(account)
+            keyriSdk.accounts().firstOrNull()?.let { account ->
+                keyriSdk.removeAccount(account)
                 authenticate(sessionId)
             }
         }
@@ -115,11 +116,11 @@ class KeyriQrScannerVM(private val app: Application) : AndroidViewModel(app) {
 
     private fun completeAuthWithScanner(isFailed: Boolean) {
         completedLD.value = true
-        KeyriSdk.completeAuthWithScanner(isFailed)
+        keyriSdk.completeAuthWithScanner(isFailed)
     }
 
     private suspend fun authAccount(account: PublicAccount, sessionId: String, service: Service) {
-        KeyriSdk.login(account, sessionId, service, custom)
+        keyriSdk.login(account, sessionId, service, custom)
         completeAuthWithScanner(isFailed = false)
     }
 }

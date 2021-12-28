@@ -18,17 +18,8 @@ import javax.inject.Singleton
 
 class KeyriSdkModule(private val context: Context) {
 
-    init {
-        createDependencies()
-    }
-
-    private fun createDependencies() {
-        val apiService = provideApiService()
-
-    }
-
     @Singleton
-    private fun provideApiService(): ApiService {
+    fun provideApiService(): ApiService {
         val okHttpClientBuilder = OkHttpClient.Builder()
 
         okHttpClientBuilder.connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
@@ -51,32 +42,32 @@ class KeyriSdkModule(private val context: Context) {
     }
 
     @Singleton
+    fun provideStorageService() =
+        StorageService(getSharedPreferences(), provideUserDao(), provideCryptoService())
+
+    @Singleton
+    fun provideUserService() = UserService(
+        provideStorageService(),
+        provideSessionService(),
+        provideApiService(),
+        provideCryptoService()
+    )
+
+    @Singleton
+    fun provideCryptoService() = CryptoService(getSharedPreferences())
+
+    @Singleton
     private fun provideAppDb(): AppDb =
         Room.databaseBuilder(context, AppDb::class.java, DB_NAME).build()
 
     @Singleton
-    private fun provideUserDao(db: AppDb) = db.userDao()
+    private fun provideUserDao() = provideAppDb().userDao()
 
-    private fun provideCryptoService(preferences: SharedPreferences) = CryptoService(preferences)
+    @Singleton
+    private fun provideSessionService() =
+        SessionService(provideSocketService(), provideCryptoService())
 
-    private fun provideStorageService(
-        preferences: SharedPreferences,
-        userDao: UserDao,
-        cryptoService: CryptoService
-    ) = StorageService(preferences, userDao, cryptoService)
-
-    private fun provideSessionService(
-        socketService: SocketService,
-        cryptoService: CryptoService
-    ) = SessionService(socketService, cryptoService)
-
-    private fun provideUserService(
-        storageService: StorageService,
-        sessionService: SessionService,
-        apiService: ApiService,
-        cryptoService: CryptoService
-    ) = UserService(storageService, sessionService, apiService, cryptoService)
-
+    @Singleton
     private fun provideSocketService() = SocketService(BuildConfig.WS_URL)
 
     @Singleton

@@ -14,7 +14,8 @@ import com.keyri.BuildConfig
 import com.keyri.R
 import kotlinx.coroutines.launch
 
-class NewAccountVM(private val app: Application) : AndroidViewModel(app) {
+class NewAccountVM(private val app: Application, private val keyriSdk: KeyriSdk) :
+    AndroidViewModel(app) {
 
     private val loadingLD = MutableLiveData<Boolean>()
     private val messageLD = LiveEvent<String>()
@@ -31,7 +32,7 @@ class NewAccountVM(private val app: Application) : AndroidViewModel(app) {
             loadingLD.value = true
             try {
                 authenticatedLD.value =
-                    KeyriSdk.mobileSignup(username, CUSTOM_DATA_SIGNUP, CUSTOM_HEADERS)
+                    keyriSdk.mobileSignup(username, CUSTOM_DATA_SIGNUP, CUSTOM_HEADERS)
             } catch (e: Throwable) {
                 if (BuildConfig.DEBUG) {
                     Log.e("Keyri", "Mobile signup exception $e")
