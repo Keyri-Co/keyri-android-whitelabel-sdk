@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.CAMERA" />
 
     <application
+        android:name="com.keyri.App"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -44,7 +45,7 @@
         </activity>
 
         <activity
-            android:name=".HomeActivity"
+            android:name=".home.HomeActivity"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
 

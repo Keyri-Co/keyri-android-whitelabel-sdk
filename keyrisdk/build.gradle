@@ -1,6 +1,9 @@
-apply plugin: 'com.android.library'
-apply plugin: 'maven-publish'
-apply plugin: 'kotlin-android'
+plugins {
+    id 'com.android.library'
+    id 'maven-publish'
+    id 'kotlin-android'
+    id 'com.google.devtools.ksp' version "$ksp_version"
+}
 
 def cfg = rootProject.ext.configuration
 
@@ -69,26 +72,26 @@ dependencies {
     implementation "androidx.camera:camera-view:$cameraXview"
 }
 
-afterEvaluate {
-    publishing {
-        publications {
-            release(MavenPublication) {
-                from components.release
-
-                groupId = 'com.example.keyrisdk'
-
-                artifactId = 'keyrisdk'
-                version = '0.9.6'
-            }
-
-            debug(MavenPublication) {
-                from components.debug
-
-                groupId = 'com.example.keyrisdk'
-
-                artifactId = 'keyrisdk-debug'
-                version = '0.9.6'
-            }
-        }
-    }
-}
+//afterEvaluate {
+//    publishing {
+//        publications {
+//            release(MavenPublication) {
+//                from components.release
+//
+//                groupId = 'com.example.keyrisdk'
+//
+//                artifactId = 'keyrisdk'
+//                version = '0.9.6'
+//            }
+//
+//            debug(MavenPublication) {
+//                from components.debug
+//
+//                groupId = 'com.example.keyrisdk'
+//
+//                artifactId = 'keyrisdk-debug'
+//                version = '0.9.6'
+//            }
+//        }
+//    }
+//}

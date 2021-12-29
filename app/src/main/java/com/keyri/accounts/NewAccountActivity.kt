@@ -6,15 +6,15 @@ import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
-import androidx.activity.viewModels
 import androidx.lifecycle.Observer
-import com.keyri.HomeActivity
+import com.keyri.home.HomeActivity
 import com.keyri.R
 import com.keyri.databinding.ActivityNewAccountBinding
+import org.koin.android.viewmodel.ext.android.viewModel
 
 class NewAccountActivity : AppCompatActivity() {
 
-    private val viewModel by viewModels<NewAccountVM>()
+    private val viewModel by viewModel<NewAccountVM>()
 
     private lateinit var binding: ActivityNewAccountBinding
 

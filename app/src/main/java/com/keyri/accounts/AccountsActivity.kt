@@ -5,17 +5,17 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
-import androidx.activity.viewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.keyrisdk.entity.PublicAccount
-import com.keyri.HomeActivity
+import com.keyri.home.HomeActivity
 import com.keyri.R
 import com.keyri.databinding.ActivityAccountsBinding
+import org.koin.android.viewmodel.ext.android.viewModel
 
 class AccountsActivity : AppCompatActivity() {
 
-    private val viewModel by viewModels<AccountsVM>()
+    private val viewModel by viewModel<AccountsVM>()
     private val adapter by lazy { AccountsAdapter(this) { viewModel.processUserAccount(it) } }
 
     private lateinit var binding: ActivityAccountsBinding

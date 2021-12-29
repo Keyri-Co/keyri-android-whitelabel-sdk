@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.room.Room
 import com.example.keyrisdk.db.AppDb
-import com.example.keyrisdk.db.UserDao
 import com.example.keyrisdk.services.*
 import com.example.keyrisdk.services.api.ApiService
 import com.example.keyrisdk.services.crypto.CryptoService
