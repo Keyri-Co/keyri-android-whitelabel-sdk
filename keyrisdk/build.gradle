@@ -60,8 +60,8 @@ dependencies {
     implementation "com.squareup.retrofit2:retrofit:$retrofit"
     implementation "com.squareup.retrofit2:converter-gson:$retrofit"
 
-    implementation "androidx.room:room-runtime:$room"
     implementation "androidx.room:room-ktx:$room"
+    ksp "androidx.room:room-compiler:$room"
 
     implementation "com.google.mlkit:barcode-scanning:$barcode"
 
@@ -72,26 +72,26 @@ dependencies {
     implementation "androidx.camera:camera-view:$cameraXview"
 }
 
-//afterEvaluate {
-//    publishing {
-//        publications {
-//            release(MavenPublication) {
-//                from components.release
-//
-//                groupId = 'com.example.keyrisdk'
-//
-//                artifactId = 'keyrisdk'
-//                version = '0.9.6'
-//            }
-//
-//            debug(MavenPublication) {
-//                from components.debug
-//
-//                groupId = 'com.example.keyrisdk'
-//
-//                artifactId = 'keyrisdk-debug'
-//                version = '0.9.6'
-//            }
-//        }
-//    }
-//}
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+
+                groupId = 'com.example.keyrisdk'
+
+                artifactId = 'keyrisdk'
+                version = '0.9.6'
+            }
+
+            debug(MavenPublication) {
+                from components.debug
+
+                groupId = 'com.example.keyrisdk'
+
+                artifactId = 'keyrisdk-debug'
+                version = '0.9.6'
+            }
+        }
+    }
+}

@@ -13,11 +13,9 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
-import javax.inject.Singleton
 
 class KeyriSdkModule(private val context: Context) {
 
-    @Singleton
     fun provideApiService(): ApiService {
         val okHttpClientBuilder = OkHttpClient.Builder()
 
@@ -40,11 +38,9 @@ class KeyriSdkModule(private val context: Context) {
             .create(ApiService::class.java)
     }
 
-    @Singleton
     fun provideStorageService() =
         StorageService(getSharedPreferences(), provideUserDao(), provideCryptoService())
 
-    @Singleton
     fun provideUserService() = UserService(
         provideStorageService(),
         provideSessionService(),
@@ -52,24 +48,18 @@ class KeyriSdkModule(private val context: Context) {
         provideCryptoService()
     )
 
-    @Singleton
     fun provideCryptoService() = CryptoService(getSharedPreferences())
 
-    @Singleton
     private fun provideAppDb(): AppDb =
         Room.databaseBuilder(context, AppDb::class.java, DB_NAME).build()
 
-    @Singleton
     private fun provideUserDao() = provideAppDb().userDao()
 
-    @Singleton
     private fun provideSessionService() =
         SessionService(provideSocketService(), provideCryptoService())
 
-    @Singleton
     private fun provideSocketService() = SocketService(BuildConfig.WS_URL)
 
-    @Singleton
     private fun getSharedPreferences(): SharedPreferences =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 

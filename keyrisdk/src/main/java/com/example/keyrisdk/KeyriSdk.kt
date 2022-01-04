@@ -1,17 +1,13 @@
 package com.example.keyrisdk
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import com.example.keyrisdk.entity.PublicAccount
 import com.example.keyrisdk.entity.Service
 import com.example.keyrisdk.entity.Session
 import com.example.keyrisdk.exception.*
 import com.example.keyrisdk.services.api.AuthMobileResponse
 import com.example.keyrisdk.services.api.InitRequest
-import com.example.keyrisdk.ui.scanner.KeyriQrScannerActivity
-import com.example.keyrisdk.ui.scanner.KeyriQrScannerActivity.Companion.ARG_CUSTOM
 import com.example.keyrisdk.utils.Utils
 import com.example.keyrisdk.utils.makeApiCall
 
@@ -196,29 +192,4 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
         }
         if (!granted) throw PermissionsException*/
     }
-
-    fun authWithScanner(activity: Activity, custom: String?, callbacks: QrAuthCallbacks) {
-        if (qrAuthCallbacks != null) return
-        qrAuthCallbacks = callbacks
-
-        val intent = Intent(activity, KeyriQrScannerActivity::class.java)
-            .putExtra(ARG_CUSTOM, custom)
-        activity.startActivity(intent)
-    }
-
-    internal fun completeAuthWithScanner(isFailed: Boolean) {
-        if (isFailed) {
-            qrAuthCallbacks?.onFailed?.invoke()
-        } else {
-            qrAuthCallbacks?.onCompleted?.invoke()
-        }
-        qrAuthCallbacks = null
-    }
-
-    class QrAuthCallbacks(
-        val onCompleted: () -> Unit,
-        val onFailed: () -> Unit
-    )
-
-    private var qrAuthCallbacks: QrAuthCallbacks? = null
 }

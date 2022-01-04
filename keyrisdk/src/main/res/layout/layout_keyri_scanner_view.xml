@@ -1,15 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
-    <RelativeLayout
-        android:id="@+id/rlRoot"
+    <FrameLayout
+        android:id="@+id/flContent"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
+        <androidx.camera.view.PreviewView
+            android:id="@+id/scannerPreview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:background="@color/keyriColorPrimary"
+            android:padding="4dp"
+            android:text="@string/keyri_powered_by_keyri"
+            android:textColor="@android:color/white"
+            android:textSize="16sp" />
+
+    </FrameLayout>
+
+    <RelativeLayout
+        android:id="@+id/rlChooseAccount"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
 
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/tvChooseAccount"
@@ -57,4 +79,4 @@
         android:id="@+id/flProgress"
         layout="@layout/keyri_layout_progress" />
 
-</LinearLayout>
+</FrameLayout>

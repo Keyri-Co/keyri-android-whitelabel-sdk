@@ -1,6 +1,5 @@
 package com.keyri.auth
 
-import android.app.Activity
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
@@ -54,18 +53,6 @@ class AuthVM(private val app: Application, private val keyriSdk: KeyriSdk) : And
             }
             loadingLD.value = false
         }
-    }
-
-    fun authWithScanner(activity: Activity, custom: String) {
-        keyriSdk.authWithScanner(
-            activity,
-            custom,
-            KeyriSdk.QrAuthCallbacks({
-                authenticatedLD.value = true
-            }, {
-                messageLD.value = app.getString(R.string.not_authenticated)
-            })
-        )
     }
 
     companion object {

@@ -33,6 +33,7 @@ import com.keyri.home.HomeActivity
 import com.keyri.accounts.AccountsActivity
 import com.keyri.accounts.AccountsMode
 import com.keyri.accounts.NewAccountActivity
+import com.keyri.auth_with_scanner.AuthWithScannerActivity
 import com.keyri.databinding.ActivityAuthBinding
 import org.koin.android.viewmodel.ext.android.viewModel
 import java.util.concurrent.Executors
@@ -124,7 +125,7 @@ class AuthActivity : AppCompatActivity() {
     private fun initializeUi() {
         with(binding) {
             btAuthQr.setOnClickListener {
-                viewModel.authWithScanner(this@AuthActivity, CUSTOM)
+                AuthWithScannerActivity.openAuthWithScannerActivity(this@AuthActivity, CUSTOM)
             }
             btSignup.setOnClickListener { openScanner() }
             btLogin.setOnClickListener { openScanner() }

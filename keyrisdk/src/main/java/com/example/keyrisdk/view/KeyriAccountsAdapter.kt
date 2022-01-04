@@ -1,4 +1,4 @@
-package com.example.keyrisdk.ui.choose_account
+package com.example.keyrisdk.view
 
 import android.view.LayoutInflater
 import android.view.View
@@ -10,9 +10,13 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.keyrisdk.R
 import com.example.keyrisdk.entity.PublicAccount
+import com.example.keyrisdk.entity.Service
 
-class KeyriQrAccountsAdapter(private val onItemSelected: (PublicAccount) -> Unit) :
-    ListAdapter<PublicAccount, KeyriQrAccountsAdapter.AccountViewHolder>(DIFF_CALLBACK) {
+class KeyriAccountsAdapter(private val onItemSelected: (PublicAccount, String, Service) -> Unit) :
+    ListAdapter<PublicAccount, KeyriAccountsAdapter.AccountViewHolder>(DIFF_CALLBACK) {
+
+    var sessionId: String? = null
+    var service: Service? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AccountViewHolder {
         val itemView =
@@ -32,7 +36,14 @@ class KeyriQrAccountsAdapter(private val onItemSelected: (PublicAccount) -> Unit
 
         fun bind(account: PublicAccount) {
             tvItemText.text = account.username
-            rlRoot.setOnClickListener { onItemSelected(account) }
+            rlRoot.setOnClickListener {
+                val sessionId = sessionId
+                val service = service
+
+                if (sessionId != null && service != null) {
+                    onItemSelected(account, sessionId, service)
+                }
+            }
         }
     }
 
