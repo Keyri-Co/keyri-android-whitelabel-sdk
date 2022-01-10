@@ -2,7 +2,7 @@
 
 This repository contains the open source code for [Keyri](https://keyri.co) Android SDK.
 
-[![GitHub release](https://img.shields.io/github/release/Keyri-Co/keyri-android-whitelabel-sdk.svg?maxAge=60)](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/releases)
+[![GitHub release](https://img.shields.io/github/release/Keyri-Co/keyri-android-whitelabel-sdk.svg?maxAge=10)](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/releases)
 
 ![demo](images/demo.gif)
 
@@ -26,14 +26,11 @@ depend on kotlin functionality.
 ## Demo
 
 This repository contains a demonstration app for the Keyri SDK product. To build and run the demo
-app, follow the instructions in
-the [demo documentation](https://docs.keyri.co/eyri-Co/keyri-android-whitelabel-sdk/android-integration-guide#demo)
-.
+app, follow the instructions in the [Usage](#usage).
 
 ## Integration
 
-See
-the [integration documentation](https://docs.keyri.co/keyri-android-whitelabel-sdk/android-integration-guide)
+See the [integration documentation](https://docs.keyri.com/android)
 in the Keyri Docs.
 
 ### Dependencies
