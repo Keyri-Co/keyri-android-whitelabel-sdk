@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.keyrisdk.entity.PublicAccount
+import com.keyrico.keyrisdk.entity.PublicAccount
 import com.keyri.R
 import com.keyri.databinding.ItemAccountBinding
 

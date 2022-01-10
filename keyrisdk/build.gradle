@@ -62,7 +62,7 @@ dependencies {
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
 
     implementation 'androidx.room:room-ktx:2.4.0'
-    annotationProcessor 'androidx.room:room-compiler:2.4.0'
+    kapt 'androidx.room:room-compiler:2.4.0'
 
     implementation 'androidx.camera:camera-core:1.1.0-alpha12'
     implementation 'androidx.camera:camera-camera2:1.1.0-alpha12'
@@ -76,19 +76,19 @@ afterEvaluate {
             release(MavenPublication) {
                 from components.release
 
-                groupId = 'com.example.keyrisdk'
+                groupId = 'com.keyrico.keyrisdk'
 
                 artifactId = 'keyrisdk'
-                version = '0.9.7'
+                version = '0.9.8'
             }
 
             debug(MavenPublication) {
                 from components.debug
 
-                groupId = 'com.example.keyrisdk'
+                groupId = 'com.keyrico.keyrisdk'
 
                 artifactId = 'keyrisdk-debug'
-                version = '0.9.7'
+                version = '0.9.8'
             }
         }
     }

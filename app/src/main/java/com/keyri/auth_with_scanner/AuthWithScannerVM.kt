@@ -3,8 +3,8 @@ package com.keyri.auth_with_scanner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.keyrisdk.entity.PublicAccount
-import com.example.keyrisdk.entity.Service
+import com.keyrico.keyrisdk.entity.PublicAccount
+import com.keyrico.keyrisdk.entity.Service
 
 class AuthWithScannerVM : ViewModel() {
 

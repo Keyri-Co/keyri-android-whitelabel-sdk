@@ -7,7 +7,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.keyrisdk.entity.PublicAccount
+import com.keyrico.keyrisdk.entity.PublicAccount
 import com.keyri.home.HomeActivity
 import com.keyri.R
 import com.keyri.databinding.ActivityAccountsBinding
