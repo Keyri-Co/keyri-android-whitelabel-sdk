@@ -7,7 +7,7 @@
 
     <application
         android:name="com.keyri.App"
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
@@ -44,7 +44,7 @@
 
         <activity
             android:name=".auth_with_scanner.AuthWithScannerActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="fullSensor" />
 
         <activity
             android:name=".home.HomeActivity"

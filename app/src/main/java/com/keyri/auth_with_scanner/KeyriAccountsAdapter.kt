@@ -1,4 +1,4 @@
-package com.example.keyrisdk.view
+package com.keyri.auth_with_scanner
 
 import android.view.LayoutInflater
 import android.view.View
@@ -8,15 +8,11 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.keyrisdk.R
 import com.example.keyrisdk.entity.PublicAccount
-import com.example.keyrisdk.entity.Service
+import com.keyri.R
 
-class KeyriAccountsAdapter(private val onItemSelected: (PublicAccount, String, Service) -> Unit) :
+class KeyriAccountsAdapter(private val onItemSelected: (PublicAccount) -> Unit) :
     ListAdapter<PublicAccount, KeyriAccountsAdapter.AccountViewHolder>(DIFF_CALLBACK) {
-
-    var sessionId: String? = null
-    var service: Service? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AccountViewHolder {
         val itemView =
@@ -36,14 +32,7 @@ class KeyriAccountsAdapter(private val onItemSelected: (PublicAccount, String, S
 
         fun bind(account: PublicAccount) {
             tvItemText.text = account.username
-            rlRoot.setOnClickListener {
-                val sessionId = sessionId
-                val service = service
-
-                if (sessionId != null && service != null) {
-                    onItemSelected(account, sessionId, service)
-                }
-            }
+            rlRoot.setOnClickListener { onItemSelected(account) }
         }
     }
 

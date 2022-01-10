@@ -21,6 +21,7 @@ class SessionService(
     /**
      * Function for user session verification.
      *
+     * @isNewUser represents is it signup or login.
      * @userId user id to verify.
      * @sessionId id of the session to verify.
      * @custom custom argument.

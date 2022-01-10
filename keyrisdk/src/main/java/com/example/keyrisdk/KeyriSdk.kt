@@ -177,7 +177,7 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
 
     @SuppressLint("DefaultLocale")
     @Throws(PermissionsException::class)
-    private suspend fun assertPermissionGranted(permission: KeyriPermission) {
+    private fun assertPermissionGranted(permission: KeyriPermission) {
         /*val serviceId = service?.serviceId ?: throw IllegalStateException()
 
         val permissionName = permission.id

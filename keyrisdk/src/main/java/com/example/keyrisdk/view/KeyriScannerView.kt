@@ -10,15 +10,19 @@ import android.util.DisplayMetrics
 import android.util.Log
 import android.util.Size
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.Camera
+import androidx.camera.core.CameraInfoUnavailableException
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.FocusMeteringAction
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
+import androidx.camera.core.SurfaceOrientedMeteringPointFactory
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
@@ -37,8 +41,12 @@ import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
 class KeyriScannerView @JvmOverloads constructor(
@@ -82,8 +90,6 @@ class KeyriScannerView @JvmOverloads constructor(
         }
     }
 
-    private val adapter by lazy { KeyriAccountsAdapter(::onAccountClicked) }
-
     private var binding: LayoutKeyriScannerViewBinding =
         LayoutKeyriScannerViewBinding.inflate(LayoutInflater.from(context), this, true)
 
@@ -93,10 +99,22 @@ class KeyriScannerView @JvmOverloads constructor(
             onLoading(field)
         }
 
+    private var autoFocusEnabled = true
+    private var flashEnabled = false
+
     fun initView(keyriScannerViewParams: KeyriScannerViewParams) {
         this.keyriScannerViewParams = keyriScannerViewParams
 
         openScanner()
+        initButtons()
+    }
+
+    fun continueAuth(publicAccount: PublicAccount, sessionId: String, service: Service) {
+        launch {
+            isLoading = true
+            authAccount(publicAccount, sessionId, service)
+            isLoading = false
+        }
     }
 
     private fun processScannedData(scannedData: String) {
@@ -117,31 +135,33 @@ class KeyriScannerView @JvmOverloads constructor(
     }
 
     private fun authenticate(sessionId: String) {
-        keyriScannerViewParams?.activity?.lifecycleScope?.launch {
+        launch {
             isLoading = true
 
             try {
-                val session =
-                    keyriScannerViewParams?.keyriSdk?.onReadSessionId(sessionId) ?: return@launch
+                val params = requireNotNull(keyriScannerViewParams)
+                val session = params.keyriSdk.onReadSessionId(sessionId)
 
                 if (session.isNewUser) {
                     try {
-                        keyriScannerViewParams?.keyriSdk?.signup(
+                        params.keyriSdk.signup(
                             session.username,
                             sessionId,
                             session.service,
-                            keyriScannerViewParams?.customArgument
+                            params.customArgument
                         )
                         onAuthCompleted()
                     } catch (e: Throwable) {
                         if (e is MultipleAccountsNotAllowedException) {
-                            onAccountAlreadyExists(sessionId)
+                            withContext(Dispatchers.Main) {
+                                onAccountAlreadyExists(sessionId)
+                            }
                         } else {
                             throw e
                         }
                     }
                 } else {
-                    val accounts = keyriScannerViewParams?.keyriSdk?.accounts() ?: return@launch
+                    val accounts = params.keyriSdk.accounts()
 
                     when {
                         accounts.isEmpty() -> throw AccountNotFoundException
@@ -150,7 +170,9 @@ class KeyriScannerView @JvmOverloads constructor(
                             onAuthCompleted()
                         }
                         else -> {
-                            chooseAccount(accounts, sessionId, session.service)
+                            withContext(Dispatchers.Main) {
+                                params.onChooseAccount(accounts, sessionId, session.service)
+                            }
                             return@launch
                         }
                     }
@@ -168,64 +190,33 @@ class KeyriScannerView @JvmOverloads constructor(
     }
 
     private suspend fun authAccount(account: PublicAccount, sessionId: String, service: Service) {
-        keyriScannerViewParams?.let { params ->
-            try {
-                params.keyriSdk.login(account, sessionId, service, params.customArgument)
-                onAuthCompleted()
-            } catch (e: Throwable) {
-                Log.d("Keyri", "Authentication exception $e")
+        val params = requireNotNull(keyriScannerViewParams)
 
-                val errorMessage = if (e is KeyriSdkException) e else AuthorizationException
+        try {
+            params.keyriSdk.login(account, sessionId, service, params.customArgument)
+            onAuthCompleted()
+        } catch (e: Throwable) {
+            Log.d("Keyri", "Authentication exception $e")
 
-                onError(errorMessage)
-            }
-        }
-    }
+            val errorMessage = if (e is KeyriSdkException) e else AuthorizationException
 
-    private suspend fun chooseAccount(
-        accounts: List<PublicAccount>,
-        sessionId: String,
-        service: Service
-    ) {
-        keyriScannerViewParams?.onChooseAccount?.invoke(accounts)?.let { account ->
-            authAccount(account, sessionId, service)
-        } ?: adapter.apply {
-            binding.apply {
-                rlChooseAccount.isVisible = true
-                flProgress.progress.isVisible = false
-                flContent.isVisible = false
-
-                rvAccounts.adapter = adapter
-            }
-
-            submitList(accounts)
-
-            this.service = service
-            this.sessionId = sessionId
-        }
-    }
-
-    private fun onAccountClicked(account: PublicAccount, sessionId: String, service: Service) {
-        binding.rlChooseAccount.isVisible = false
-
-        keyriScannerViewParams?.activity?.lifecycleScope?.launch {
-            authAccount(account, sessionId, service)
+            onError(errorMessage)
         }
     }
 
     private fun removeExistingAccountAndInitNewSession(sessionId: String) {
-        keyriScannerViewParams?.let { params ->
-            params.activity.lifecycleScope.launch {
-                params.keyriSdk.accounts().firstOrNull()?.let { account ->
-                    params.keyriSdk.removeAccount(account)
-                    authenticate(sessionId)
-                }
+        launch {
+            val params = requireNotNull(keyriScannerViewParams)
+
+            params.keyriSdk.accounts().firstOrNull()?.let { account ->
+                params.keyriSdk.removeAccount(account)
+                authenticate(sessionId)
             }
         }
     }
 
     private fun onAccountAlreadyExists(sessionId: String) {
-        keyriScannerViewParams?.onAccountAlreadyExists?.invoke(sessionId)?.takeIf { it }?.let {
+        keyriScannerViewParams?.onAccountAlreadyExists?.invoke()?.takeIf { it }?.let {
             removeExistingAccountAndInitNewSession(sessionId)
         } ?: AlertDialog.Builder(context)
             .setTitle(R.string.keyri_you_already_have_account)
@@ -248,6 +239,78 @@ class KeyriScannerView @JvmOverloads constructor(
         initCamera()
     }
 
+    @SuppressLint("ClickableViewAccessibility")
+    private fun initButtons() {
+        binding.ivAutofocus.setOnClickListener {
+            if (autoFocusEnabled) {
+                val preview = binding.scannerPreview
+
+                preview.setOnTouchListener { _, event ->
+                    return@setOnTouchListener when (event.action) {
+                        MotionEvent.ACTION_DOWN -> true
+                        MotionEvent.ACTION_UP -> {
+                            val factory = SurfaceOrientedMeteringPointFactory(
+                                preview.width.toFloat(),
+                                preview.height.toFloat()
+                            )
+                            val autoFocusPoint = factory.createPoint(event.x, event.y)
+                            try {
+                                camera?.cameraControl?.startFocusAndMetering(
+                                    FocusMeteringAction.Builder(
+                                        autoFocusPoint,
+                                        FocusMeteringAction.FLAG_AF
+                                    ).apply {
+                                        //focus only when the user tap the preview
+                                        disableAutoCancel()
+                                    }.build()
+                                )
+                            } catch (e: CameraInfoUnavailableException) {
+                                Log.d("Keyri", "cannot access camera, $e")
+                            }
+                            true
+                        }
+                        else -> false
+                    }
+                }
+            } else {
+                val autoFocusPoint =
+                    SurfaceOrientedMeteringPointFactory(1f, 1f).createPoint(.5f, .5f)
+
+                try {
+                    val autoFocusAction =
+                        FocusMeteringAction.Builder(autoFocusPoint, FocusMeteringAction.FLAG_AF)
+                            .apply {
+                                //start auto-focusing after 2 seconds
+                                setAutoCancelDuration(2, TimeUnit.SECONDS)
+                            }.build()
+
+                    camera?.cameraControl?.startFocusAndMetering(autoFocusAction)
+                } catch (e: CameraInfoUnavailableException) {
+                    Log.d("Keyri", "cannot access camera, $e")
+                }
+            }
+
+            val focusRes =
+                if (autoFocusEnabled) R.drawable.ic_autofocus_off else R.drawable.ic_autofocus_on
+
+            binding.ivAutofocus.setImageResource(focusRes)
+
+            autoFocusEnabled = !autoFocusEnabled
+        }
+
+        binding.ivFlash.setOnClickListener {
+            camera?.let {
+                val fleshRes = if (flashEnabled) R.drawable.ic_flash_off else R.drawable.ic_flash_on
+
+                binding.ivFlash.setImageResource(fleshRes)
+
+                it.cameraControl.enableTorch(!flashEnabled)
+
+                flashEnabled = !flashEnabled
+            }
+        }
+    }
+
     private fun requestCameraPermission() {
         keyriScannerViewParams?.activity?.registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (isGranted) {
@@ -265,13 +328,17 @@ class KeyriScannerView @JvmOverloads constructor(
         ) == PackageManager.PERMISSION_GRANTED
 
     private fun onError(exception: KeyriSdkException) {
-        keyriScannerViewParams?.onError?.invoke(exception)
-            ?: onMessage(context.getString(exception.errorMessage))
+        launch(Dispatchers.Main) {
+            keyriScannerViewParams?.onError?.invoke(exception)
+                ?: onMessage(context.getString(exception.errorMessage))
+        }
     }
 
     private fun onAuthCompleted() {
-        keyriScannerViewParams?.onCompleted?.invoke()
-            ?: onMessage(context.getString(R.string.keyri_auth_complete))
+        launch(Dispatchers.Main) {
+            keyriScannerViewParams?.onCompleted?.invoke()
+                ?: onMessage(context.getString(R.string.keyri_auth_complete))
+        }
     }
 
     private fun onMessage(message: String) {
@@ -285,7 +352,9 @@ class KeyriScannerView @JvmOverloads constructor(
             override fun onDisplayChanged(displayId: Int) {
                 keyriScannerViewParams?.activity?.window?.decorView?.let { view ->
                     if (displayId == this@KeyriScannerView.displayId) {
-                        imageAnalyzer?.targetRotation = view.display.rotation
+                        view.display?.rotation?.let { rotation ->
+                            imageAnalyzer?.targetRotation = rotation
+                        }
                     }
                 }
             }
@@ -320,7 +389,7 @@ class KeyriScannerView @JvmOverloads constructor(
 
         imageAnalyzer = ImageAnalysis.Builder()
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-            .setTargetResolution(Size(480, 480))
+            .setTargetResolution(Size(320, 320))
             .setTargetRotation(rotation)
             .build()
 
@@ -354,18 +423,26 @@ class KeyriScannerView @JvmOverloads constructor(
     }
 
     private fun onLoading(isLoading: Boolean) {
-        keyriScannerViewParams?.onLoading?.invoke(isLoading) ?: with(binding) {
-            flContent.isVisible = !isLoading
-            flProgress.progress.isVisible = isLoading
-            rlChooseAccount.isVisible = false
+        launch(Dispatchers.Main) {
+            keyriScannerViewParams?.onLoading?.invoke(isLoading) ?: with(binding) {
+                rlContent.isVisible = !isLoading
+                flProgress.progress.isVisible = isLoading
 
-            if (isLoading) {
-                imageAnalyzer?.clearAnalyzer()
-                cameraProvider?.unbindAll()
-            } else {
-                bindCameraUseCases()
+                if (isLoading) {
+                    imageAnalyzer?.clearAnalyzer()
+                    cameraProvider?.unbindAll()
+                } else {
+                    bindCameraUseCases()
+                }
             }
         }
+    }
+
+    private fun launch(
+        dispatcher: CoroutineDispatcher = Dispatchers.IO,
+        block: suspend () -> Unit
+    ) {
+        keyriScannerViewParams?.activity?.lifecycleScope?.launch(dispatcher) { block() }
     }
 
     companion object {

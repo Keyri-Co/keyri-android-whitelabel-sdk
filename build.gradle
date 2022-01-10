@@ -1,27 +1,4 @@
-ext {
-    configuration = [
-            compileSdkVersion: 31,
-            minSdkVersion    : 23,
-            targetSdkVersion : 31,
-    ]
-
-    appCompat = '1.4.0'
-    coreKtx = '1.7.0'
-    activity = '1.4.0'
-    room = '2.4.0'
-    okHttp = '4.9.1'
-    retrofit = '2.9.0'
-    gson = '2.8.6'
-    recyclerView = '1.2.1'
-    barcode = '17.0.1'
-    cameraX = '1.1.0-alpha11'
-    cameraXview = '1.0.0-alpha31'
-}
-
 buildscript {
-    ext.kotlin_version = '1.5.31'
-    ext.ksp_version = '1.5.31-1.0.0'
-
     repositories {
         google()
         mavenCentral()
@@ -29,7 +6,7 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:7.0.4'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.31'
     }
 }
 

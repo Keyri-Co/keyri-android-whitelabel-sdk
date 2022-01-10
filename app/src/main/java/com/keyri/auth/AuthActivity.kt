@@ -182,7 +182,7 @@ class AuthActivity : AppCompatActivity() {
 
         imageAnalyzer = ImageAnalysis.Builder()
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-            .setTargetResolution(Size(480, 480))
+            .setTargetResolution(Size(320, 320))
             .setTargetRotation(rotation)
             .build()
 
