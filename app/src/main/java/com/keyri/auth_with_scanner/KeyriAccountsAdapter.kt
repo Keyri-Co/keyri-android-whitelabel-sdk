@@ -1,4 +1,4 @@
-package com.example.keyrisdk.ui.choose_account
+package com.keyri.auth_with_scanner
 
 import android.view.LayoutInflater
 import android.view.View
@@ -8,11 +8,11 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.keyrisdk.R
 import com.example.keyrisdk.entity.PublicAccount
+import com.keyri.R
 
-class KeyriQrAccountsAdapter(private val onItemSelected: (PublicAccount) -> Unit) :
-    ListAdapter<PublicAccount, KeyriQrAccountsAdapter.AccountViewHolder>(DIFF_CALLBACK) {
+class KeyriAccountsAdapter(private val onItemSelected: (PublicAccount) -> Unit) :
+    ListAdapter<PublicAccount, KeyriAccountsAdapter.AccountViewHolder>(DIFF_CALLBACK) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AccountViewHolder {
         val itemView =

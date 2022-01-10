@@ -6,21 +6,21 @@
     <uses-permission android:name="android.permission.CAMERA" />
 
     <application
-        android:name=".KeyriApp"
-        android:allowBackup="true"
+        android:name="com.keyri.App"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        tools:ignore="LockedOrientationActivity">
 
         <activity
             android:name=".auth.AuthActivity"
             android:exported="true"
             android:launchMode="singleTask"
-            android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity">
+            android:screenOrientation="portrait">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -37,27 +37,26 @@
                 <data android:scheme="https" />
 
                 <data android:host="dev-api.keyri.co" />
-                <!--                TODO Uncomment after adding json with this host -->
-                <!--                <data android:host="www.keyri.co" />-->
 
                 <data android:pathPrefix="/application" />
             </intent-filter>
         </activity>
 
         <activity
-            android:name=".HomeActivity"
-            android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity" />
+            android:name=".auth_with_scanner.AuthWithScannerActivity"
+            android:screenOrientation="fullSensor" />
+
+        <activity
+            android:name=".home.HomeActivity"
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".accounts.AccountsActivity"
-            android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity" />
+            android:screenOrientation="portrait" />
 
         <activity
             android:name=".accounts.NewAccountActivity"
-            android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity" />
+            android:screenOrientation="portrait" />
 
     </application>
 

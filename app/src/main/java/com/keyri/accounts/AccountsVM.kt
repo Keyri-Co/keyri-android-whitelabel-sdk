@@ -16,7 +16,8 @@ import com.keyri.R
 import com.keyri.accounts.AccountsActivity.Companion.EXTRA_MODE
 import kotlinx.coroutines.launch
 
-class AccountsVM(private val app: Application) : AndroidViewModel(app) {
+class AccountsVM(private val app: Application, private val keyriSdk: KeyriSdk) :
+    AndroidViewModel(app) {
 
     private var initialized: Boolean = false
 
@@ -50,7 +51,7 @@ class AccountsVM(private val app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             loadingLD.value = true
             try {
-                accountsLD.value = KeyriSdk.accounts()
+                accountsLD.value = keyriSdk.accounts()
             } catch (e: Throwable) {
                 Log.d("Keyri", "Failed to load accounts $e")
                 if (e is KeyriSdkException) {
@@ -70,7 +71,7 @@ class AccountsVM(private val app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             loadingLD.value = true
             try {
-                authenticatedLD.value = KeyriSdk.mobileLogin(account, CUSTOM_HEADERS)
+                authenticatedLD.value = keyriSdk.mobileLogin(account, CUSTOM_HEADERS)
             } catch (e: Throwable) {
                 Log.d("Keyri", "Mobile login exception $e")
                 if (e is KeyriSdkException) {

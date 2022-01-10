@@ -13,7 +13,7 @@ import com.example.keyrisdk.utils.LiveEvent
 import com.keyri.R
 import kotlinx.coroutines.launch
 
-class AuthVM(private val app: Application) : AndroidViewModel(app) {
+class AuthVM(private val app: Application, private val keyriSdk: KeyriSdk) : AndroidViewModel(app) {
 
     private val loadingLD = MutableLiveData<Boolean>()
     private val messageLD = LiveEvent<String>()
@@ -29,9 +29,9 @@ class AuthVM(private val app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             loadingLD.value = true
             try {
-                val session = KeyriSdk.onReadSessionId(sessionId)
+                val session = keyriSdk.onReadSessionId(sessionId)
                 if (session.isNewUser) {
-                    KeyriSdk.signup(
+                    keyriSdk.signup(
                         session.username,
                         sessionId,
                         session.service,
@@ -39,8 +39,8 @@ class AuthVM(private val app: Application) : AndroidViewModel(app) {
                     )
                 } else {
                     val account =
-                        KeyriSdk.accounts().firstOrNull() ?: throw AccountNotFoundException
-                    KeyriSdk.login(account, sessionId, session.service, CUSTOM_DATA_LOGIN)
+                        keyriSdk.accounts().firstOrNull() ?: throw AccountNotFoundException
+                    keyriSdk.login(account, sessionId, session.service, CUSTOM_DATA_LOGIN)
                 }
                 authenticatedLD.value = true
             } catch (e: Throwable) {

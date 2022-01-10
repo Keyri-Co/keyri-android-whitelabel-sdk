@@ -21,11 +21,17 @@ class SessionService(
     /**
      * Function for user session verification.
      *
+     * @isNewUser represents is it signup or login.
      * @userId user id to verify.
      * @sessionId id of the session to verify.
      * @custom custom argument.
      */
-    suspend fun verifyUserSession(userId: String, sessionId: String, custom: String?) {
+    suspend fun verifyUserSession(
+        isNewUser: Boolean,
+        userId: String,
+        sessionId: String,
+        custom: String?
+    ) {
         val sessionKey = Utils.getRandomString(32)
         sessions[sessionKey] = userId
 
@@ -48,7 +54,7 @@ class SessionService(
             val message = Gson().toJson(verificationDto)
 
             val encryptedMessage = cryptoService.encryptAes(message)
-            val publicKeyForVerification = cryptoService.getPublicKey()
+            val publicKeyForVerification = if (isNewUser) cryptoService.getPublicKey() else null
             val initializationVector = cryptoService.getIV()
             val confirmationMessage =
                 VerifyApproveMessage(

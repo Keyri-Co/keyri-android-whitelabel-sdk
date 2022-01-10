@@ -6,10 +6,16 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <RelativeLayout
-        android:id="@+id/rlRoot"
+    <com.example.keyrisdk.view.KeyriScannerView
+        android:id="@+id/vKeyriScanner"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent" />
+
+    <RelativeLayout
+        android:id="@+id/rlChooseAccount"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
 
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/tvChooseAccount"
@@ -52,9 +58,5 @@
             tools:listitem="@layout/item_choose_account" />
 
     </RelativeLayout>
-
-    <include
-        android:id="@+id/flProgress"
-        layout="@layout/keyri_layout_progress" />
 
 </LinearLayout>

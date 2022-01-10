@@ -12,5 +12,4 @@
     <string name="account_label">Your accounts</string>
     <string name="no_accounts_label">You don\'t have accounts</string>
     <string name="username_label">Username</string>
-    <string name="not_authenticated">Authentication has failed or cancelled</string>
 </resources>

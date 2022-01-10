@@ -15,7 +15,6 @@ import android.util.Size
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
@@ -26,23 +25,23 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.view.isGone
 import androidx.lifecycle.Observer
-import com.example.keyrisdk.KeyriSdk
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
-import com.keyri.HomeActivity
-import com.keyri.R
+import com.keyri.home.HomeActivity
 import com.keyri.accounts.AccountsActivity
 import com.keyri.accounts.AccountsMode
 import com.keyri.accounts.NewAccountActivity
+import com.keyri.auth_with_scanner.AuthWithScannerActivity
 import com.keyri.databinding.ActivityAuthBinding
+import org.koin.android.viewmodel.ext.android.viewModel
 import java.util.concurrent.Executors
 import kotlin.math.abs
 
 class AuthActivity : AppCompatActivity() {
 
-    private val viewModel by viewModels<AuthVM>()
+    private val viewModel by viewModel<AuthVM>()
 
     private val displayManager by lazy { getSystemService(Context.DISPLAY_SERVICE) as DisplayManager }
     private val cameraExecutor by lazy { Executors.newSingleThreadExecutor() }
@@ -126,14 +125,7 @@ class AuthActivity : AppCompatActivity() {
     private fun initializeUi() {
         with(binding) {
             btAuthQr.setOnClickListener {
-                KeyriSdk.authWithScanner(
-                    this@AuthActivity, CUSTOM,
-                    KeyriSdk.QrAuthCallbacks({
-                        HomeActivity.openHomeActivity(this@AuthActivity)
-                    }, {
-                        onMessage(getString(R.string.not_authenticated))
-                    })
-                )
+                AuthWithScannerActivity.openAuthWithScannerActivity(this@AuthActivity, CUSTOM)
             }
             btSignup.setOnClickListener { openScanner() }
             btLogin.setOnClickListener { openScanner() }
@@ -190,7 +182,7 @@ class AuthActivity : AppCompatActivity() {
 
         imageAnalyzer = ImageAnalysis.Builder()
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-            .setTargetResolution(Size(480, 480))
+            .setTargetResolution(Size(320, 320))
             .setTargetRotation(rotation)
             .build()
 

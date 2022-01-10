@@ -1,24 +1,20 @@
 package com.example.keyrisdk
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import com.example.keyrisdk.entity.PublicAccount
 import com.example.keyrisdk.entity.Service
 import com.example.keyrisdk.entity.Session
 import com.example.keyrisdk.exception.*
 import com.example.keyrisdk.services.api.AuthMobileResponse
 import com.example.keyrisdk.services.api.InitRequest
-import com.example.keyrisdk.ui.scanner.KeyriQrScannerActivity
-import com.example.keyrisdk.ui.scanner.KeyriQrScannerActivity.Companion.ARG_CUSTOM
 import com.example.keyrisdk.utils.Utils
 import com.example.keyrisdk.utils.makeApiCall
 
 /**
  * Keyri SDK public API
  */
-class KeyriSdk(private val context: Context, private val config: KeyriConfig) {
+class KeyriSdk(context: Context, private val config: KeyriConfig) {
 
     private var service: Service? = null
     private val keyriSdkModule = KeyriSdkModule(context)
@@ -43,7 +39,8 @@ class KeyriSdk(private val context: Context, private val config: KeyriConfig) {
 
         assertPermissionGranted(KeyriPermission.SESSION)
 
-        val session = makeApiCall { keyriSdkModule.getApiService().getSession(sessionId) }.body()
+        val session =
+            makeApiCall { keyriSdkModule.provideApiService().getSession(sessionId) }.body()
         if (session?.service?.serviceId != service.serviceId) throw WrongConfigException
         return session
     }
@@ -52,8 +49,8 @@ class KeyriSdk(private val context: Context, private val config: KeyriConfig) {
     suspend fun signup(username: String, sessionId: String, service: Service, custom: String?) {
         assertPermissionGranted(KeyriPermission.SIGNUP)
 
-        keyriSdkGraph
-            .getUserService()
+        keyriSdkModule
+            .provideUserService()
             .signup(
                 username,
                 sessionId,
@@ -74,13 +71,13 @@ class KeyriSdk(private val context: Context, private val config: KeyriConfig) {
 
         assertPermissionGranted(KeyriPermission.LOGIN)
 
-        val acc = keyriSdkGraph
-            .getStorageService()
+        val acc = keyriSdkModule
+            .provideStorageService()
             .getAccounts(service.serviceId)
             .firstOrNull { it.username == account.username } ?: throw AccountNotFoundException
 
-        keyriSdkGraph
-            .getUserService()
+        keyriSdkModule
+            .provideUserService()
             .login(sessionId, acc, custom)
     }
 
@@ -100,8 +97,8 @@ class KeyriSdk(private val context: Context, private val config: KeyriConfig) {
 
         assertPermissionGranted(KeyriPermission.MOBILE_SIGNUP)
 
-        return keyriSdkGraph
-            .getUserService()
+        return keyriSdkModule
+            .provideUserService()
             .signupMobile(
                 username,
                 service,
@@ -126,8 +123,8 @@ class KeyriSdk(private val context: Context, private val config: KeyriConfig) {
 
         assertPermissionGranted(KeyriPermission.MOBILE_LOGIN)
 
-        return keyriSdkGraph
-            .getUserService()
+        return keyriSdkModule
+            .provideUserService()
             .loginMobile(account, service, extendedHeaders, config.callbackUrl)
             ?: throw AuthorizationException
     }
@@ -139,8 +136,8 @@ class KeyriSdk(private val context: Context, private val config: KeyriConfig) {
 
         assertPermissionGranted(KeyriPermission.ACCOUNTS)
 
-        return keyriSdkGraph
-            .getStorageService()
+        return keyriSdkModule
+            .provideStorageService()
             .getAccounts(service.serviceId)
             .map { PublicAccount(it.username, it.custom) }
     }
@@ -152,8 +149,8 @@ class KeyriSdk(private val context: Context, private val config: KeyriConfig) {
 
         assertPermissionGranted(KeyriPermission.ACCOUNTS)
 
-        keyriSdkGraph
-            .getStorageService()
+        keyriSdkModule
+            .provideStorageService()
             .removeAccount(service.serviceId, account)
     }
 
@@ -161,26 +158,26 @@ class KeyriSdk(private val context: Context, private val config: KeyriConfig) {
     private suspend fun loadServiceIfNeeded() {
         if (service != null) return
         val deviceId =
-            keyriSdkGraph.getStorageService().getDeviceId() ?: throw IllegalStateException()
+            keyriSdkModule.provideStorageService().getDeviceId() ?: throw IllegalStateException()
 
         val request = InitRequest(deviceId, config.appKey)
-        val response = makeApiCall { keyriSdkGraph.getApiService().init(request) }.body()
+        val response = makeApiCall { keyriSdkModule.provideApiService().init(request) }.body()
         service = response?.service
     }
 
     private fun initKeys() {
-        keyriSdkGraph.getCryptoService().generateSecretKey(config.publicKey)
+        keyriSdkModule.provideCryptoService().generateSecretKey(config.publicKey)
     }
 
     private fun generateDeviceIdIfNeeded() {
-        if (keyriSdkGraph.getStorageService().getDeviceId() == null) {
-            keyriSdkGraph.getStorageService().setDeviceId(Utils.getRandomString(32))
+        if (keyriSdkModule.provideStorageService().getDeviceId() == null) {
+            keyriSdkModule.provideStorageService().setDeviceId(Utils.getRandomString(32))
         }
     }
 
     @SuppressLint("DefaultLocale")
     @Throws(PermissionsException::class)
-    private suspend fun assertPermissionGranted(permission: KeyriPermission) {
+    private fun assertPermissionGranted(permission: KeyriPermission) {
         /*val serviceId = service?.serviceId ?: throw IllegalStateException()
 
         val permissionName = permission.id
@@ -195,29 +192,4 @@ class KeyriSdk(private val context: Context, private val config: KeyriConfig) {
         }
         if (!granted) throw PermissionsException*/
     }
-
-    fun authWithScanner(activity: Activity, custom: String?, callbacks: QrAuthCallbacks) {
-        if (qrAuthCallbacks != null) return
-        qrAuthCallbacks = callbacks
-
-        val intent = Intent(activity, KeyriQrScannerActivity::class.java)
-            .putExtra(ARG_CUSTOM, custom)
-        activity.startActivity(intent)
-    }
-
-    internal fun completeAuthWithScanner(isFailed: Boolean) {
-        if (isFailed) {
-            qrAuthCallbacks?.onFailed?.invoke()
-        } else {
-            qrAuthCallbacks?.onCompleted?.invoke()
-        }
-        qrAuthCallbacks = null
-    }
-
-    class QrAuthCallbacks(
-        val onCompleted: () -> Unit,
-        val onFailed: () -> Unit
-    )
-
-    private var qrAuthCallbacks: QrAuthCallbacks? = null
 }

@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.room.Room
 import com.example.keyrisdk.db.AppDb
-import com.example.keyrisdk.db.UserDao
 import com.example.keyrisdk.services.*
 import com.example.keyrisdk.services.api.ApiService
 import com.example.keyrisdk.services.crypto.CryptoService
@@ -14,21 +13,10 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
-import javax.inject.Singleton
 
 class KeyriSdkModule(private val context: Context) {
 
-    init {
-        createDependencies()
-    }
-
-    private fun createDependencies() {
-        val apiService = provideApiService()
-
-    }
-
-    @Singleton
-    private fun provideApiService(): ApiService {
+    fun provideApiService(): ApiService {
         val okHttpClientBuilder = OkHttpClient.Builder()
 
         okHttpClientBuilder.connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
@@ -50,36 +38,28 @@ class KeyriSdkModule(private val context: Context) {
             .create(ApiService::class.java)
     }
 
-    @Singleton
+    fun provideStorageService() =
+        StorageService(getSharedPreferences(), provideUserDao(), provideCryptoService())
+
+    fun provideUserService() = UserService(
+        provideStorageService(),
+        provideSessionService(),
+        provideApiService(),
+        provideCryptoService()
+    )
+
+    fun provideCryptoService() = CryptoService(getSharedPreferences())
+
     private fun provideAppDb(): AppDb =
         Room.databaseBuilder(context, AppDb::class.java, DB_NAME).build()
 
-    @Singleton
-    private fun provideUserDao(db: AppDb) = db.userDao()
+    private fun provideUserDao() = provideAppDb().userDao()
 
-    private fun provideCryptoService(preferences: SharedPreferences) = CryptoService(preferences)
-
-    private fun provideStorageService(
-        preferences: SharedPreferences,
-        userDao: UserDao,
-        cryptoService: CryptoService
-    ) = StorageService(preferences, userDao, cryptoService)
-
-    private fun provideSessionService(
-        socketService: SocketService,
-        cryptoService: CryptoService
-    ) = SessionService(socketService, cryptoService)
-
-    private fun provideUserService(
-        storageService: StorageService,
-        sessionService: SessionService,
-        apiService: ApiService,
-        cryptoService: CryptoService
-    ) = UserService(storageService, sessionService, apiService, cryptoService)
+    private fun provideSessionService() =
+        SessionService(provideSocketService(), provideCryptoService())
 
     private fun provideSocketService() = SocketService(BuildConfig.WS_URL)
 
-    @Singleton
     private fun getSharedPreferences(): SharedPreferences =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
