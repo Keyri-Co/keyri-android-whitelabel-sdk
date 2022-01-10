@@ -49,6 +49,9 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
+/**
+ * Custom Scanner View which encapsulates the authorization of the desktop user agent.
+ */
 class KeyriScannerView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
@@ -102,6 +105,11 @@ class KeyriScannerView @JvmOverloads constructor(
     private var autoFocusEnabled = true
     private var flashEnabled = false
 
+    /**
+     * Call [initView] to initialize View.
+     *
+     * @keyriScannerViewParams parameters for initialization.
+     */
     fun initView(keyriScannerViewParams: KeyriScannerViewParams) {
         this.keyriScannerViewParams = keyriScannerViewParams
 
@@ -109,6 +117,13 @@ class KeyriScannerView @JvmOverloads constructor(
         initButtons()
     }
 
+    /**
+     * Call [continueAuth] to continue authorization process after selecting account.
+     *
+     * @publicAccount selected account.
+     * @sessionId sessionId from @onChooseAccount callback.
+     * @service service from @onChooseAccount callback.
+     */
     fun continueAuth(publicAccount: PublicAccount, sessionId: String, service: Service) {
         launch {
             isLoading = true

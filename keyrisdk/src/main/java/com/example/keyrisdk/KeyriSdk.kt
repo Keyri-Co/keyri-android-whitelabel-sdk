@@ -12,7 +12,7 @@ import com.example.keyrisdk.utils.Utils
 import com.example.keyrisdk.utils.makeApiCall
 
 /**
- * Keyri SDK public API
+ * Keyri SDK public API.
  */
 class KeyriSdk(context: Context, private val config: KeyriConfig) {
 
@@ -45,6 +45,16 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
         return session
     }
 
+    /**
+     * Create new user for Desktop agent. If @allowMultipleAccounts is false,
+     * throws MultipleAccountsNotAllowedException exception.
+     * Must be called after [onReadSessionId], if @isNewUser is true.
+     *
+     * @username for new user.
+     * @sessionId scanned sessionId.
+     * @service obtained Session from [onReadSessionId].
+     * @custom custom argument.
+     */
     @Throws(NotInitializedException::class, MultipleAccountsNotAllowedException::class)
     suspend fun signup(username: String, sessionId: String, service: Service, custom: String?) {
         assertPermissionGranted(KeyriPermission.SIGNUP)
@@ -60,6 +70,15 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
             )
     }
 
+    /**
+     * Login user for Desktop agent.
+     * Must be called after [onReadSessionId], if @isNewUser is false.
+     *
+     * @account pass created earlier publicAccount.
+     * @sessionId scanned sessionId.
+     * @service obtained Session from [onReadSessionId].
+     * @custom custom argument.
+     */
     @Throws(AccountNotFoundException::class, NotInitializedException::class)
     suspend fun login(
         account: PublicAccount,
@@ -81,6 +100,14 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
             .login(sessionId, acc, custom)
     }
 
+    /**
+     * Create new user on mobile device. If @allowMultipleAccounts is false,
+     * throws MultipleAccountsNotAllowedException exception.
+     *
+     * @username for new user.
+     * @custom custom argument.
+     * @extendedHeaders custom headers.
+     */
     @Throws(
         IllegalStateException::class,
         NotInitializedException::class,
@@ -109,6 +136,12 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
             ) ?: throw AuthorizationException
     }
 
+    /**
+     * Login user on mobile device.
+     *
+     * @account pass created earlier publicAccount.
+     * @extendedHeaders custom headers.
+     */
     @Throws(
         IllegalStateException::class,
         NotInitializedException::class,
@@ -129,6 +162,9 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
             ?: throw AuthorizationException
     }
 
+    /**
+     * Retrieves all public accounts on device.
+     */
     @Throws(IllegalStateException::class, NotInitializedException::class)
     suspend fun accounts(): List<PublicAccount> {
         loadServiceIfNeeded()
@@ -142,6 +178,11 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
             .map { PublicAccount(it.username, it.custom) }
     }
 
+    /**
+     * Remove public account from database.
+     *
+     * @account public account to remove.
+     */
     @Throws(IllegalStateException::class, NotInitializedException::class)
     suspend fun removeAccount(account: PublicAccount) {
         loadServiceIfNeeded()
