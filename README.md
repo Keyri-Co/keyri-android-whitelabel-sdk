@@ -2,7 +2,6 @@
 
 This repository contains the open source code for [Keyri](https://keyri.co) Android SDK.
 
-![Release](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/workflows/Release/badge.svg)
 [![GitHub release](https://img.shields.io/github/release/Keyri-Co/keyri-android-whitelabel-sdk.svg?maxAge=60)](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/releases)
 
 ![demo](images/demo.gif)
