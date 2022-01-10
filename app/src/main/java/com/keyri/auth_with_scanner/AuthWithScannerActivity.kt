@@ -4,9 +4,9 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
-import com.example.keyrisdk.KeyriSdk
-import com.example.keyrisdk.entity.PublicAccount
-import com.example.keyrisdk.view.KeyriScannerViewParams
+import com.keyrico.keyrisdk.KeyriSdk
+import com.keyrico.keyrisdk.entity.PublicAccount
+import com.keyrico.keyrisdk.view.KeyriScannerViewParams
 import com.keyri.databinding.ActivityAuthWithScannerBinding
 import com.keyri.home.HomeActivity
 import org.koin.android.ext.android.inject
