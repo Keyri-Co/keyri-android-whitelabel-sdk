@@ -2,9 +2,9 @@ name: Instrumented Tests
 
 on:
   push:
-    branches: [ master, develop ]
+    branches: [ master ]
   pull_request:
-    branches: [ master, develop ]
+    branches: [ master ]
 
 jobs:
   instrumentation-test:
@@ -15,7 +15,11 @@ jobs:
       - name: test
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 28
+          api-level: 29
           script: ./gradlew connectedCheck
       - name: upload-artifacts
         uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: test-report
+          path: ${{ github.workspace }}/*/build/reports/

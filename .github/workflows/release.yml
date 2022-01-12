@@ -1,4 +1,4 @@
-name: Publish to the Maven Central Repository
+name: Release
 
 on:
   release:
