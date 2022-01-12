@@ -28,6 +28,10 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
+import com.google.mlkit.vision.barcode.BarcodeScannerOptions
+import com.google.mlkit.vision.barcode.BarcodeScanning
+import com.google.mlkit.vision.barcode.common.Barcode
+import com.google.mlkit.vision.common.InputImage
 import com.keyrico.keyrisdk.R
 import com.keyrico.keyrisdk.databinding.LayoutKeyriScannerViewBinding
 import com.keyrico.keyrisdk.entity.PublicAccount
@@ -37,10 +41,6 @@ import com.keyrico.keyrisdk.exception.AuthorizationException
 import com.keyrico.keyrisdk.exception.CameraPermissionNotGrantedException
 import com.keyrico.keyrisdk.exception.KeyriSdkException
 import com.keyrico.keyrisdk.exception.MultipleAccountsNotAllowedException
-import com.google.mlkit.vision.barcode.BarcodeScannerOptions
-import com.google.mlkit.vision.barcode.BarcodeScanning
-import com.google.mlkit.vision.barcode.common.Barcode
-import com.google.mlkit.vision.common.InputImage
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -275,7 +275,7 @@ class KeyriScannerView @JvmOverloads constructor(
                                         autoFocusPoint,
                                         FocusMeteringAction.FLAG_AF
                                     ).apply {
-                                        //focus only when the user tap the preview
+                                        // focus only when the user tap the preview
                                         disableAutoCancel()
                                     }.build()
                                 )
@@ -295,7 +295,7 @@ class KeyriScannerView @JvmOverloads constructor(
                     val autoFocusAction =
                         FocusMeteringAction.Builder(autoFocusPoint, FocusMeteringAction.FLAG_AF)
                             .apply {
-                                //start auto-focusing after 2 seconds
+                                // start auto-focusing after 2 seconds
                                 setAutoCancelDuration(2, TimeUnit.SECONDS)
                             }.build()
 

@@ -1,16 +1,16 @@
 package com.keyri.accounts
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.keyrico.keyrisdk.entity.PublicAccount
-import com.keyri.home.HomeActivity
 import com.keyri.R
 import com.keyri.databinding.ActivityAccountsBinding
+import com.keyri.home.HomeActivity
+import com.keyrico.keyrisdk.entity.PublicAccount
 import org.koin.android.viewmodel.ext.android.viewModel
 
 class AccountsActivity : AppCompatActivity() {

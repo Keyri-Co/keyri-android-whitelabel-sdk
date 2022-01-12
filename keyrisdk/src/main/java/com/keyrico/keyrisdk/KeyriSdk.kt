@@ -5,16 +5,16 @@ import android.content.Context
 import com.keyrico.keyrisdk.entity.PublicAccount
 import com.keyrico.keyrisdk.entity.Service
 import com.keyrico.keyrisdk.entity.Session
-import com.keyrico.keyrisdk.services.api.AuthMobileResponse
-import com.keyrico.keyrisdk.services.api.InitRequest
-import com.keyrico.keyrisdk.utils.Utils
-import com.keyrico.keyrisdk.utils.makeApiCall
 import com.keyrico.keyrisdk.exception.AccountNotFoundException
 import com.keyrico.keyrisdk.exception.AuthorizationException
 import com.keyrico.keyrisdk.exception.MultipleAccountsNotAllowedException
 import com.keyrico.keyrisdk.exception.NotInitializedException
 import com.keyrico.keyrisdk.exception.PermissionsException
 import com.keyrico.keyrisdk.exception.WrongConfigException
+import com.keyrico.keyrisdk.services.api.AuthMobileResponse
+import com.keyrico.keyrisdk.services.api.InitRequest
+import com.keyrico.keyrisdk.utils.Utils
+import com.keyrico.keyrisdk.utils.makeApiCall
 
 /**
  * Keyri SDK public API.

@@ -6,11 +6,11 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.keyri.R
 import com.keyrico.keyrisdk.KeyriSdk
 import com.keyrico.keyrisdk.exception.AccountNotFoundException
 import com.keyrico.keyrisdk.exception.KeyriSdkException
 import com.keyrico.keyrisdk.utils.LiveEvent
-import com.keyri.R
 import kotlinx.coroutines.launch
 
 class AuthVM(private val app: Application, private val keyriSdk: KeyriSdk) : AndroidViewModel(app) {

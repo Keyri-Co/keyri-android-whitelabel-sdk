@@ -8,8 +8,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.keyrico.keyrisdk.entity.PublicAccount
 import com.keyri.R
+import com.keyrico.keyrisdk.entity.PublicAccount
 
 class KeyriAccountsAdapter(private val onItemSelected: (PublicAccount) -> Unit) :
     ListAdapter<PublicAccount, KeyriAccountsAdapter.AccountViewHolder>(DIFF_CALLBACK) {
