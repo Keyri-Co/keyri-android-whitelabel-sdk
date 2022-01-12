@@ -11,6 +11,8 @@ android {
         versionCode 1
         versionName "1.0"
 
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
 //        buildConfigField "String", "APP_KEY", "\"qUQ9DX176JT9JdQwK7N2XhRJ35GfJLzv\""
 //        buildConfigField "String", "PUBLIC_KEY", "\"00uVMpjv0sxLPMovInfRCB5kSX3WPKpx9RKNe3HFnTE=\""
 //        buildConfigField "String", "KEYRI_CALLBACK_URL", "\"http://18.234.222.59:5000/users/session-mobile\""
@@ -64,4 +66,9 @@ dependencies {
     // Koin
     implementation 'io.insert-koin:koin-android:2.2.3'
     implementation 'io.insert-koin:koin-android-viewmodel:2.2.3'
+
+    // Testing
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 }
