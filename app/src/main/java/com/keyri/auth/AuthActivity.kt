@@ -252,7 +252,11 @@ class AuthActivity : AppCompatActivity() {
 
         try {
             // Try to parse link and process it
-            processLink(scannedData.toUri())
+            viewModel.linkPrefix().value?.let { linkPrefix ->
+                scannedData.takeIf { it.contains(linkPrefix) }?.let {
+                    processLink(it.toUri())
+                }
+            }
         } catch (e: java.lang.Exception) {
             Log.d("Keyri", "Not valid link: $scannedData")
         }

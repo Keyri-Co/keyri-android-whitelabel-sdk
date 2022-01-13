@@ -200,6 +200,17 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
             .removeAccount(service.serviceId, account)
     }
 
+    /**
+     * Retrieves prefix for deep links.
+     *
+     * Call this before scanning the QR code.
+     */
+    suspend fun getLinkPrefix(): String? {
+        return makeApiCall {
+            keyriSdkModule.provideApiService().getDeepLinksPrefix(config.appKey)
+        }.body()?.androidPrefix
+    }
+
     @Throws(IllegalStateException::class)
     private suspend fun loadServiceIfNeeded() {
         if (service != null) return

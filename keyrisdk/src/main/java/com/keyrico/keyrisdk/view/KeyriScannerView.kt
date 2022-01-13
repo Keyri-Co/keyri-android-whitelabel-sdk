@@ -105,6 +105,8 @@ class KeyriScannerView @JvmOverloads constructor(
     private var autoFocusEnabled = true
     private var flashEnabled = false
 
+    private var linkPrefix: String? = null
+
     /**
      * Call [initView] to initialize View.
      *
@@ -113,6 +115,7 @@ class KeyriScannerView @JvmOverloads constructor(
     fun initView(keyriScannerViewParams: KeyriScannerViewParams) {
         this.keyriScannerViewParams = keyriScannerViewParams
 
+        initApplicationId()
         openScanner()
         initButtons()
     }
@@ -137,13 +140,16 @@ class KeyriScannerView @JvmOverloads constructor(
 
         try {
             // Try to parse link and process it
-            scannedData.toUri()
-                .getQueryParameters("sessionId")
-                ?.firstOrNull()
-                ?.let { sessionId ->
-                    cameraProvider?.unbindAll()
-                    authenticate(sessionId)
-                }
+            linkPrefix?.let { prefix ->
+                scannedData.takeIf { it.contains(prefix) }
+                    ?.toUri()
+                    ?.getQueryParameters("sessionId")
+                    ?.firstOrNull()
+                    ?.let { sessionId ->
+                        cameraProvider?.unbindAll()
+                        authenticate(sessionId)
+                    }
+            }
         } catch (e: Exception) {
             Log.d("Keyri", "Not valid link: $scannedData")
         }
@@ -243,6 +249,14 @@ class KeyriScannerView @JvmOverloads constructor(
                 onError(MultipleAccountsNotAllowedException)
             }
             .show()
+    }
+
+    private fun initApplicationId() {
+        launch {
+            keyriScannerViewParams?.keyriSdk?.getLinkPrefix()?.let { prefix ->
+                linkPrefix = prefix
+            }
+        }
     }
 
     private fun openScanner() {

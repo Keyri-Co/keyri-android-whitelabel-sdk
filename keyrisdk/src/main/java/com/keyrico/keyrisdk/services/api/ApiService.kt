@@ -45,4 +45,10 @@ interface ApiService {
         @Path("serviceId") serviceId: String,
         @Query("queryPermissions[]") permissions: List<String>
     ): Response<PermissionsResponse>
+
+    /**
+     * @GET Method for retrieving deep links prefix
+     */
+    @GET("application/deep-link")
+    suspend fun getDeepLinksPrefix(@Query("appKey") appKey: String): Response<PrefixesResponse>
 }
