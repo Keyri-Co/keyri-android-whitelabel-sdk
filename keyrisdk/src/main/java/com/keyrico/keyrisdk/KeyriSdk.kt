@@ -202,8 +202,6 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
 
     /**
      * Retrieves prefix for deep links.
-     *
-     * Call this before scanning the QR code.
      */
     suspend fun getLinkPrefix(): String? {
         return makeApiCall {
