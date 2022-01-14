@@ -11,7 +11,6 @@ import com.keyrico.keyrisdk.KeyriSdk
 import com.keyrico.keyrisdk.exception.AccountNotFoundException
 import com.keyrico.keyrisdk.exception.KeyriSdkException
 import com.keyrico.keyrisdk.utils.LiveEvent
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class AuthVM(private val app: Application, private val keyriSdk: KeyriSdk) : AndroidViewModel(app) {
@@ -19,19 +18,12 @@ class AuthVM(private val app: Application, private val keyriSdk: KeyriSdk) : And
     private val loadingLD = MutableLiveData<Boolean>()
     private val messageLD = LiveEvent<String>()
     private val authenticatedLD = LiveEvent<Boolean>()
-    private val linkPrefixLD = LiveEvent<String>()
-
-    init {
-        initLinkPrefix()
-    }
 
     fun loading() = loadingLD as LiveData<Boolean>
 
     fun message() = messageLD as LiveData<String>
 
     fun authenticated() = authenticatedLD as LiveData<Boolean>
-
-    fun linkPrefix() = linkPrefixLD as LiveData<String>
 
     fun authenticate(sessionId: String) {
         viewModelScope.launch {
@@ -60,14 +52,6 @@ class AuthVM(private val app: Application, private val keyriSdk: KeyriSdk) : And
                 }
             }
             loadingLD.value = false
-        }
-    }
-
-    private fun initLinkPrefix() {
-        viewModelScope.launch(Dispatchers.IO) {
-            val linkPrefix = keyriSdk.getLinkPrefix()
-
-            linkPrefixLD.postValue(linkPrefix)
         }
     }
 
