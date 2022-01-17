@@ -39,6 +39,7 @@ import com.keyrico.keyrisdk.entity.Service
 import com.keyrico.keyrisdk.exception.AccountNotFoundException
 import com.keyrico.keyrisdk.exception.AuthorizationException
 import com.keyrico.keyrisdk.exception.CameraPermissionNotGrantedException
+import com.keyrico.keyrisdk.exception.KeyriScannerViewInitializationException
 import com.keyrico.keyrisdk.exception.KeyriSdkException
 import com.keyrico.keyrisdk.exception.MultipleAccountsNotAllowedException
 import kotlinx.coroutines.CoroutineDispatcher
@@ -110,7 +111,12 @@ class KeyriScannerView @JvmOverloads constructor(
      *
      * @keyriScannerViewParams parameters for initialization.
      */
+    @Throws(KeyriScannerViewInitializationException::class)
     fun initView(keyriScannerViewParams: KeyriScannerViewParams) {
+        if (keyriScannerViewParams.keyriSdk.allowMultipleAccounts && keyriScannerViewParams.onChooseAccount == null) {
+            throw KeyriScannerViewInitializationException
+        }
+
         this.keyriScannerViewParams = keyriScannerViewParams
 
         openScanner()
@@ -186,7 +192,7 @@ class KeyriScannerView @JvmOverloads constructor(
                         }
                         else -> {
                             withContext(Dispatchers.Main) {
-                                params.onChooseAccount(accounts, sessionId, session.service)
+                                params.onChooseAccount?.invoke(accounts, sessionId, session.service)
                             }
                             return@launch
                         }

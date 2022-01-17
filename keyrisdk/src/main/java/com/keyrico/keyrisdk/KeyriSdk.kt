@@ -23,6 +23,8 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
 
     private var service: Service? = null
     private val keyriSdkModule = KeyriSdkModule(context)
+    internal val allowMultipleAccounts: Boolean
+        get() = config.allowMultipleAccounts
 
     init {
         initKeys()
