@@ -57,10 +57,10 @@ allprojects {
 dependencies {
     // ...
     // SDK with https://api.keyri.co base url (release snapshot):
-    implementation 'com.github.Keyri-Co.keyri-android-whitelabel-sdk:keyrisdk:0.9.8'
+    implementation 'com.github.Keyri-Co.keyri-android-whitelabel-sdk:keyrisdk:0.9.9'
 
     // Or if you want to use debug SDK snapshot with https://dev-api.keyri.co base url:
-    // implementation 'com.github.Keyri-Co.keyri-android-whitelabel-sdk:keyrisdk-debug:0.9.8'
+    // implementation 'com.github.Keyri-Co.keyri-android-whitelabel-sdk:keyrisdk-debug:0.9.9'
 }
 ```
 
@@ -178,7 +178,7 @@ methods:
 val session = keyriSdk.onReadSessionId(sessionId)
 
 if (session.isNewUser) {
-    KeyriSdk.signup(
+    keyriSdk.signup(
         session.username,
         sessionId,
         session.service,
