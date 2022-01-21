@@ -14,6 +14,7 @@ import android.view.MotionEvent
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.CallSuper
 import androidx.appcompat.app.AlertDialog
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.Camera
@@ -52,7 +53,7 @@ import kotlin.math.abs
 /**
  * Custom Scanner View which encapsulates the authorization of the desktop user agent.
  */
-class KeyriScannerView @JvmOverloads constructor(
+open class KeyriScannerView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
@@ -110,7 +111,8 @@ class KeyriScannerView @JvmOverloads constructor(
      *
      * @keyriScannerViewParams parameters for initialization.
      */
-    fun initView(keyriScannerViewParams: KeyriScannerViewParams) {
+    @CallSuper
+    open fun initView(keyriScannerViewParams: KeyriScannerViewParams) {
         this.keyriScannerViewParams = keyriScannerViewParams
 
         openScanner()
@@ -124,7 +126,8 @@ class KeyriScannerView @JvmOverloads constructor(
      * @sessionId sessionId from @onChooseAccount callback.
      * @service service from @onChooseAccount callback.
      */
-    fun continueAuth(publicAccount: PublicAccount, sessionId: String, service: Service) {
+    @CallSuper
+    open fun continueAuth(publicAccount: PublicAccount, sessionId: String, service: Service) {
         launch {
             isLoading = true
             authAccount(publicAccount, sessionId, service)
