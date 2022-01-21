@@ -29,6 +29,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.whenCreated
 import com.keyrico.keyrisdk.R
 import com.keyrico.keyrisdk.databinding.LayoutKeyriScannerViewBinding
 import com.keyrico.keyrisdk.entity.PublicAccount
@@ -115,8 +116,12 @@ open class KeyriScannerView @JvmOverloads constructor(
     open fun initView(keyriScannerViewParams: KeyriScannerViewParams) {
         this.keyriScannerViewParams = keyriScannerViewParams
 
-        openScanner()
-        initButtons()
+        launch(Dispatchers.Main) {
+            keyriScannerViewParams.activity.lifecycle.whenCreated {
+                openScanner()
+                initButtons()
+            }
+        }
     }
 
     /**
