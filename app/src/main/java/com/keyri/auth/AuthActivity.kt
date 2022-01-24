@@ -36,7 +36,6 @@ import com.keyri.accounts.NewAccountActivity
 import com.keyri.auth_with_scanner.AuthWithScannerActivity
 import com.keyri.databinding.ActivityAuthBinding
 import com.keyri.home.HomeActivity
-import org.koin.android.viewmodel.ext.android.viewModel
 import com.keyrico.keyrisdk.KeyriSdk
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.util.concurrent.Executors

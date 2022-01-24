@@ -12,7 +12,6 @@ import com.keyri.databinding.ActivityAccountsBinding
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import com.keyri.home.HomeActivity
 import com.keyrico.keyrisdk.entity.PublicAccount
-import org.koin.android.viewmodel.ext.android.viewModel
 
 class AccountsActivity : AppCompatActivity() {
 

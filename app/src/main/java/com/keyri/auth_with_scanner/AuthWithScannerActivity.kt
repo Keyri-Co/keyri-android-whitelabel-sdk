@@ -8,10 +8,8 @@ import com.keyri.databinding.ActivityAuthWithScannerBinding
 import com.keyri.home.HomeActivity
 import com.keyrico.keyrisdk.KeyriSdk
 import com.keyrico.keyrisdk.entity.PublicAccount
-import com.keyrico.keyrisdk.view.KeyriScannerViewParams
-import com.keyri.databinding.ActivityAuthWithScannerBinding
-import com.keyri.home.HomeActivity
 import com.keyrico.keyrisdk.ui.KeyriAccountsAdapter
+import com.keyrico.keyrisdk.view.KeyriScannerViewParams
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
