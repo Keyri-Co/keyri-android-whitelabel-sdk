@@ -1,6 +1,6 @@
 # Overview
 
-This repository contains the open source code for [Keyri](https://keyri.co) Android SDK.
+This repository contains the open source code for [Keyri](https://keyri.com) Android SDK.
 
 ![Lint](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/workflows/Lint/badge.svg)
 ![Instrumentation Tests](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/workflows/Instrumented%20Tests/badge.svg)
@@ -270,4 +270,24 @@ here: [https://developer.android.com/training/app-links/verify-site-associations
 
 ## License
 
-In development.
+This library is available under paid and free licenses. See the [LICENSE](LICENSE.txt) file for the
+full license text.
+
+* Details of licensing (pricing, etc) are available
+  at [https://keyri.com/pricing](https://keyri.com/pricing), or you can contact us
+  at [Sales@keyri.com](mailto:Sales@keyri.com).
+
+### Details
+
+What's allowed under the license:
+
+* Free use for any app under the Keyri Developer plan.
+* Any modifications as needed to work in your app
+
+What's not allowed under the license:
+
+* Redistribution under a different license
+* Removing attribution
+* Modifying logos
+* Indemnification: using this free software is ‘at your own risk’, so you can’t sue Keyri, Inc. for
+  problems caused by this library

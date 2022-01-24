@@ -281,7 +281,7 @@ class KeyriScannerView @JvmOverloads constructor(
                                         autoFocusPoint,
                                         FocusMeteringAction.FLAG_AF
                                     ).apply {
-                                        // focus only when the user tap the preview
+                                        // Focus only when the user tap the preview
                                         disableAutoCancel()
                                     }.build()
                                 )
@@ -301,7 +301,7 @@ class KeyriScannerView @JvmOverloads constructor(
                     val autoFocusAction =
                         FocusMeteringAction.Builder(autoFocusPoint, FocusMeteringAction.FLAG_AF)
                             .apply {
-                                // start auto-focusing after 2 seconds
+                                // Start auto-focusing after 2 seconds
                                 setAutoCancelDuration(2, TimeUnit.SECONDS)
                             }.build()
 
