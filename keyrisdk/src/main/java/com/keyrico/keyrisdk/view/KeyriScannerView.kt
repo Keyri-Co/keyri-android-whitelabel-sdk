@@ -77,20 +77,20 @@ class KeyriScannerView @JvmOverloads constructor(
 
     @SuppressLint("UnsafeOptInUsageError")
     private val qrAnalyzer = ImageAnalysis.Analyzer { imageProxy ->
-        imageProxy.image?.let { mediaImage ->
-            val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+        imageProxy.image?.takeIf { !isLoading }?.let { mediaImage ->
+            val image =
+                InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
 
             BarcodeScanning.getClient(options).process(image)
                 .addOnSuccessListener { barcodes ->
                     barcodes.firstOrNull()
                         ?.displayValue
-                        ?.takeIf { !isLoading }
                         ?.let(::processScannedData)
                 }
                 .addOnCompleteListener {
                     imageProxy.close()
                 }
-        }
+        } ?: imageProxy.close()
     }
 
     private var binding: LayoutKeyriScannerViewBinding =
