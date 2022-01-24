@@ -15,9 +15,9 @@ import com.keyrico.keyrisdk.exception.PermissionsException
 import com.keyrico.keyrisdk.exception.WrongConfigException
 import com.keyrico.keyrisdk.services.api.AuthMobileResponse
 import com.keyrico.keyrisdk.services.api.InitRequest
+import com.keyrico.keyrisdk.ui.AuthWithScannerActivity
 import com.keyrico.keyrisdk.utils.Utils
 import com.keyrico.keyrisdk.utils.makeApiCall
-import com.keyrico.keyrisdk.ui.AuthWithScannerActivity
 
 /**
  * Keyri SDK public API.

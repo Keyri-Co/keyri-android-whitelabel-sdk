@@ -19,7 +19,6 @@ class AuthWithScannerActivity : AppCompatActivity() {
 
     private val keyriSdk by inject<KeyriSdk>()
     private val viewModel by viewModel<AuthWithScannerVM>()
-
     private val adapter by lazy { KeyriAccountsAdapter(::onAccountClicked) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
