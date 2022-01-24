@@ -11,6 +11,7 @@ import com.keyri.R
 import com.keyri.databinding.ActivityNewAccountBinding
 import com.keyri.home.HomeActivity
 import org.koin.android.viewmodel.ext.android.viewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class NewAccountActivity : AppCompatActivity() {
 

@@ -65,14 +65,38 @@ class AccountsVM(private val app: Application, private val keyriSdk: KeyriSdk) :
     }
 
     fun processUserAccount(account: PublicAccount) {
-        if (mode == AccountsMode.ACCOUNTS) return
+        when (mode) {
+            AccountsMode.ACCOUNTS -> return
+            AccountsMode.LOGIN -> mobileLogin(account)
+            AccountsMode.REMOVE -> removeAccount(account)
+        }
+    }
 
+    private fun mobileLogin(account: PublicAccount) {
         viewModelScope.launch {
             loadingLD.value = true
             try {
                 authenticatedLD.value = keyriSdk.mobileLogin(account, CUSTOM_HEADERS)
             } catch (e: Throwable) {
                 Log.d("Keyri", "Mobile login exception $e")
+                if (e is KeyriSdkException) {
+                    messageLD.value = app.getString(e.errorMessage)
+                } else {
+                    messageLD.value = app.getString(R.string.error_general)
+                }
+            }
+            loadingLD.value = false
+        }
+    }
+
+    private fun removeAccount(account: PublicAccount) {
+        viewModelScope.launch {
+            loadingLD.value = true
+            try {
+                keyriSdk.removeAccount(account)
+                accountsLD.postValue(keyriSdk.accounts())
+            } catch (e: Throwable) {
+                Log.d("Keyri", "Remove account exception $e")
                 if (e is KeyriSdkException) {
                     messageLD.value = app.getString(e.errorMessage)
                 } else {

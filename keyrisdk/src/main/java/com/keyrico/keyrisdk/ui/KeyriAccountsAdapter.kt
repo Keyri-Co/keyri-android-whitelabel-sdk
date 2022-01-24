@@ -1,4 +1,4 @@
-package com.keyri.auth_with_scanner
+package com.keyrico.keyrisdk.ui
 
 import android.view.LayoutInflater
 import android.view.View
@@ -8,7 +8,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.keyri.R
+import com.keyrico.keyrisdk.R
 import com.keyrico.keyrisdk.entity.PublicAccount
 
 class KeyriAccountsAdapter(private val onItemSelected: (PublicAccount) -> Unit) :

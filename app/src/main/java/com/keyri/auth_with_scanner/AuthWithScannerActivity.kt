@@ -9,8 +9,11 @@ import com.keyri.home.HomeActivity
 import com.keyrico.keyrisdk.KeyriSdk
 import com.keyrico.keyrisdk.entity.PublicAccount
 import com.keyrico.keyrisdk.view.KeyriScannerViewParams
+import com.keyri.databinding.ActivityAuthWithScannerBinding
+import com.keyri.home.HomeActivity
+import com.keyrico.keyrisdk.ui.KeyriAccountsAdapter
 import org.koin.android.ext.android.inject
-import org.koin.android.viewmodel.ext.android.viewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class AuthWithScannerActivity : AppCompatActivity() {
 
