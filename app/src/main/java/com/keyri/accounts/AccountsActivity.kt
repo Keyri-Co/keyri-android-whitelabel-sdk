@@ -9,9 +9,9 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.keyri.R
 import com.keyri.databinding.ActivityAccountsBinding
-import org.koin.androidx.viewmodel.ext.android.viewModel
 import com.keyri.home.HomeActivity
 import com.keyrico.keyrisdk.entity.PublicAccount
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class AccountsActivity : AppCompatActivity() {
 
