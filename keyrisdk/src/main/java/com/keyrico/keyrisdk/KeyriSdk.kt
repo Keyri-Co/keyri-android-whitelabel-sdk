@@ -7,17 +7,17 @@ import android.content.Intent
 import com.keyrico.keyrisdk.entity.PublicAccount
 import com.keyrico.keyrisdk.entity.Service
 import com.keyrico.keyrisdk.entity.Session
-import com.keyrico.keyrisdk.services.api.AuthMobileResponse
-import com.keyrico.keyrisdk.services.api.InitRequest
-import com.keyrico.keyrisdk.utils.Utils
-import com.keyrico.keyrisdk.utils.makeApiCall
 import com.keyrico.keyrisdk.exception.AccountNotFoundException
 import com.keyrico.keyrisdk.exception.AuthorizationException
 import com.keyrico.keyrisdk.exception.MultipleAccountsNotAllowedException
 import com.keyrico.keyrisdk.exception.NotInitializedException
 import com.keyrico.keyrisdk.exception.PermissionsException
 import com.keyrico.keyrisdk.exception.WrongConfigException
+import com.keyrico.keyrisdk.services.api.AuthMobileResponse
+import com.keyrico.keyrisdk.services.api.InitRequest
 import com.keyrico.keyrisdk.ui.AuthWithScannerActivity
+import com.keyrico.keyrisdk.utils.Utils
+import com.keyrico.keyrisdk.utils.makeApiCall
 
 /**
  * Keyri SDK public API.
@@ -26,6 +26,8 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
 
     private var service: Service? = null
     private val keyriSdkModule = KeyriSdkModule(context)
+    internal val allowMultipleAccounts: Boolean
+        get() = config.allowMultipleAccounts
 
     init {
         initKeys()
@@ -201,6 +203,15 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
         keyriSdkModule
             .provideStorageService()
             .removeAccount(service.serviceId, account)
+    }
+
+    /**
+     * Retrieves prefix for deep links.
+     */
+    suspend fun getLinkPrefix(): String? {
+        return makeApiCall {
+            keyriSdkModule.provideApiService().getDeepLinksPrefix(config.appKey)
+        }.body()?.androidPrefix
     }
 
     /**

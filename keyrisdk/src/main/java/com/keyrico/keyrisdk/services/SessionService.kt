@@ -1,5 +1,6 @@
 package com.keyrico.keyrisdk.services
 
+import com.google.gson.Gson
 import com.keyrico.keyrisdk.exception.AuthorizationException
 import com.keyrico.keyrisdk.services.crypto.CryptoService
 import com.keyrico.keyrisdk.services.socket.SocketService
@@ -7,8 +8,8 @@ import com.keyrico.keyrisdk.services.socket.messages.ValidateMessage
 import com.keyrico.keyrisdk.services.socket.messages.VerificationMessage
 import com.keyrico.keyrisdk.services.socket.messages.VerifyApproveMessage
 import com.keyrico.keyrisdk.utils.Utils
-import com.google.gson.Gson
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeoutOrNull
 
 class SessionService(

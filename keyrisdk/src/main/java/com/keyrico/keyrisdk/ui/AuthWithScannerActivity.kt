@@ -18,7 +18,6 @@ class AuthWithScannerActivity : AppCompatActivity() {
 
     private val adapter by lazy { KeyriAccountsAdapter(::onAccountClicked) }
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAuthWithScannerBinding.inflate(layoutInflater)

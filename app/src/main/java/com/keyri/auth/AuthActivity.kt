@@ -8,7 +8,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.hardware.display.DisplayManager
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
@@ -16,6 +15,7 @@ import android.util.Size
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
@@ -30,12 +30,12 @@ import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
-import com.keyri.home.HomeActivity
 import com.keyri.accounts.AccountsActivity
 import com.keyri.accounts.AccountsMode
 import com.keyri.accounts.NewAccountActivity
 import com.keyri.auth_with_scanner.AuthWithScannerActivity
 import com.keyri.databinding.ActivityAuthBinding
+import com.keyri.home.HomeActivity
 import com.keyrico.keyrisdk.KeyriSdk
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.util.concurrent.Executors
@@ -255,7 +255,6 @@ class AuthActivity : AppCompatActivity() {
             this,
             Manifest.permission.CAMERA
         ) == PackageManager.PERMISSION_GRANTED
-
 
     private fun requestCameraPermission() {
         requestPermissionLauncher.launch(Manifest.permission.CAMERA)

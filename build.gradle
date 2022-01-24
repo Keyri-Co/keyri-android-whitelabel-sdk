@@ -11,9 +11,58 @@ buildscript {
 }
 
 allprojects {
+    apply plugin: 'checkstyle'
+
+    checkstyle {
+        toolVersion '9.2.1'
+    }
+
+    configurations {
+        javadocDeps
+        kotlinlint
+    }
+
+    dependencies {
+        kotlinlint("com.pinterest:ktlint:0.43.1") {
+            attributes {
+                attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling, Bundling.EXTERNAL))
+            }
+        }
+    }
+
     repositories {
         google()
         mavenCentral()
+    }
+
+    task checkJavaStyle(type: Checkstyle) {
+        showViolations = true
+        configFile file("../settings/checkstyle.xml")
+        source 'src/main/java'
+        include '**/*.java'
+        exclude '**/gen/**'
+        exclude '**/R.java'
+        exclude '**/BuildConfig.java'
+
+        // empty classpath
+        classpath = files()
+    }
+
+    task ktlint(type: JavaExec, group: "verification") {
+        description = "Check Kotlin code style."
+        main = "com.pinterest.ktlint.Main"
+        classpath = configurations.kotlinlint
+        args "src/**/*.kt"
+        // to generate report in checkstyle format prepend following args:
+        // "--reporter=plain", "--reporter=checkstyle,output=${buildDir}/ktlint.xml"
+        // see https://github.com/pinterest/ktlint#usage for more
+    }
+
+    task ktlintFormat(type: JavaExec, group: "formatting") {
+        description = "Fix Kotlin code style deviations."
+        main = "com.pinterest.ktlint.Main"
+        classpath = configurations.kotlinlint
+        args "-F", "src/**/*.kt"
     }
 }
 

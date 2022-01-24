@@ -2,6 +2,11 @@
 
 This repository contains the open source code for [Keyri](https://keyri.com) Android SDK.
 
+![Lint](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/workflows/Lint/badge.svg)
+![Instrumentation Tests](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/workflows/Instrumented%20Tests/badge.svg)
+![Unit Tests](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/workflows/Unit%20Tests/badge.svg)
+![Release](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/workflows/Release/badge.svg)
+
 [![GitHub release](https://img.shields.io/github/release/Keyri-Co/keyri-android-whitelabel-sdk.svg?maxAge=10)](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/releases)
 
 ![demo](images/demo.gif)
@@ -52,10 +57,10 @@ allprojects {
 dependencies {
     // ...
     // SDK with https://api.keyri.co base url (release snapshot):
-    implementation 'com.github.Keyri-Co.keyri-android-whitelabel-sdk:keyrisdk:0.9.8'
+    implementation 'com.github.Keyri-Co.keyri-android-whitelabel-sdk:keyrisdk:0.9.9'
 
     // Or if you want to use debug SDK snapshot with https://dev-api.keyri.co base url:
-    // implementation 'com.github.Keyri-Co.keyri-android-whitelabel-sdk:keyrisdk-debug:0.9.8'
+    // implementation 'com.github.Keyri-Co.keyri-android-whitelabel-sdk:keyrisdk-debug:0.9.9'
 }
 ```
 
@@ -173,7 +178,7 @@ methods:
 val session = keyriSdk.onReadSessionId(sessionId)
 
 if (session.isNewUser) {
-    KeyriSdk.signup(
+    keyriSdk.signup(
         session.username,
         sessionId,
         session.service,

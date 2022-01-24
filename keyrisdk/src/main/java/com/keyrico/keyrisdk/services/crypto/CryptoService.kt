@@ -5,13 +5,18 @@ import android.security.keystore.KeyProperties
 import android.security.keystore.KeyProtection
 import android.util.Base64
 import androidx.core.content.edit
+import com.keyrico.keyrisdk.exception.NotInitializedException
 import com.keyrico.keyrisdk.utils.toByteArrayFromBase64String
 import com.keyrico.keyrisdk.utils.toStringBase64
-import java.security.*
+import java.security.KeyFactory
+import java.security.KeyPairGenerator
+import java.security.KeyStore
+import java.security.PublicKey
 import java.security.spec.ECGenParameterSpec
 import java.security.spec.X509EncodedKeySpec
-import javax.crypto.*
-import com.keyrico.keyrisdk.exception.NotInitializedException
+import javax.crypto.Cipher
+import javax.crypto.KeyAgreement
+import javax.crypto.SecretKey
 import javax.crypto.spec.IvParameterSpec
 
 class CryptoService(private val preferences: SharedPreferences) {

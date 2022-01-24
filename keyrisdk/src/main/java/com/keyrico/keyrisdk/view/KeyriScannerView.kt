@@ -14,7 +14,6 @@ import android.view.MotionEvent
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.CallSuper
 import androidx.appcompat.app.AlertDialog
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.Camera
@@ -29,7 +28,10 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.whenCreated
+import com.google.mlkit.vision.barcode.BarcodeScannerOptions
+import com.google.mlkit.vision.barcode.BarcodeScanning
+import com.google.mlkit.vision.barcode.common.Barcode
+import com.google.mlkit.vision.common.InputImage
 import com.keyrico.keyrisdk.R
 import com.keyrico.keyrisdk.databinding.LayoutKeyriScannerViewBinding
 import com.keyrico.keyrisdk.entity.PublicAccount
@@ -37,12 +39,9 @@ import com.keyrico.keyrisdk.entity.Service
 import com.keyrico.keyrisdk.exception.AccountNotFoundException
 import com.keyrico.keyrisdk.exception.AuthorizationException
 import com.keyrico.keyrisdk.exception.CameraPermissionNotGrantedException
+import com.keyrico.keyrisdk.exception.KeyriScannerViewInitializationException
 import com.keyrico.keyrisdk.exception.KeyriSdkException
 import com.keyrico.keyrisdk.exception.MultipleAccountsNotAllowedException
-import com.google.mlkit.vision.barcode.BarcodeScannerOptions
-import com.google.mlkit.vision.barcode.BarcodeScanning
-import com.google.mlkit.vision.barcode.common.Barcode
-import com.google.mlkit.vision.common.InputImage
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -54,7 +53,7 @@ import kotlin.math.abs
 /**
  * Custom Scanner View which encapsulates the authorization of the desktop user agent.
  */
-open class KeyriScannerView @JvmOverloads constructor(
+class KeyriScannerView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
@@ -112,16 +111,16 @@ open class KeyriScannerView @JvmOverloads constructor(
      *
      * @keyriScannerViewParams parameters for initialization.
      */
-    @CallSuper
-    open fun initView(keyriScannerViewParams: KeyriScannerViewParams) {
+    @Throws(KeyriScannerViewInitializationException::class)
+    fun initView(keyriScannerViewParams: KeyriScannerViewParams) {
+        if (keyriScannerViewParams.keyriSdk.allowMultipleAccounts && keyriScannerViewParams.onChooseAccount == null) {
+            throw KeyriScannerViewInitializationException
+        }
+
         this.keyriScannerViewParams = keyriScannerViewParams
 
-        launch(Dispatchers.Main) {
-            keyriScannerViewParams.activity.lifecycle.whenCreated {
-                openScanner()
-                initButtons()
-            }
-        }
+        openScanner()
+        initButtons()
     }
 
     /**
@@ -131,8 +130,7 @@ open class KeyriScannerView @JvmOverloads constructor(
      * @sessionId sessionId from @onChooseAccount callback.
      * @service service from @onChooseAccount callback.
      */
-    @CallSuper
-    open fun continueAuth(publicAccount: PublicAccount, sessionId: String, service: Service) {
+    fun continueAuth(publicAccount: PublicAccount, sessionId: String, service: Service) {
         launch {
             isLoading = true
             authAccount(publicAccount, sessionId, service)
@@ -194,7 +192,7 @@ open class KeyriScannerView @JvmOverloads constructor(
                         }
                         else -> {
                             withContext(Dispatchers.Main) {
-                                params.onChooseAccount(accounts, sessionId, session.service)
+                                params.onChooseAccount?.invoke(accounts, sessionId, session.service)
                             }
                             return@launch
                         }
@@ -283,7 +281,7 @@ open class KeyriScannerView @JvmOverloads constructor(
                                         autoFocusPoint,
                                         FocusMeteringAction.FLAG_AF
                                     ).apply {
-                                        //focus only when the user tap the preview
+                                        // Focus only when the user tap the preview
                                         disableAutoCancel()
                                     }.build()
                                 )
@@ -303,7 +301,7 @@ open class KeyriScannerView @JvmOverloads constructor(
                     val autoFocusAction =
                         FocusMeteringAction.Builder(autoFocusPoint, FocusMeteringAction.FLAG_AF)
                             .apply {
-                                //start auto-focusing after 2 seconds
+                                // Start auto-focusing after 2 seconds
                                 setAutoCancelDuration(2, TimeUnit.SECONDS)
                             }.build()
 

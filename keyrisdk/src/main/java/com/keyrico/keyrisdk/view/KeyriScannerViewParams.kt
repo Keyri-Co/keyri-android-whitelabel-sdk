@@ -24,7 +24,7 @@ data class KeyriScannerViewParams(
     val activity: AppCompatActivity,
     val keyriSdk: KeyriSdk,
     val customArgument: String? = null,
-    val onChooseAccount: (accounts: List<PublicAccount>, sessionId: String, service: Service) -> Unit,
+    val onChooseAccount: ((accounts: List<PublicAccount>, sessionId: String, service: Service) -> Unit)? = null,
     val onCompleted: (() -> Unit)? = null,
     val onError: ((error: KeyriSdkException) -> Unit)? = null,
     val onAccountAlreadyExists: (() -> Boolean)? = null,

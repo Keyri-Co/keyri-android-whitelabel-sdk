@@ -7,13 +7,13 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.keyri.R
+import com.keyri.accounts.AccountsActivity.Companion.EXTRA_MODE
 import com.keyrico.keyrisdk.KeyriSdk
 import com.keyrico.keyrisdk.entity.PublicAccount
 import com.keyrico.keyrisdk.exception.KeyriSdkException
 import com.keyrico.keyrisdk.services.api.AuthMobileResponse
 import com.keyrico.keyrisdk.utils.LiveEvent
-import com.keyri.R
-import com.keyri.accounts.AccountsActivity.Companion.EXTRA_MODE
 import kotlinx.coroutines.launch
 
 class AccountsVM(private val app: Application, private val keyriSdk: KeyriSdk) :
@@ -62,7 +62,6 @@ class AccountsVM(private val app: Application, private val keyriSdk: KeyriSdk) :
             }
             loadingLD.value = false
         }
-
     }
 
     fun processUserAccount(account: PublicAccount) {

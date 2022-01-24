@@ -1,8 +1,8 @@
 package com.keyri.home
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import com.keyri.R
 import com.keyri.auth.AuthActivity
 

@@ -27,3 +27,5 @@ object PermissionsException : KeyriSdkException(R.string.keyri_err_no_permission
 object MultipleAccountsNotAllowedException : KeyriSdkException(R.string.keyri_multiple_accounts_not_allowed)
 
 object CameraPermissionNotGrantedException : KeyriSdkException(R.string.keyri_camera_not_granted)
+
+object KeyriScannerViewInitializationException : KeyriSdkException(R.string.keyri_view_initialization_error)
