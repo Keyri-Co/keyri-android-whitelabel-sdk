@@ -15,4 +15,5 @@
     <string name="keyri_do_you_want_to_replace_account">Do you want to replace it with new one?</string>
     <string name="keyri_choose_your_account">Choose your account</string>
     <string name="keyri_auth_complete">You have been successfully authenticated</string>
+    <string name="keyri_view_initialization_error">You need to provide onChooseAccount callback, when allowMultipleAccounts is true</string>
 </resources>

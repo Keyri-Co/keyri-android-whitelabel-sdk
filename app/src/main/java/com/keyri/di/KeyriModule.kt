@@ -1,8 +1,8 @@
 package com.keyri.di
 
+import com.keyri.BuildConfig
 import com.keyrico.keyrisdk.KeyriConfig
 import com.keyrico.keyrisdk.KeyriSdk
-import com.keyri.BuildConfig
 import org.koin.dsl.module
 
 /**

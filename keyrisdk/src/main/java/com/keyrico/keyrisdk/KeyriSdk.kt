@@ -1,20 +1,23 @@
 package com.keyrico.keyrisdk
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import com.keyrico.keyrisdk.entity.PublicAccount
 import com.keyrico.keyrisdk.entity.Service
 import com.keyrico.keyrisdk.entity.Session
-import com.keyrico.keyrisdk.services.api.AuthMobileResponse
-import com.keyrico.keyrisdk.services.api.InitRequest
-import com.keyrico.keyrisdk.utils.Utils
-import com.keyrico.keyrisdk.utils.makeApiCall
 import com.keyrico.keyrisdk.exception.AccountNotFoundException
 import com.keyrico.keyrisdk.exception.AuthorizationException
 import com.keyrico.keyrisdk.exception.MultipleAccountsNotAllowedException
 import com.keyrico.keyrisdk.exception.NotInitializedException
 import com.keyrico.keyrisdk.exception.PermissionsException
 import com.keyrico.keyrisdk.exception.WrongConfigException
+import com.keyrico.keyrisdk.services.api.AuthMobileResponse
+import com.keyrico.keyrisdk.services.api.InitRequest
+import com.keyrico.keyrisdk.ui.AuthWithScannerActivity
+import com.keyrico.keyrisdk.utils.Utils
+import com.keyrico.keyrisdk.utils.makeApiCall
 
 /**
  * Keyri SDK public API.
@@ -23,6 +26,8 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
 
     private var service: Service? = null
     private val keyriSdkModule = KeyriSdkModule(context)
+    internal val allowMultipleAccounts: Boolean
+        get() = config.allowMultipleAccounts
 
     init {
         initKeys()
@@ -40,7 +45,7 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
     )
     suspend fun onReadSessionId(sessionId: String): Session {
         loadServiceIfNeeded()
-        val service = this.service ?: throw IllegalStateException()
+        val service = service ?: throw IllegalStateException()
 
         assertPermissionGranted(KeyriPermission.SESSION)
 
@@ -125,7 +130,7 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
         extendedHeaders: Map<String, String> = emptyMap()
     ): AuthMobileResponse {
         loadServiceIfNeeded()
-        val service = this.service ?: throw IllegalStateException()
+        val service = service ?: throw IllegalStateException()
 
         assertPermissionGranted(KeyriPermission.MOBILE_SIGNUP)
 
@@ -157,7 +162,7 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
         extendedHeaders: Map<String, String> = emptyMap()
     ): AuthMobileResponse {
         loadServiceIfNeeded()
-        val service = this.service ?: throw IllegalStateException()
+        val service = service ?: throw IllegalStateException()
 
         assertPermissionGranted(KeyriPermission.MOBILE_LOGIN)
 
@@ -173,7 +178,7 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
     @Throws(IllegalStateException::class, NotInitializedException::class)
     suspend fun accounts(): List<PublicAccount> {
         loadServiceIfNeeded()
-        val service = this.service ?: throw IllegalStateException()
+        val service = service ?: throw IllegalStateException()
 
         assertPermissionGranted(KeyriPermission.ACCOUNTS)
 
@@ -191,13 +196,39 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
     @Throws(IllegalStateException::class, NotInitializedException::class)
     suspend fun removeAccount(account: PublicAccount) {
         loadServiceIfNeeded()
-        val service = this.service ?: throw IllegalStateException()
+        val service = service ?: throw IllegalStateException()
 
         assertPermissionGranted(KeyriPermission.ACCOUNTS)
 
         keyriSdkModule
             .provideStorageService()
             .removeAccount(service.serviceId, account)
+    }
+
+    /**
+     * Retrieves prefix for deep links.
+     */
+    suspend fun getLinkPrefix(): String? {
+        return makeApiCall {
+            keyriSdkModule.provideApiService().getDeepLinksPrefix(config.appKey)
+        }.body()?.androidPrefix
+    }
+
+    /**
+     * Open auth with scanner activity.
+     * Handle result with @AUTH_REQUEST_CODE (953) in activity result callback.
+     */
+    @Throws(IllegalStateException::class, NotInitializedException::class)
+    suspend fun authWithScanner(activity: Activity, customArg: String? = null) {
+        loadServiceIfNeeded()
+        service ?: throw IllegalStateException()
+
+        val intent = Intent(activity, AuthWithScannerActivity::class.java).apply {
+            putExtra(AuthWithScannerActivity.KEY_CONFIG, config)
+            putExtra(AuthWithScannerActivity.KEY_CUSTOM_ARG, customArg)
+        }
+
+        activity.startActivityForResult(intent, AUTH_REQUEST_CODE)
     }
 
     @Throws(IllegalStateException::class)
@@ -237,5 +268,9 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
             KeyriPermission.MOBILE_SIGNUP -> response.mobileSignup == true
         }
         if (!granted) throw PermissionsException*/
+    }
+
+    companion object {
+        const val AUTH_REQUEST_CODE = 953
     }
 }

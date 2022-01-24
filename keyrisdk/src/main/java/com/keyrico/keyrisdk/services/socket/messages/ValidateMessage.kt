@@ -1,7 +1,7 @@
 package com.keyrico.keyrisdk.services.socket.messages
 
-import com.keyrico.keyrisdk.services.socket.SocketAction
 import com.google.gson.JsonObject
+import com.keyrico.keyrisdk.services.socket.SocketAction
 
 data class ValidateMessage(val sessionId: String, val sessionKey: String) {
 

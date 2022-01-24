@@ -4,7 +4,7 @@ import com.keyri.accounts.AccountsVM
 import com.keyri.accounts.NewAccountVM
 import com.keyri.auth.AuthVM
 import com.keyri.auth_with_scanner.AuthWithScannerVM
-import org.koin.android.viewmodel.dsl.viewModel
+import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 /**

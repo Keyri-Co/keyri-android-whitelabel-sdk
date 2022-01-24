@@ -7,13 +7,13 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.keyri.R
+import com.keyri.accounts.AccountsActivity.Companion.EXTRA_MODE
 import com.keyrico.keyrisdk.KeyriSdk
 import com.keyrico.keyrisdk.entity.PublicAccount
 import com.keyrico.keyrisdk.exception.KeyriSdkException
 import com.keyrico.keyrisdk.services.api.AuthMobileResponse
 import com.keyrico.keyrisdk.utils.LiveEvent
-import com.keyri.R
-import com.keyri.accounts.AccountsActivity.Companion.EXTRA_MODE
 import kotlinx.coroutines.launch
 
 class AccountsVM(private val app: Application, private val keyriSdk: KeyriSdk) :
@@ -62,18 +62,41 @@ class AccountsVM(private val app: Application, private val keyriSdk: KeyriSdk) :
             }
             loadingLD.value = false
         }
-
     }
 
     fun processUserAccount(account: PublicAccount) {
-        if (mode == AccountsMode.ACCOUNTS) return
+        when (mode) {
+            AccountsMode.ACCOUNTS -> return
+            AccountsMode.LOGIN -> mobileLogin(account)
+            AccountsMode.REMOVE -> removeAccount(account)
+        }
+    }
 
+    private fun mobileLogin(account: PublicAccount) {
         viewModelScope.launch {
             loadingLD.value = true
             try {
                 authenticatedLD.value = keyriSdk.mobileLogin(account, CUSTOM_HEADERS)
             } catch (e: Throwable) {
                 Log.d("Keyri", "Mobile login exception $e")
+                if (e is KeyriSdkException) {
+                    messageLD.value = app.getString(e.errorMessage)
+                } else {
+                    messageLD.value = app.getString(R.string.error_general)
+                }
+            }
+            loadingLD.value = false
+        }
+    }
+
+    private fun removeAccount(account: PublicAccount) {
+        viewModelScope.launch {
+            loadingLD.value = true
+            try {
+                keyriSdk.removeAccount(account)
+                accountsLD.postValue(keyriSdk.accounts())
+            } catch (e: Throwable) {
+                Log.d("Keyri", "Remove account exception $e")
                 if (e is KeyriSdkException) {
                     messageLD.value = app.getString(e.errorMessage)
                 } else {

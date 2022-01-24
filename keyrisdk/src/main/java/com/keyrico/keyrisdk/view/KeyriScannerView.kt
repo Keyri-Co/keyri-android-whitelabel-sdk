@@ -28,6 +28,10 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
+import com.google.mlkit.vision.barcode.BarcodeScannerOptions
+import com.google.mlkit.vision.barcode.BarcodeScanning
+import com.google.mlkit.vision.barcode.common.Barcode
+import com.google.mlkit.vision.common.InputImage
 import com.keyrico.keyrisdk.R
 import com.keyrico.keyrisdk.databinding.LayoutKeyriScannerViewBinding
 import com.keyrico.keyrisdk.entity.PublicAccount
@@ -35,12 +39,9 @@ import com.keyrico.keyrisdk.entity.Service
 import com.keyrico.keyrisdk.exception.AccountNotFoundException
 import com.keyrico.keyrisdk.exception.AuthorizationException
 import com.keyrico.keyrisdk.exception.CameraPermissionNotGrantedException
+import com.keyrico.keyrisdk.exception.KeyriScannerViewInitializationException
 import com.keyrico.keyrisdk.exception.KeyriSdkException
 import com.keyrico.keyrisdk.exception.MultipleAccountsNotAllowedException
-import com.google.mlkit.vision.barcode.BarcodeScannerOptions
-import com.google.mlkit.vision.barcode.BarcodeScanning
-import com.google.mlkit.vision.barcode.common.Barcode
-import com.google.mlkit.vision.common.InputImage
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -77,20 +78,20 @@ class KeyriScannerView @JvmOverloads constructor(
 
     @SuppressLint("UnsafeOptInUsageError")
     private val qrAnalyzer = ImageAnalysis.Analyzer { imageProxy ->
-        imageProxy.image?.let { mediaImage ->
-            val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+        imageProxy.image?.takeIf { !isLoading }?.let { mediaImage ->
+            val image =
+                InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
 
             BarcodeScanning.getClient(options).process(image)
                 .addOnSuccessListener { barcodes ->
                     barcodes.firstOrNull()
                         ?.displayValue
-                        ?.takeIf { !isLoading }
                         ?.let(::processScannedData)
                 }
                 .addOnCompleteListener {
                     imageProxy.close()
                 }
-        }
+        } ?: imageProxy.close()
     }
 
     private var binding: LayoutKeyriScannerViewBinding =
@@ -110,7 +111,12 @@ class KeyriScannerView @JvmOverloads constructor(
      *
      * @keyriScannerViewParams parameters for initialization.
      */
+    @Throws(KeyriScannerViewInitializationException::class)
     fun initView(keyriScannerViewParams: KeyriScannerViewParams) {
+        if (keyriScannerViewParams.keyriSdk.allowMultipleAccounts && keyriScannerViewParams.onChooseAccount == null) {
+            throw KeyriScannerViewInitializationException
+        }
+
         this.keyriScannerViewParams = keyriScannerViewParams
 
         openScanner()
@@ -186,7 +192,7 @@ class KeyriScannerView @JvmOverloads constructor(
                         }
                         else -> {
                             withContext(Dispatchers.Main) {
-                                params.onChooseAccount(accounts, sessionId, session.service)
+                                params.onChooseAccount?.invoke(accounts, sessionId, session.service)
                             }
                             return@launch
                         }
@@ -275,7 +281,7 @@ class KeyriScannerView @JvmOverloads constructor(
                                         autoFocusPoint,
                                         FocusMeteringAction.FLAG_AF
                                     ).apply {
-                                        //focus only when the user tap the preview
+                                        // Focus only when the user tap the preview
                                         disableAutoCancel()
                                     }.build()
                                 )
@@ -295,7 +301,7 @@ class KeyriScannerView @JvmOverloads constructor(
                     val autoFocusAction =
                         FocusMeteringAction.Builder(autoFocusPoint, FocusMeteringAction.FLAG_AF)
                             .apply {
-                                //start auto-focusing after 2 seconds
+                                // Start auto-focusing after 2 seconds
                                 setAutoCancelDuration(2, TimeUnit.SECONDS)
                             }.build()
 

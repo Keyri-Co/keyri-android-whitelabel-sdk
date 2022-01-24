@@ -9,7 +9,7 @@
     <style name="KeyriButton" parent="android:Widget.TextView">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">50dp</item>
-        <item name="android:background">@drawable/shape_button</item>
+        <item name="android:background">@drawable/keyri_button_selector</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textSize"> 15sp</item>
         <item name="android:textColor">@color/colorPrimary</item>

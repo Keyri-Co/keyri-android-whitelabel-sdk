@@ -2,7 +2,13 @@ package com.keyrico.keyrisdk.services.api
 
 import com.keyrico.keyrisdk.entity.Session
 import retrofit2.Response
-import retrofit2.http.*
+import retrofit2.http.Body
+import retrofit2.http.GET
+import retrofit2.http.HeaderMap
+import retrofit2.http.POST
+import retrofit2.http.Path
+import retrofit2.http.Query
+import retrofit2.http.Url
 
 /**
  * Keyri SDK REST API
@@ -39,4 +45,10 @@ interface ApiService {
         @Path("serviceId") serviceId: String,
         @Query("queryPermissions[]") permissions: List<String>
     ): Response<PermissionsResponse>
+
+    /**
+     * @GET Method for retrieving deep links prefix
+     */
+    @GET("application/deep-link")
+    suspend fun getDeepLinksPrefix(@Query("appKey") appKey: String): Response<PrefixesResponse>
 }

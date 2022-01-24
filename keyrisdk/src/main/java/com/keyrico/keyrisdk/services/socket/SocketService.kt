@@ -1,16 +1,19 @@
 package com.keyrico.keyrisdk.services.socket
 
 import android.util.Log
+import com.google.gson.JsonParser
 import com.keyrico.keyrisdk.exception.NetworkException
 import com.keyrico.keyrisdk.services.socket.messages.ValidateMessage
 import com.keyrico.keyrisdk.services.socket.messages.VerifyApproveMessage
 import com.keyrico.keyrisdk.services.socket.messages.VerifyRequestMessage
-import com.google.gson.JsonParser
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.Channel
-import okhttp3.*
-import org.json.JSONObject
 import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
+import okhttp3.WebSocket
+import okhttp3.WebSocketListener
+import org.json.JSONObject
 
 class SocketService(private val url: String) : WebSocketListener() {
 

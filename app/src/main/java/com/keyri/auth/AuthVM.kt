@@ -1,16 +1,17 @@
 package com.keyri.auth
 
+import android.app.Activity
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.keyri.R
 import com.keyrico.keyrisdk.KeyriSdk
 import com.keyrico.keyrisdk.exception.AccountNotFoundException
 import com.keyrico.keyrisdk.exception.KeyriSdkException
 import com.keyrico.keyrisdk.utils.LiveEvent
-import com.keyri.R
 import kotlinx.coroutines.launch
 
 class AuthVM(private val app: Application, private val keyriSdk: KeyriSdk) : AndroidViewModel(app) {
@@ -52,6 +53,12 @@ class AuthVM(private val app: Application, private val keyriSdk: KeyriSdk) : And
                 }
             }
             loadingLD.value = false
+        }
+    }
+
+    fun authWithScanner(activity: Activity) {
+        viewModelScope.launch {
+            keyriSdk.authWithScanner(activity)
         }
     }
 

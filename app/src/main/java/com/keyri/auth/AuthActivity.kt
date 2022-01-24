@@ -2,12 +2,12 @@ package com.keyri.auth
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.hardware.display.DisplayManager
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
@@ -15,6 +15,7 @@ import android.util.Size
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
@@ -29,13 +30,14 @@ import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
-import com.keyri.home.HomeActivity
 import com.keyri.accounts.AccountsActivity
 import com.keyri.accounts.AccountsMode
 import com.keyri.accounts.NewAccountActivity
 import com.keyri.auth_with_scanner.AuthWithScannerActivity
 import com.keyri.databinding.ActivityAuthBinding
-import org.koin.android.viewmodel.ext.android.viewModel
+import com.keyri.home.HomeActivity
+import com.keyrico.keyrisdk.KeyriSdk
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.util.concurrent.Executors
 import kotlin.math.abs
 
@@ -79,20 +81,20 @@ class AuthActivity : AppCompatActivity() {
 
     @SuppressLint("UnsafeOptInUsageError")
     private val qrAnalyzer = ImageAnalysis.Analyzer { imageProxy ->
-        imageProxy.image?.let { mediaImage ->
-            val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+        imageProxy.image?.takeIf { viewModel.loading().value != true }?.let { mediaImage ->
+            val image =
+                InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
 
             BarcodeScanning.getClient(options).process(image)
                 .addOnSuccessListener { barcodes ->
                     barcodes.firstOrNull()
                         ?.displayValue
-                        ?.takeIf { viewModel.loading().value != true }
                         ?.let(::processScannedData)
                 }
                 .addOnCompleteListener {
                     imageProxy.close()
                 }
-        }
+        } ?: imageProxy.close()
     }
 
     private lateinit var binding: ActivityAuthBinding
@@ -116,6 +118,15 @@ class AuthActivity : AppCompatActivity() {
         processLink(intent.data)
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == KeyriSdk.AUTH_REQUEST_CODE) {
+                HomeActivity.openHomeActivity(this)
+            }
+        }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         cameraExecutor?.shutdown()
@@ -124,15 +135,17 @@ class AuthActivity : AppCompatActivity() {
 
     private fun initializeUi() {
         with(binding) {
-            btAuthQr.setOnClickListener {
+            bAuthQr.setOnClickListener { viewModel.authWithScanner(this@AuthActivity) }
+            bKeyriView.setOnClickListener {
                 AuthWithScannerActivity.openAuthWithScannerActivity(this@AuthActivity, CUSTOM)
             }
-            btSignup.setOnClickListener { openScanner() }
-            btLogin.setOnClickListener { openScanner() }
+            bSignup.setOnClickListener { openScanner() }
+            bLogin.setOnClickListener { openScanner() }
 
-            btSignupMobile.setOnClickListener { NewAccountActivity.openNewAccountActivity(this@AuthActivity) }
-            btLoginMobile.setOnClickListener { openAccountsActivity(AccountsMode.LOGIN) }
-            btAccounts.setOnClickListener { openAccountsActivity(AccountsMode.ACCOUNTS) }
+            bSignupMobile.setOnClickListener { NewAccountActivity.openNewAccountActivity(this@AuthActivity) }
+            bLoginMobile.setOnClickListener { openAccountsActivity(AccountsMode.LOGIN) }
+            bAccounts.setOnClickListener { openAccountsActivity(AccountsMode.ACCOUNTS) }
+            bRemoveAccount.setOnClickListener { openAccountsActivity(AccountsMode.REMOVE) }
         }
     }
 
@@ -242,7 +255,6 @@ class AuthActivity : AppCompatActivity() {
             this,
             Manifest.permission.CAMERA
         ) == PackageManager.PERMISSION_GRANTED
-
 
     private fun requestCameraPermission() {
         requestPermissionLauncher.launch(Manifest.permission.CAMERA)

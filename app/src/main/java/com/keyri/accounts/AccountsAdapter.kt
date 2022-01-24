@@ -7,9 +7,9 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.keyrico.keyrisdk.entity.PublicAccount
 import com.keyri.R
 import com.keyri.databinding.ItemAccountBinding
+import com.keyrico.keyrisdk.entity.PublicAccount
 
 class AccountsAdapter(context: Context, private val listener: (PublicAccount) -> Unit) :
     ListAdapter<PublicAccount, AccountsAdapter.ViewHolder>(DIFF_CALLBACK) {

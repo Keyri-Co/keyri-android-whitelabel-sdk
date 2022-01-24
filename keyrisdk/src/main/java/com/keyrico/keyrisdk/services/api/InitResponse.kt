@@ -1,7 +1,7 @@
 package com.keyrico.keyrisdk.services.api
 
-import com.keyrico.keyrisdk.entity.Service
 import com.google.gson.annotations.SerializedName
+import com.keyrico.keyrisdk.entity.Service
 
 data class InitResponse(
 

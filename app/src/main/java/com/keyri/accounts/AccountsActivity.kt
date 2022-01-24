@@ -1,17 +1,17 @@
 package com.keyri.accounts
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.keyrico.keyrisdk.entity.PublicAccount
-import com.keyri.home.HomeActivity
 import com.keyri.R
 import com.keyri.databinding.ActivityAccountsBinding
-import org.koin.android.viewmodel.ext.android.viewModel
+import com.keyri.home.HomeActivity
+import com.keyrico.keyrisdk.entity.PublicAccount
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class AccountsActivity : AppCompatActivity() {
 
@@ -48,11 +48,13 @@ class AccountsActivity : AppCompatActivity() {
             return
         }
 
-        if (viewModel.mode == AccountsMode.ACCOUNTS) {
-            binding.tvAccount.text = getString(R.string.account_label)
-        } else {
-            binding.tvAccount.text = getString(R.string.select_account_label)
+        val textRes = when (viewModel.mode) {
+            AccountsMode.ACCOUNTS -> R.string.account_label
+            AccountsMode.LOGIN -> R.string.select_account_label
+            AccountsMode.REMOVE -> R.string.remove_account_button_label
         }
+
+        binding.tvAccount.text = getString(textRes)
 
         adapter.submitList(accounts)
     }

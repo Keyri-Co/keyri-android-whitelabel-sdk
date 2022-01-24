@@ -4,13 +4,14 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
-import com.keyrico.keyrisdk.KeyriSdk
-import com.keyrico.keyrisdk.entity.PublicAccount
-import com.keyrico.keyrisdk.view.KeyriScannerViewParams
 import com.keyri.databinding.ActivityAuthWithScannerBinding
 import com.keyri.home.HomeActivity
+import com.keyrico.keyrisdk.KeyriSdk
+import com.keyrico.keyrisdk.entity.PublicAccount
+import com.keyrico.keyrisdk.ui.KeyriAccountsAdapter
+import com.keyrico.keyrisdk.view.KeyriScannerViewParams
 import org.koin.android.ext.android.inject
-import org.koin.android.viewmodel.ext.android.viewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class AuthWithScannerActivity : AppCompatActivity() {
 
@@ -18,7 +19,6 @@ class AuthWithScannerActivity : AppCompatActivity() {
 
     private val keyriSdk by inject<KeyriSdk>()
     private val viewModel by viewModel<AuthWithScannerVM>()
-
     private val adapter by lazy { KeyriAccountsAdapter(::onAccountClicked) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,9 +70,11 @@ class AuthWithScannerActivity : AppCompatActivity() {
         private const val KEY_CUSTOM_ARG = "KEY_CUSTOM_ARG"
 
         fun openAuthWithScannerActivity(activity: AppCompatActivity, customArg: String) {
-            activity.startActivity(Intent(activity, AuthWithScannerActivity::class.java).apply {
-                putExtra(KEY_CUSTOM_ARG, customArg)
-            })
+            activity.startActivity(
+                Intent(activity, AuthWithScannerActivity::class.java).apply {
+                    putExtra(KEY_CUSTOM_ARG, customArg)
+                }
+            )
         }
     }
 }
