@@ -30,6 +30,7 @@ import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import com.keyri.R
 import com.keyri.accounts.AccountsActivity
 import com.keyri.accounts.AccountsMode
 import com.keyri.accounts.NewAccountActivity
@@ -120,10 +121,8 @@ class AuthActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == Activity.RESULT_OK) {
-            if (requestCode == KeyriSdk.AUTH_REQUEST_CODE) {
-                HomeActivity.openHomeActivity(this)
-            }
+        if (resultCode == Activity.RESULT_OK && requestCode == KeyriSdk.AUTH_REQUEST_CODE) {
+            onMessage(getString(R.string.message_authenticated))
         }
     }
 

@@ -44,7 +44,6 @@ allprojects {
         exclude '**/R.java'
         exclude '**/BuildConfig.java'
 
-        // empty classpath
         classpath = files()
     }
 
@@ -53,9 +52,6 @@ allprojects {
         main = "com.pinterest.ktlint.Main"
         classpath = configurations.kotlinlint
         args "src/**/*.kt"
-        // to generate report in checkstyle format prepend following args:
-        // "--reporter=plain", "--reporter=checkstyle,output=${buildDir}/ktlint.xml"
-        // see https://github.com/pinterest/ktlint#usage for more
     }
 
     task ktlintFormat(type: JavaExec, group: "formatting") {
