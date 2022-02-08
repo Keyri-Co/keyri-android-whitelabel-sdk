@@ -39,8 +39,8 @@
             android:layout_marginTop="24dp"
             android:background="@drawable/bg_list_item_grey"
             android:padding="12dp"
-            android:tint="@android:color/black"
-            app:srcCompat="@drawable/ic_user" />
+            android:src="@drawable/ic_user"
+            android:tint="@android:color/black" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvAccounts"

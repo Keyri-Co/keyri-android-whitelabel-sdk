@@ -1,6 +1,5 @@
 package com.keyrico.keyrisdk
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -252,13 +251,12 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
         }
     }
 
-    @SuppressLint("DefaultLocale")
     @Throws(PermissionsException::class)
-    private fun assertPermissionGranted(permission: KeyriPermission) {
-        /*val serviceId = service?.serviceId ?: throw IllegalStateException()
+    private suspend fun assertPermissionGranted(permission: KeyriPermission) {
+        /* val serviceId = service?.serviceId ?: throw IllegalStateException()
 
         val permissionName = permission.id
-        val response = makeApiCall { keyriSdkGraph.getApiService().getPermissions(serviceId, listOf(permissionName)) }.body()
+        val response = makeApiCall { keyriSdkModule.provideApiService().getPermissions(serviceId, listOf(permissionName)) }.body() ?: throw IllegalStateException()
         val granted: Boolean = when(permission) {
             KeyriPermission.SESSION -> response.session == true
             KeyriPermission.ACCOUNTS -> response.accounts == true
@@ -267,7 +265,7 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
             KeyriPermission.MOBILE_LOGIN -> response.mobileLogin == true
             KeyriPermission.MOBILE_SIGNUP -> response.mobileSignup == true
         }
-        if (!granted) throw PermissionsException*/
+        if (!granted) throw PermissionsException */
     }
 
     companion object {
