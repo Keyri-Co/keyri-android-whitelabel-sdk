@@ -57,9 +57,7 @@ class AuthVM(private val app: Application, private val keyriSdk: KeyriSdk) : And
     }
 
     fun authWithScanner(activity: Activity) {
-        viewModelScope.launch {
-            keyriSdk.authWithScanner(activity)
-        }
+        keyriSdk.authWithScanner(activity)
     }
 
     companion object {

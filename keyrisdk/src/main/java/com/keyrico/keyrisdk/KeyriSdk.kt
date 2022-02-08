@@ -218,9 +218,8 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
      * Handle result with @AUTH_REQUEST_CODE (953) in activity result callback.
      */
     @Throws(IllegalStateException::class, NotInitializedException::class)
-    suspend fun authWithScanner(activity: Activity, customArg: String? = null) {
-        loadServiceIfNeeded()
-        service ?: throw IllegalStateException()
+    fun authWithScanner(activity: Activity, customArg: String? = null) {
+        if (service != null) return
 
         val intent = Intent(activity, AuthWithScannerActivity::class.java).apply {
             putExtra(AuthWithScannerActivity.KEY_CONFIG, config)
