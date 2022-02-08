@@ -33,7 +33,7 @@ class SocketService(private val url: String) : WebSocketListener() {
     private var webSocket: WebSocket? = null
 
     override fun onMessage(webSocket: WebSocket, text: String) {
-        Log.d(TAG, "New message recieved")
+        Log.d(TAG, "New message received")
 
         val data = JSONObject(JsonParser().parse(text).asJsonObject.toString())
 
