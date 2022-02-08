@@ -37,14 +37,14 @@ class SocketService(private val url: String) : WebSocketListener() {
 
         val data = JSONObject(JsonParser().parse(text).asJsonObject.toString())
 
-        parseVerificationRequest(data)?.let { verifyMessageChannel.offer(Result.success(it)) }
+        parseVerificationRequest(data)?.let { verifyMessageChannel.trySend(Result.success(it)) }
     }
 
     override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
         Log.e(TAG, "Error: ${t.message}")
 
         try {
-            verifyMessageChannel.offer(Result.failure(NetworkException))
+            verifyMessageChannel.trySend(Result.failure(NetworkException))
         } catch (e: TimeoutCancellationException) {
             Log.e(TAG, e.message.toString())
         }
