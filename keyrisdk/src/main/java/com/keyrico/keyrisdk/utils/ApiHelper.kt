@@ -41,7 +41,7 @@ suspend fun <T : Any> makeApiCall(call: suspend () -> Response<T>): Response<T> 
                     else -> ServerUnreachableException
                 }
             }
-            else -> InternalServerException()
+            else -> NetworkException
         }
     }
 }
