@@ -38,6 +38,7 @@ class AuthWithScannerActivity : AppCompatActivity() {
                     changeListVisibility(true)
                 },
                 onCompleted = {
+                    changeListVisibility(false)
                     setResult(RESULT_OK)
                     finish()
                 }

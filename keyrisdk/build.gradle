@@ -86,7 +86,7 @@ afterEvaluate {
                 groupId = 'com.keyrico.keyrisdk'
 
                 artifactId = 'keyrisdk'
-                version = '0.9.89'
+                version = '0.9.9'
             }
 
             debug(MavenPublication) {
@@ -95,7 +95,7 @@ afterEvaluate {
                 groupId = 'com.keyrico.keyrisdk'
 
                 artifactId = 'keyrisdk-debug'
-                version = '0.9.89'
+                version = '0.9.9'
             }
         }
     }

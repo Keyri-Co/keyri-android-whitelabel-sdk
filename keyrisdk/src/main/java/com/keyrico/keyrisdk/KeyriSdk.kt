@@ -65,7 +65,13 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
      * @custom custom argument.
      */
     @Throws(NotInitializedException::class, MultipleAccountsNotAllowedException::class)
-    suspend fun signup(username: String, sessionId: String, service: Service, custom: String?) {
+    suspend fun signup(
+        username: String,
+        sessionId: String,
+        service: Service,
+        custom: String?,
+        isTestEnv: Boolean = false
+    ) {
         assertPermissionGranted(KeyriPermission.SIGNUP)
 
         keyriSdkModule
@@ -75,7 +81,8 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
                 sessionId,
                 service,
                 custom,
-                config.allowMultipleAccounts
+                config.allowMultipleAccounts,
+                isTestEnv
             )
     }
 
@@ -93,7 +100,8 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
         account: PublicAccount,
         sessionId: String,
         service: Service,
-        custom: String?
+        custom: String?,
+        isTestEnv: Boolean = false
     ) {
         loadServiceIfNeeded()
 
@@ -106,7 +114,7 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
 
         keyriSdkModule
             .provideUserService()
-            .login(sessionId, acc, custom)
+            .login(sessionId, acc, custom, isTestEnv)
     }
 
     /**
