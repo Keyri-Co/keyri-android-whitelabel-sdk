@@ -7,7 +7,6 @@ import android.view.inputmethod.EditorInfo
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
-import com.keyri.R
 import com.keyri.databinding.ActivityNewAccountBinding
 import com.keyri.home.HomeActivity
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -24,8 +23,6 @@ class NewAccountActivity : AppCompatActivity() {
 
         setContentView(binding.root)
 
-        setContentView(R.layout.activity_new_account)
-
         viewModel.message().observe(this, Observer(::onMessage))
         viewModel.loading().observe(this, Observer(::onLoading))
         viewModel.authenticated().observe(this) { openHomeActivity() }
@@ -37,15 +34,17 @@ class NewAccountActivity : AppCompatActivity() {
         binding.etUsername.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 doMobileSignup()
+                true
+            } else {
+                false
             }
-            false
         }
 
         binding.btSignupMobile.setOnClickListener { doMobileSignup() }
     }
 
     private fun doMobileSignup() {
-        viewModel.mobileSignup(binding.etUsername.text.toString())
+        binding.etUsername.text.toString().takeIf { it.isNotEmpty() }?.let(viewModel::mobileSignup)
     }
 
     private fun onMessage(message: String) {

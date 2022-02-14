@@ -12,8 +12,8 @@
 
         <activity
             android:name=".ui.AuthWithScannerActivity"
-            android:exported="false" />
-
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar" />
     </application>
 
 </manifest>
