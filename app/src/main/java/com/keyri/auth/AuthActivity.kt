@@ -234,7 +234,6 @@ class AuthActivity : AppCompatActivity() {
 
     private fun onLoading(isLoading: Boolean) {
         with(binding) {
-            scannerPreview.isGone = true
             actionsPanel.isGone = false
 
             imageAnalyzer?.clearAnalyzer()

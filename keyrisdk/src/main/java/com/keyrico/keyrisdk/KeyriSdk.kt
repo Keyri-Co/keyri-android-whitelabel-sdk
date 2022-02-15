@@ -74,16 +74,21 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
     ) {
         assertPermissionGranted(KeyriPermission.SIGNUP)
 
-        keyriSdkModule
-            .provideUserService()
-            .signup(
-                username,
-                sessionId,
-                service,
-                custom,
-                config.allowMultipleAccounts,
-                isTestEnv
-            )
+        try {
+            keyriSdkModule
+                .provideUserService()
+                .signup(
+                    username,
+                    sessionId,
+                    service,
+                    custom,
+                    config.allowMultipleAccounts,
+                    isTestEnv
+                )
+        } catch (e: Throwable) {
+            removeAccount(PublicAccount(username, custom))
+            throw e
+        }
     }
 
     /**
@@ -227,8 +232,6 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
      */
     @Throws(IllegalStateException::class, NotInitializedException::class)
     fun authWithScanner(activity: Activity, customArg: String? = null) {
-        if (service == null) return
-
         val intent = Intent(activity, AuthWithScannerActivity::class.java).apply {
             putExtra(AuthWithScannerActivity.KEY_CONFIG, config)
             putExtra(AuthWithScannerActivity.KEY_CUSTOM_ARG, customArg)

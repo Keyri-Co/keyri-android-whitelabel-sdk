@@ -147,7 +147,7 @@ class KeyriScannerView @JvmOverloads constructor(
                 .getQueryParameters("sessionId")
                 ?.firstOrNull()
                 ?.let { sessionId ->
-                    cameraProvider?.unbindAll()
+                    imageAnalyzer?.clearAnalyzer()
                     authenticate(sessionId)
                 }
         } catch (e: Exception) {
@@ -446,12 +446,11 @@ class KeyriScannerView @JvmOverloads constructor(
     private fun onLoading(isLoading: Boolean) {
         launch(Dispatchers.Main) {
             keyriScannerViewParams?.onLoading?.invoke(isLoading) ?: with(binding) {
-                rlContent.isVisible = !isLoading
                 flProgress.progress.isVisible = isLoading
 
                 if (isLoading) {
                     imageAnalyzer?.clearAnalyzer()
-                    cameraProvider?.unbindAll()
+//                    cameraProvider?.unbindAll()
                 } else {
                     bindCameraUseCases()
                 }
