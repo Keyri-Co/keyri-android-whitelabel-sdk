@@ -88,7 +88,7 @@ class ExampleAppInstrumentedTest {
 
         Log.d("Keyri", "SESSION ID: $sessionId")
 
-        val session = keyriSdk.onReadSessionId(sessionId)
+        val session = keyriSdk.handleSessionId(sessionId)
 
         if (session.isNewUser) {
             keyriSdk.sessionSignup(session.username, sessionId, session.service, "Custom", true)
