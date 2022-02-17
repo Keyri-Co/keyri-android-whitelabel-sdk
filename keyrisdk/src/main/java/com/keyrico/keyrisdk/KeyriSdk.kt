@@ -42,7 +42,7 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
         IllegalStateException::class,
         WrongConfigException::class
     )
-    suspend fun onReadSessionId(sessionId: String): Session {
+    suspend fun handleSessionId(sessionId: String): Session {
         loadServiceIfNeeded()
         val service = service ?: throw IllegalStateException()
 
@@ -57,43 +57,56 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
     /**
      * Create new user for Desktop agent. If @allowMultipleAccounts is false,
      * throws MultipleAccountsNotAllowedException exception.
-     * Must be called after [onReadSessionId], if @isNewUser is true.
+     * Must be called after [handleSessionId], if @isNewUser is true.
      *
      * @username for new user.
      * @sessionId scanned sessionId.
-     * @service obtained Session from [onReadSessionId].
+     * @service obtained Session from [handleSessionId].
      * @custom custom argument.
      */
     @Throws(NotInitializedException::class, MultipleAccountsNotAllowedException::class)
-    suspend fun signup(username: String, sessionId: String, service: Service, custom: String?) {
+    suspend fun sessionSignup(
+        username: String,
+        sessionId: String,
+        service: Service,
+        custom: String?,
+        isTestEnv: Boolean = false
+    ) {
         assertPermissionGranted(KeyriPermission.SIGNUP)
 
-        keyriSdkModule
-            .provideUserService()
-            .signup(
-                username,
-                sessionId,
-                service,
-                custom,
-                config.allowMultipleAccounts
-            )
+        try {
+            keyriSdkModule
+                .provideUserService()
+                .signup(
+                    username,
+                    sessionId,
+                    service,
+                    custom,
+                    config.allowMultipleAccounts,
+                    isTestEnv
+                )
+        } catch (e: Throwable) {
+            removeAccount(PublicAccount(username, custom))
+            throw e
+        }
     }
 
     /**
      * Login user for Desktop agent.
-     * Must be called after [onReadSessionId], if @isNewUser is false.
+     * Must be called after [handleSessionId], if @isNewUser is false.
      *
      * @account pass created earlier publicAccount.
      * @sessionId scanned sessionId.
-     * @service obtained Session from [onReadSessionId].
+     * @service obtained Session from [handleSessionId].
      * @custom custom argument.
      */
     @Throws(AccountNotFoundException::class, NotInitializedException::class)
-    suspend fun login(
+    suspend fun sessionLogin(
         account: PublicAccount,
         sessionId: String,
         service: Service,
-        custom: String?
+        custom: String?,
+        isTestEnv: Boolean = false
     ) {
         loadServiceIfNeeded()
 
@@ -106,7 +119,7 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
 
         keyriSdkModule
             .provideUserService()
-            .login(sessionId, acc, custom)
+            .login(sessionId, acc, custom, isTestEnv)
     }
 
     /**
@@ -123,7 +136,7 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
         AuthorizationException::class,
         MultipleAccountsNotAllowedException::class
     )
-    suspend fun mobileSignup(
+    suspend fun directSignup(
         username: String,
         custom: String?,
         extendedHeaders: Map<String, String> = emptyMap()
@@ -156,7 +169,7 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
         NotInitializedException::class,
         AuthorizationException::class
     )
-    suspend fun mobileLogin(
+    suspend fun directLogin(
         account: PublicAccount,
         extendedHeaders: Map<String, String> = emptyMap()
     ): AuthMobileResponse {
@@ -175,7 +188,7 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
      * Retrieves all public accounts on device.
      */
     @Throws(IllegalStateException::class, NotInitializedException::class)
-    suspend fun accounts(): List<PublicAccount> {
+    suspend fun getAccounts(): List<PublicAccount> {
         loadServiceIfNeeded()
         val service = service ?: throw IllegalStateException()
 
@@ -205,22 +218,11 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
     }
 
     /**
-     * Retrieves prefix for deep links.
-     */
-    suspend fun getLinkPrefix(): String? {
-        return makeApiCall {
-            keyriSdkModule.provideApiService().getDeepLinksPrefix(config.appKey)
-        }.body()?.androidPrefix
-    }
-
-    /**
      * Open auth with scanner activity.
      * Handle result with @AUTH_REQUEST_CODE (953) in activity result callback.
      */
     @Throws(IllegalStateException::class, NotInitializedException::class)
-    fun authWithScanner(activity: Activity, customArg: String? = null) {
-        if (service != null) return
-
+    fun easyKeyriAuth(activity: Activity, customArg: String? = null) {
         val intent = Intent(activity, AuthWithScannerActivity::class.java).apply {
             putExtra(AuthWithScannerActivity.KEY_CONFIG, config)
             putExtra(AuthWithScannerActivity.KEY_CUSTOM_ARG, customArg)

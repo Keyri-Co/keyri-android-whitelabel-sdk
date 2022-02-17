@@ -3,7 +3,11 @@ package com.keyrico.keyrisdk.services.socket.messages
 import com.google.gson.JsonObject
 import com.keyrico.keyrisdk.services.socket.SocketAction
 
-data class ValidateMessage(val sessionId: String, val sessionKey: String) {
+data class ValidateMessage(
+    val sessionId: String,
+    val sessionKey: String,
+    val isTestEnv: Boolean = false
+) {
 
     /**
      * Create [JsonObject] for representing [ValidateMessage].
@@ -14,5 +18,6 @@ data class ValidateMessage(val sessionId: String, val sessionKey: String) {
         it.addProperty("sessionId", sessionId)
         it.addProperty("sessionKey", sessionKey)
         it.addProperty("action", SocketAction.SESSION_VALIDATE.name)
+        it.addProperty("testEnv", isTestEnv)
     }
 }

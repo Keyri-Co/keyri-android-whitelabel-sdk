@@ -34,10 +34,11 @@ class AuthWithScannerActivity : AppCompatActivity() {
                 keyriSdk = KeyriSdk(this, config),
                 customArgument = intent.getStringExtra(KEY_CUSTOM_ARG),
                 onChooseAccount = { accounts, sessionId, service ->
-                    viewModel.init(accounts, service, sessionId)
                     changeListVisibility(true)
+                    viewModel.init(accounts, service, sessionId)
                 },
                 onCompleted = {
+                    changeListVisibility(false)
                     setResult(RESULT_OK)
                     finish()
                 }

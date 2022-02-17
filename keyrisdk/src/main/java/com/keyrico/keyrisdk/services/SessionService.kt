@@ -31,13 +31,14 @@ class SessionService(
         isNewUser: Boolean,
         userId: String,
         sessionId: String,
-        custom: String?
+        custom: String?,
+        isTestEnv: Boolean
     ) {
         val sessionKey = Utils.getRandomString(32)
         sessions[sessionKey] = userId
 
         val encryptedSessionKey = cryptoService.encryptAes(sessionKey)
-        val validationMessage = ValidateMessage(sessionId, encryptedSessionKey)
+        val validationMessage = ValidateMessage(sessionId, encryptedSessionKey, isTestEnv)
         val extraHeader = cryptoService.encryptAes(userId).take(15)
 
         socketService.reconnect(extraHeader)

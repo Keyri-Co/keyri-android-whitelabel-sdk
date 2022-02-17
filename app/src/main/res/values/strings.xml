@@ -1,17 +1,17 @@
 <resources>
     <string name="app_name">Keyri Demo app</string>
     <string name="error_general">Something went wrong</string>
-    <string name="auth_with_qr_label">Auth with QR</string>
-    <string name="signup_button_label">Sign up</string>
-    <string name="mobile_signup_button_label">Sign up (mobile)</string>
-    <string name="login_button_label">Login</string>
-    <string name="mobile_login_button_label">Login (mobile)</string>
-    <string name="keyri_view_button_label">Keyri view</string>
-    <string name="accounts_button_label">Accounts</string>
-    <string name="remove_account_button_label">Remove account</string>
+    <string name="easy_keyri_auth">Easy Keyri Auth</string>
+    <string name="session_signup">Session Signup</string>
+    <string name="direct_signup">Direct Signup</string>
+    <string name="session_login">Session Login</string>
+    <string name="direct_login">Direct Login</string>
+    <string name="keyri_view">Keyri view</string>
+    <string name="accounts">Accounts</string>
+    <string name="remove_account">Remove account</string>
     <string name="message_authenticated">You have been successfully authenticated</string>
-    <string name="select_account_label">Select your account to login with</string>
-    <string name="account_label">Your accounts</string>
-    <string name="no_accounts_label">You don\'t have accounts</string>
-    <string name="username_label">Username</string>
+    <string name="select_account">Select your account to login with</string>
+    <string name="your_accounts">Your accounts</string>
+    <string name="no_accounts">You don\'t have accounts</string>
+    <string name="username">Username</string>
 </resources>

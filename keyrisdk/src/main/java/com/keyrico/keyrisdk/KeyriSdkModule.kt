@@ -30,12 +30,10 @@ class KeyriSdkModule(private val context: Context) {
             okHttpClientBuilder.addInterceptor(loggingInterceptor)
         }
 
-        val client = okHttpClientBuilder.build()
-
         return Retrofit.Builder()
             .baseUrl(BuildConfig.API_URL)
             .addConverterFactory(GsonConverterFactory.create())
-            .client(client)
+            .client(okHttpClientBuilder.build())
             .build()
             .create(ApiService::class.java)
     }
@@ -53,7 +51,7 @@ class KeyriSdkModule(private val context: Context) {
     fun provideCryptoService() = CryptoService(getSharedPreferences())
 
     private fun provideAppDb(): AppDb =
-        Room.databaseBuilder(context, AppDb::class.java, DB_NAME).build()
+        Room.databaseBuilder(context, AppDb::class.java, DB_NAME + context.packageName).build()
 
     private fun provideUserDao() = provideAppDb().userDao()
 
