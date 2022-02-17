@@ -30,9 +30,9 @@ class AuthVM(private val app: Application, private val keyriSdk: KeyriSdk) : And
         viewModelScope.launch {
             loadingLD.value = true
             try {
-                val session = keyriSdk.onReadSessionId(sessionId)
+                val session = keyriSdk.handleSessionId(sessionId)
                 if (session.isNewUser) {
-                    keyriSdk.signup(
+                    keyriSdk.sessionSignup(
                         session.username,
                         sessionId,
                         session.service,
@@ -40,8 +40,8 @@ class AuthVM(private val app: Application, private val keyriSdk: KeyriSdk) : And
                     )
                 } else {
                     val account =
-                        keyriSdk.accounts().firstOrNull() ?: throw AccountNotFoundException
-                    keyriSdk.login(account, sessionId, session.service, CUSTOM_DATA_LOGIN)
+                        keyriSdk.getAccounts().firstOrNull() ?: throw AccountNotFoundException
+                    keyriSdk.sessionLogin(account, sessionId, session.service, CUSTOM_DATA_LOGIN)
                 }
                 authenticatedLD.value = true
             } catch (e: Throwable) {
@@ -57,9 +57,7 @@ class AuthVM(private val app: Application, private val keyriSdk: KeyriSdk) : And
     }
 
     fun authWithScanner(activity: Activity) {
-        viewModelScope.launch {
-            keyriSdk.authWithScanner(activity)
-        }
+        keyriSdk.easyKeyriAuth(activity)
     }
 
     companion object {

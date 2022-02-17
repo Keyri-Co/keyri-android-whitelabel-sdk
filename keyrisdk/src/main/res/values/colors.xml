@@ -4,4 +4,5 @@
     <color name="grey_dot">#C4C4C4</color>
     <color name="grey_divider">#EAEAEA</color>
     <color name="account_text_color">#636363</color>
+    <color name="grey_70">#B3636363</color>
 </resources>

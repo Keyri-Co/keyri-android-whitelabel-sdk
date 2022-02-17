@@ -25,53 +25,53 @@
             android:layout_gravity="center"
             android:orientation="vertical">
 
-            <androidx.appcompat.widget.AppCompatTextView
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/bAuthQr"
                 style="@style/KeyriButton"
                 android:layout_marginTop="24dp"
-                android:text="@string/auth_with_qr_label" />
+                android:text="@string/easy_keyri_auth" />
 
-            <androidx.appcompat.widget.AppCompatTextView
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/bKeyriView"
                 style="@style/KeyriButton"
                 android:layout_marginTop="8dp"
-                android:text="@string/keyri_view_button_label" />
+                android:text="@string/keyri_view" />
 
-            <androidx.appcompat.widget.AppCompatTextView
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/bSignup"
                 style="@style/KeyriButton"
                 android:layout_marginTop="8dp"
-                android:text="@string/signup_button_label" />
+                android:text="@string/session_signup" />
 
-            <androidx.appcompat.widget.AppCompatTextView
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/bLogin"
                 style="@style/KeyriButton"
                 android:layout_marginTop="8dp"
-                android:text="@string/login_button_label" />
+                android:text="@string/session_login" />
 
-            <androidx.appcompat.widget.AppCompatTextView
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/bSignupMobile"
                 style="@style/KeyriButton"
                 android:layout_marginTop="24dp"
-                android:text="@string/mobile_signup_button_label" />
+                android:text="@string/direct_signup" />
 
-            <androidx.appcompat.widget.AppCompatTextView
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/bLoginMobile"
                 style="@style/KeyriButton"
                 android:layout_marginTop="8dp"
-                android:text="@string/mobile_login_button_label" />
+                android:text="@string/direct_login" />
 
-            <androidx.appcompat.widget.AppCompatTextView
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/bAccounts"
                 style="@style/KeyriButton"
                 android:layout_marginTop="24dp"
-                android:text="@string/accounts_button_label" />
+                android:text="@string/accounts" />
 
-            <androidx.appcompat.widget.AppCompatTextView
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/bRemoveAccount"
                 style="@style/KeyriButton"
                 android:layout_marginTop="8dp"
-                android:text="@string/remove_account_button_label" />
+                android:text="@string/remove_account" />
 
         </LinearLayout>
 

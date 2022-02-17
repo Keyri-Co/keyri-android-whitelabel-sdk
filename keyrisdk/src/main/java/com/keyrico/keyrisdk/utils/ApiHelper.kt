@@ -5,7 +5,6 @@ import com.google.gson.reflect.TypeToken
 import com.keyrico.keyrisdk.exception.InternalServerException
 import com.keyrico.keyrisdk.exception.NetworkException
 import com.keyrico.keyrisdk.exception.ServerErrorException
-import com.keyrico.keyrisdk.exception.ServerUnreachableException
 import retrofit2.Response
 import java.io.IOException
 import java.net.ConnectException
@@ -38,10 +37,10 @@ suspend fun <T : Any> makeApiCall(call: suspend () -> Response<T>): Response<T> 
                     is UnknownHostException,
                     is SocketTimeoutException,
                     is ConnectException -> NetworkException
-                    else -> ServerUnreachableException
+                    else -> e
                 }
             }
-            else -> InternalServerException()
+            else -> NetworkException
         }
     }
 }

@@ -32,7 +32,7 @@ class NewAccountVM(private val app: Application, private val keyriSdk: KeyriSdk)
             loadingLD.value = true
             try {
                 authenticatedLD.value =
-                    keyriSdk.mobileSignup(username, CUSTOM_DATA_SIGNUP, CUSTOM_HEADERS)
+                    keyriSdk.directSignup(username, CUSTOM_DATA_SIGNUP, CUSTOM_HEADERS)
             } catch (e: Throwable) {
                 if (BuildConfig.DEBUG) {
                     Log.e("Keyri", "Mobile signup exception $e")
