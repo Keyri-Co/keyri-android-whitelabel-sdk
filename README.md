@@ -118,7 +118,7 @@ val keyriModule = module {
 
 ## Usage
 
-Note that the SDK object must not be destroyed between calling **onReadSessionId()** and retrieving
+Note that the SDK object must not be destroyed between calling **handleSessionId()** and retrieving
 the result of authorization methods.
 
 ### Option 1: Use the built-in QR login UI/UX
@@ -165,20 +165,20 @@ in [AuthWithScannerActivity](app/src/main/java/com/keyri/auth_with_scanner/AuthW
 Alternatively, if you want to provide a custom authentication/authorization UI/UX, use the following
 methods:
 
-* **onReadSessionId()** - Call it after retrieving the sessionId from QR-code or deep link.
-* **signup()** - Must be called after **onReadSessionId()**. This method is needed to create a user
+* **handleSessionId()** - Call it after retrieving the sessionId from QR-code or deep link.
+* **sessionSignup()** - Must be called after **onReadSessionId()**. This method is needed to create a user
   for Desktop agent (i.e., if the user does not already have an account and is trying to register).
   Pass username, sessionId, service, and any custom param needed to work with your identity
   management system.
-* **login()** - This method needed to login user for Desktop agent. Must be called after
-  **onReadSessionId()**. Pass public account identifies (e.g., username), sessionId, service and
+* **sessionLogin()** - This method needed to login user for Desktop agent. Must be called after
+  **handleSessionId()**. Pass public account identifies (e.g., username), sessionId, service and
   custom param:
 
 ```kotlin
-val session = keyriSdk.onReadSessionId(sessionId)
+val session = keyriSdk.handleSessionId(sessionId)
 
 if (session.isNewUser) {
-    keyriSdk.signup(
+    keyriSdk.sessionSignup(
         session.username,
         sessionId,
         session.service,
@@ -186,23 +186,23 @@ if (session.isNewUser) {
     )
 } else {
     val account = keyriSdk.accounts().firstOrNull() ?: throw AccountNotFoundException
-    keyriSdk.login(account, sessionId, session.service, CUSTOM_DATA_LOGIN)
+    keyriSdk.sessionLogin(account, sessionId, session.service, CUSTOM_DATA_LOGIN)
 }
 ```
 
-* **mobileSignup()** - method to create user on mobile device:
+* **directSignup()** - method to create user on mobile device:
 
 ```kotlin
-val authResponse = keyriSdk.mobileSignup(username, CUSTOM_DATA_SIGNUP, CUSTOM_HEADERS)
+val authResponse = keyriSdk.directSignup(username, CUSTOM_DATA_SIGNUP, CUSTOM_HEADERS)
 
 val user = authResponse.user
 val refreshToken = authResponse.refreshToken
 ```
 
-* **mobileLogin()** - method to login user on mobile device:
+* **directLogin()** - method to login user on mobile device:
 
 ```kotlin
-val authResponse = keyriSdk.mobileLogin(account, CUSTOM_HEADERS)
+val authResponse = keyriSdk.directLogin(account, CUSTOM_HEADERS)
 
 val user = authResponse.user
 val refreshToken = authResponse.refreshToken
@@ -212,11 +212,11 @@ val refreshToken = authResponse.refreshToken
 
 To manage accounts use the following methods:
 
-* **accounts()** - retrieve all public accounts from storage.
+* **getAccounts()** - retrieve all public accounts from storage.
 * **removeAccount()** - remove public account from storage.
 
 ```kotlin
-keyriSdk.accounts().firstOrNull { it.username == "User" && it.custom == "SOME CUSTOM ARG" }
+keyriSdk.getAccounts().firstOrNull { it.username == "User" && it.custom == "SOME CUSTOM ARG" }
     ?.let { account -> keyriSdk.removeAccount(account) }
 ```
 
