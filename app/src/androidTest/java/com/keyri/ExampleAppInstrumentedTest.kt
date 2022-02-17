@@ -13,7 +13,6 @@ import com.google.mlkit.vision.barcode.common.Barcode
 import com.keyrico.keyrisdk.KeyriConfig
 import com.keyrico.keyrisdk.KeyriSdk
 import com.keyrico.keyrisdk.exception.AccountNotFoundException
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
@@ -30,6 +29,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Headers
 import retrofit2.http.Query
+import java.util.concurrent.TimeUnit
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(JUnit4::class)
@@ -73,7 +73,7 @@ class ExampleAppInstrumentedTest {
             .addOnSuccessListener { barcodes ->
                 scannedData = barcodes.mapNotNull { it }.firstOrNull()?.displayValue
 
-                Log.d("Keyri", "SCANNED DATA: ${scannedData.toString()}")
+                Log.d("Keyri", "SCANNED DATA: $scannedData")
             }
 
         delay(10_000L)
