@@ -161,11 +161,11 @@ class KeyriScannerView @JvmOverloads constructor(
 
             try {
                 val params = requireNotNull(keyriScannerViewParams)
-                val session = params.keyriSdk.onReadSessionId(sessionId)
+                val session = params.keyriSdk.handleSessionId(sessionId)
 
                 if (session.isNewUser) {
                     try {
-                        params.keyriSdk.signup(
+                        params.keyriSdk.sessionSignup(
                             session.username,
                             sessionId,
                             session.service,
@@ -182,7 +182,7 @@ class KeyriScannerView @JvmOverloads constructor(
                         }
                     }
                 } else {
-                    val accounts = params.keyriSdk.accounts()
+                    val accounts = params.keyriSdk.getAccounts()
 
                     when {
                         accounts.isEmpty() -> throw AccountNotFoundException
@@ -214,7 +214,7 @@ class KeyriScannerView @JvmOverloads constructor(
         val params = requireNotNull(keyriScannerViewParams)
 
         try {
-            params.keyriSdk.login(account, sessionId, service, params.customArgument)
+            params.keyriSdk.sessionLogin(account, sessionId, service, params.customArgument)
             onAuthCompleted()
         } catch (e: Throwable) {
             Log.d("Keyri", "Authentication exception $e")
@@ -229,7 +229,7 @@ class KeyriScannerView @JvmOverloads constructor(
         launch {
             val params = requireNotNull(keyriScannerViewParams)
 
-            params.keyriSdk.accounts().firstOrNull()?.let { account ->
+            params.keyriSdk.getAccounts().firstOrNull()?.let { account ->
                 params.keyriSdk.removeAccount(account)
                 authenticate(sessionId)
             }

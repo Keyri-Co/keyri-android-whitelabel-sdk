@@ -44,14 +44,14 @@ class AccountsActivity : AppCompatActivity() {
 
     private fun renderAccounts(accounts: List<PublicAccount>) {
         if (accounts.isEmpty()) {
-            binding.tvAccount.text = getString(R.string.no_accounts_label)
+            binding.tvAccount.text = getString(R.string.no_accounts)
             return
         }
 
         val textRes = when (viewModel.mode) {
-            AccountsMode.ACCOUNTS -> R.string.account_label
-            AccountsMode.LOGIN -> R.string.select_account_label
-            AccountsMode.REMOVE -> R.string.remove_account_button_label
+            AccountsMode.ACCOUNTS -> R.string.your_accounts
+            AccountsMode.LOGIN -> R.string.select_account
+            AccountsMode.REMOVE -> R.string.remove_account
         }
 
         binding.tvAccount.text = getString(textRes)

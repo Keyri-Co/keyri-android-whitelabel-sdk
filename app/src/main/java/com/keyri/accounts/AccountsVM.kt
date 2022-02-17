@@ -51,7 +51,7 @@ class AccountsVM(private val app: Application, private val keyriSdk: KeyriSdk) :
         viewModelScope.launch {
             loadingLD.value = true
             try {
-                accountsLD.value = keyriSdk.accounts()
+                accountsLD.value = keyriSdk.getAccounts()
             } catch (e: Throwable) {
                 Log.d("Keyri", "Failed to load accounts $e")
                 if (e is KeyriSdkException) {
@@ -76,7 +76,7 @@ class AccountsVM(private val app: Application, private val keyriSdk: KeyriSdk) :
         viewModelScope.launch {
             loadingLD.value = true
             try {
-                authenticatedLD.value = keyriSdk.mobileLogin(account, CUSTOM_HEADERS)
+                authenticatedLD.value = keyriSdk.directLogin(account, CUSTOM_HEADERS)
             } catch (e: Throwable) {
                 Log.d("Keyri", "Mobile login exception $e")
                 if (e is KeyriSdkException) {
@@ -94,7 +94,7 @@ class AccountsVM(private val app: Application, private val keyriSdk: KeyriSdk) :
             loadingLD.value = true
             try {
                 keyriSdk.removeAccount(account)
-                accountsLD.postValue(keyriSdk.accounts())
+                accountsLD.postValue(keyriSdk.getAccounts())
             } catch (e: Throwable) {
                 Log.d("Keyri", "Remove account exception $e")
                 if (e is KeyriSdkException) {

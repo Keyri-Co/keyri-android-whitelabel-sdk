@@ -15,7 +15,7 @@
             android:id="@+id/tvUsername"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/username_label"
+            android:text="@string/username"
             android:textColor="@color/colorPrimary"
             android:textSize="18sp"
             android:textStyle="bold" />
@@ -34,7 +34,7 @@
             android:id="@+id/btSignupMobile"
             style="@style/KeyriButton"
             android:layout_marginTop="16dp"
-            android:text="@string/mobile_signup_button_label" />
+            android:text="@string/direct_signup" />
 
     </LinearLayout>
 

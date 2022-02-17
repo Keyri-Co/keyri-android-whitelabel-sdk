@@ -10,7 +10,6 @@ import com.google.gson.annotations.SerializedName
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
-import com.google.mlkit.vision.common.InputImage
 import com.keyrico.keyrisdk.KeyriConfig
 import com.keyrico.keyrisdk.KeyriSdk
 import com.keyrico.keyrisdk.exception.AccountNotFoundException
@@ -31,7 +30,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Headers
 import retrofit2.http.Query
-
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(JUnit4::class)
@@ -61,19 +59,17 @@ class ExampleAppInstrumentedTest {
     fun `1_getScannedData`() = runBlocking {
         val devServiceId = "5ef32caaaccd766719387f08"
         val sessionQr = provideApiService().createSession(devServiceId)
-        val qr = sessionQr.qr.replace("data:image/png;base64", "")
-
-        Log.d("Retrieved QR", qr)
+        val qr = sessionQr.qr.replace("data:image/png;base64,", "")
 
         val decodedString: ByteArray = Base64.decode(qr, Base64.DEFAULT)
         val bitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.size)
 
-        val image = InputImage.fromBitmap(bitmap, 0)
         val options = BarcodeScannerOptions.Builder()
             .setBarcodeFormats(Barcode.FORMAT_QR_CODE, Barcode.FORMAT_AZTEC)
             .build()
 
-        BarcodeScanning.getClient(options).process(image)
+        BarcodeScanning.getClient(options)
+            .process(bitmap, 0)
             .addOnSuccessListener { barcodes ->
                 scannedData = barcodes.mapNotNull { it }.firstOrNull()?.displayValue
 
@@ -95,13 +91,13 @@ class ExampleAppInstrumentedTest {
         val session = keyriSdk.onReadSessionId(sessionId)
 
         if (session.isNewUser) {
-            keyriSdk.signup(session.username, sessionId, session.service, "Custom", true)
+            keyriSdk.sessionSignup(session.username, sessionId, session.service, "Custom", true)
         } else {
-            val account = keyriSdk.accounts().firstOrNull() ?: throw AccountNotFoundException
-            keyriSdk.login(account, sessionId, session.service, "Custom", true)
+            val account = keyriSdk.getAccounts().firstOrNull() ?: throw AccountNotFoundException
+            keyriSdk.sessionLogin(account, sessionId, session.service, "Custom", true)
         }
 
-        val userName = keyriSdk.accounts().first()
+        val userName = keyriSdk.getAccounts().first()
 
         delay(10_000L)
 
