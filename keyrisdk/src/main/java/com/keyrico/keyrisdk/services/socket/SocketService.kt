@@ -2,7 +2,7 @@ package com.keyrico.keyrisdk.services.socket
 
 import android.util.Log
 import com.google.gson.JsonParser
-import com.keyrico.keyrisdk.exception.NetworkException
+import com.keyrico.keyrisdk.exception.AuthorizationException
 import com.keyrico.keyrisdk.services.socket.messages.ValidateMessage
 import com.keyrico.keyrisdk.services.socket.messages.VerifyApproveMessage
 import com.keyrico.keyrisdk.services.socket.messages.VerifyRequestMessage
@@ -44,7 +44,7 @@ class SocketService(private val url: String) : WebSocketListener() {
         Log.e(TAG, "Error: ${t.message}")
 
         try {
-            verifyMessageChannel.trySend(Result.failure(NetworkException))
+            verifyMessageChannel.trySend(Result.failure(AuthorizationException))
         } catch (e: TimeoutCancellationException) {
             Log.e(TAG, e.message.toString())
         }
