@@ -3,7 +3,6 @@ package com.keyrico.keyrisdk.new_auth_flow
 import android.content.Context
 import android.content.SharedPreferences
 import com.keyrico.keyrisdk.BuildConfig
-import com.keyrico.keyrisdk.KeyriConfig
 import com.keyrico.keyrisdk.KeyriSdkModule
 import com.keyrico.keyrisdk.entity.Service
 import com.keyrico.keyrisdk.services.api.InitRequest
@@ -16,7 +15,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 class NewAuthFlow(
     private val context: Context,
-    private val config: KeyriConfig,
+    private val config: NewFlowConfig,
     private val keyriSdkModule: KeyriSdkModule
 ) {
 
@@ -26,7 +25,7 @@ class NewAuthFlow(
 
     private var service: Service? = null
 
-    suspend fun startNewAuthFlow(sessionId: String) {
+    suspend fun startNewAuthFlow(sessionId: String, custom: String = "TEST CUSTOM") {
         initSdk()
 
         val headers = mapOf("appKey" to config.appKey)
@@ -34,18 +33,33 @@ class NewAuthFlow(
 
         if (response?.username != null) {
             // TODO Generate keypair for Username
-            cryptoService.generateSecretKey(response.username, "SOME UUID", config.publicKey)
+            cryptoService.generateSecretKey(response.username, custom, config.publicKey)
         }
 
-        // TODO Compare response service domain to SDK service domain
-        if (service?.name != response?.serviceDomain) throw IllegalStateException()
+        if (config.domainName != response?.serviceDomain) throw IllegalStateException()
 
         // TODO Display confirmation with following fields:
-        response?.userAgent
-        response?.riskCharacteristics
+        response.userAgent
+        response.riskCharacteristics
 
-        // TODO If user confirms confirmation screen:
+        val userConfirmation = true
 
+        if (userConfirmation) {
+            // TODO If user confirms confirmation screen:
+            val cipher =
+                cryptoService.encryptAes("${response.username}, ${custom}, ${System.currentTimeMillis()}")
+
+            val request = SecondRequest(
+                PublicObject(response.username ?: "", config.publicKey),
+                cipher,
+                sessionId
+            )
+
+            api.secondPost(request)
+            // TODO Return authenticated status based on response
+        } else {
+            // TODO Show user decline auth dialog
+        }
     }
 
     private suspend fun initSdk() {
