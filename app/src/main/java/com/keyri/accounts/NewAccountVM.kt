@@ -41,7 +41,7 @@ class NewAccountVM(private val app: Application, private val keyriSdk: KeyriSdk)
                 if (e is KeyriSdkException) {
                     messageLD.value = app.getString(e.errorMessage)
                 } else {
-                    messageLD.value = app.getString(R.string.error_general)
+                    messageLD.value = e.message ?: app.getString(R.string.error_general)
                 }
             }
             loadingLD.value = false

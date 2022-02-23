@@ -40,7 +40,7 @@ suspend fun <T : Any> makeApiCall(call: suspend () -> Response<T>): Response<T> 
                     else -> e
                 }
             }
-            else -> NetworkException
+            else -> e
         }
     }
 }
