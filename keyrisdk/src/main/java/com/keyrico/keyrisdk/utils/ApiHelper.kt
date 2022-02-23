@@ -1,7 +1,10 @@
 package com.keyrico.keyrisdk.utils
 
+import android.util.MalformedJsonException
 import com.google.gson.Gson
+import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
+import com.keyrico.keyrisdk.exception.AuthorizationException
 import com.keyrico.keyrisdk.exception.InternalServerException
 import com.keyrico.keyrisdk.exception.NetworkException
 import com.keyrico.keyrisdk.exception.ServerErrorException
@@ -40,6 +43,7 @@ suspend fun <T : Any> makeApiCall(call: suspend () -> Response<T>): Response<T> 
                     else -> e
                 }
             }
+            is MalformedJsonException, is JsonSyntaxException -> AuthorizationException
             else -> e
         }
     }
