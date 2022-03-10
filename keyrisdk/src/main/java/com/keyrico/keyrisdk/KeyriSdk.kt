@@ -234,22 +234,12 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
     @Throws(AccountNotFoundException::class, NotInitializedException::class)
     suspend fun whitelabelAuth(
         sessionId: String,
-        service: Service,
         custom: String,
-        isTestEnv: Boolean = false
     ) {
         loadServiceIfNeeded()
-
         assertPermissionGranted(KeyriPermission.LOGIN)
 
-        val account = keyriSdkModule
-            .provideStorageService()
-            .getAccounts(service.serviceId)
-            .firstOrNull() ?: throw AccountNotFoundException
-
-        keyriSdkModule
-            .provideUserService()
-            .login(sessionId, account, custom, isTestEnv)
+        keyriSdkModule.provideUserService().whitelabelAuth(sessionId, custom)
     }
 
     @Throws(IllegalStateException::class)

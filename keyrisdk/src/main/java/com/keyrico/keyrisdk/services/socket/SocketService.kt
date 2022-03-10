@@ -73,6 +73,10 @@ class SocketService(private val url: String) : WebSocketListener() {
         connectIfNeeded(true)
     }
 
+    fun reconnect() {
+        connectIfNeeded(true)
+    }
+
     /**
      * Use this function to send verification event [ValidateMessage].
      *

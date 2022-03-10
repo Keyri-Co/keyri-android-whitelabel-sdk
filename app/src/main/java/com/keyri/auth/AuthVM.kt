@@ -33,7 +33,7 @@ class AuthVM(private val app: Application, private val keyriSdk: KeyriSdk) : And
                 val session = keyriSdk.handleSessionId(sessionId)
 
                 if (isWhitelabelAuth) {
-                    keyriSdk.whitelabelAuth(sessionId, session.service, CUSTOM_DATA_LOGIN)
+                    keyriSdk.whitelabelAuth(sessionId, CUSTOM_DATA_LOGIN)
                 } else {
                     if (session.isNewUser) {
                         keyriSdk.sessionSignup(
