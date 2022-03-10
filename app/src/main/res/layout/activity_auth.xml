@@ -50,6 +50,12 @@
                 android:text="@string/session_login" />
 
             <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/bWhitelabelAuth"
+                style="@style/KeyriButton"
+                android:layout_marginTop="8dp"
+                android:text="@string/whitelabel_auth" />
+
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/bSignupMobile"
                 style="@style/KeyriButton"
                 android:layout_marginTop="24dp"

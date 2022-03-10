@@ -231,6 +231,17 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
         activity.startActivityForResult(intent, AUTH_REQUEST_CODE)
     }
 
+    @Throws(AccountNotFoundException::class, NotInitializedException::class)
+    suspend fun whitelabelAuth(
+        sessionId: String,
+        custom: String,
+    ) {
+        loadServiceIfNeeded()
+        assertPermissionGranted(KeyriPermission.LOGIN)
+
+        keyriSdkModule.provideUserService().whitelabelAuth(sessionId, custom)
+    }
+
     @Throws(IllegalStateException::class)
     private suspend fun loadServiceIfNeeded() {
         if (service != null) return

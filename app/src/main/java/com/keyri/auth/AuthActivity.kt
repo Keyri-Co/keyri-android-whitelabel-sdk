@@ -98,6 +98,24 @@ class AuthActivity : AppCompatActivity() {
         } ?: imageProxy.close()
     }
 
+    @SuppressLint("UnsafeOptInUsageError")
+    private val whitelabelAnalyzer = ImageAnalysis.Analyzer { imageProxy ->
+        imageProxy.image?.takeIf { viewModel.loading().value != true }?.let { mediaImage ->
+            val image =
+                InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+
+            BarcodeScanning.getClient(options).process(image)
+                .addOnSuccessListener { barcodes ->
+                    barcodes.firstOrNull()
+                        ?.displayValue
+                        ?.let { processScannedData(it, true) }
+                }
+                .addOnCompleteListener {
+                    imageProxy.close()
+                }
+        } ?: imageProxy.close()
+    }
+
     private lateinit var binding: ActivityAuthBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -140,7 +158,7 @@ class AuthActivity : AppCompatActivity() {
             }
             bSignup.setOnClickListener { openScanner() }
             bLogin.setOnClickListener { openScanner() }
-
+            bWhitelabelAuth.setOnClickListener { openScanner(true) }
             bSignupMobile.setOnClickListener { NewAccountActivity.openNewAccountActivity(this@AuthActivity) }
             bLoginMobile.setOnClickListener { openAccountsActivity(AccountsMode.LOGIN) }
             bAccounts.setOnClickListener { openAccountsActivity(AccountsMode.ACCOUNTS) }
@@ -152,16 +170,16 @@ class AuthActivity : AppCompatActivity() {
         AccountsActivity.openAccountsActivity(this, mode)
     }
 
-    private fun openScanner() {
+    private fun openScanner(isWhitelabelAuth: Boolean = false) {
         if (!hasCameraPermission()) {
             requestCameraPermission()
             return
         }
 
-        initCamera()
+        initCamera(isWhitelabelAuth)
     }
 
-    private fun initCamera() {
+    private fun initCamera(isWhitelabelAuth: Boolean = false) {
         binding.scannerPreview.isGone = false
         binding.actionsPanel.isGone = true
 
@@ -175,12 +193,12 @@ class AuthActivity : AppCompatActivity() {
             cameraProviderFuture.addListener({
                 cameraProvider = cameraProviderFuture.get()
 
-                bindCameraUseCases()
+                bindCameraUseCases(isWhitelabelAuth)
             }, ContextCompat.getMainExecutor(this))
         }
     }
 
-    private fun bindCameraUseCases() {
+    private fun bindCameraUseCases(isWhitelabelAuth: Boolean = false) {
         val metrics = DisplayMetrics().also { binding.scannerPreview.display.getRealMetrics(it) }
         val screenAspectRatio = aspectRatio(metrics.widthPixels, metrics.heightPixels)
         val rotation = binding.scannerPreview.display.rotation
@@ -198,8 +216,9 @@ class AuthActivity : AppCompatActivity() {
             .setTargetRotation(rotation)
             .build()
 
-        imageAnalyzer?.setAnalyzer(cameraExecutor, qrAnalyzer)
+        val analyzer = if (isWhitelabelAuth) whitelabelAnalyzer else qrAnalyzer
 
+        imageAnalyzer?.setAnalyzer(cameraExecutor, analyzer)
         cameraProvider?.unbindAll()
 
         try {
@@ -258,21 +277,21 @@ class AuthActivity : AppCompatActivity() {
         requestPermissionLauncher.launch(Manifest.permission.CAMERA)
     }
 
-    private fun processScannedData(scannedData: String) {
+    private fun processScannedData(scannedData: String, isWhitelabelAuth: Boolean = false) {
         Log.d("Keyri", "QR processed: $scannedData")
 
         try {
             // Try to parse link and process it
-            processLink(scannedData.toUri())
+            processLink(scannedData.toUri(), isWhitelabelAuth)
         } catch (e: java.lang.Exception) {
             Log.d("Keyri", "Not valid link: $scannedData")
         }
     }
 
-    private fun processLink(uri: Uri?) {
+    private fun processLink(uri: Uri?, isWhitelabelAuth: Boolean = false) {
         uri?.getQueryParameters("sessionId")?.firstOrNull()?.let { sessionId ->
             cameraProvider?.unbindAll()
-            viewModel.authenticate(sessionId)
+            viewModel.authenticate(sessionId, isWhitelabelAuth)
         } ?: Log.e("Keyri", "Failed to process link")
     }
 
