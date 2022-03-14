@@ -13,8 +13,8 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField "String", "APP_KEY", "\"raB7SFWt27VoKqkPhaUrmWAsCJIO8Moj\""
-        buildConfigField "String", "PUBLIC_KEY", "\"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE56eKjQNfIbfWYCBQLCF2yV6VySbHMzuc07JYCOS6juySvUWE/ubYvw9pJGAgQfmNr2n4LAQggoapHgfHkTNqbg==\""
+        buildConfigField "String", "APP_KEY", "\"DwUiRM3e2uIFUU9ECyh6f9jCbDw8HAAA\""
+        buildConfigField "String", "PUBLIC_KEY", "\"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE/UjxGpcDzl5lE9myTLFcqdsdQKDapspUaH7+GI1PdXAV5NpzcwJ8fLIk2SgmGpX7vOS+31XKbOGYnJRFzM8xjQ==\""
         buildConfigField "String", "KEYRI_CALLBACK_URL", "\"http://18.208.184.185:5000/users/session-mobile\""
     }
 
