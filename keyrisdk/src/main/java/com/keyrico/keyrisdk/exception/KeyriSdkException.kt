@@ -10,8 +10,6 @@ object NetworkException : KeyriSdkException(R.string.keyri_err_network)
 
 object AuthorizationException : KeyriSdkException(R.string.keyri_err_authorization)
 
-object ServerUnreachableException : KeyriSdkException(R.string.keyri_err_server_unreachable)
-
 data class InternalServerException(val httpCode: Int? = null) :
     KeyriSdkException(R.string.keyri_err_internal_server)
 
@@ -24,8 +22,10 @@ object AccountNotFoundException : KeyriSdkException(R.string.keyri_err_account_n
 
 object PermissionsException : KeyriSdkException(R.string.keyri_err_no_permissions)
 
-object MultipleAccountsNotAllowedException : KeyriSdkException(R.string.keyri_multiple_accounts_not_allowed)
+object MultipleAccountsNotAllowedException :
+    KeyriSdkException(R.string.keyri_multiple_accounts_not_allowed)
 
 object CameraPermissionNotGrantedException : KeyriSdkException(R.string.keyri_camera_not_granted)
 
-object KeyriScannerViewInitializationException : KeyriSdkException(R.string.keyri_view_initialization_error)
+object KeyriScannerViewInitializationException :
+    KeyriSdkException(R.string.keyri_view_initialization_error)

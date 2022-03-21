@@ -56,11 +56,7 @@ allprojects {
 ```groovy
 dependencies {
     // ...
-    // SDK with https://api.keyri.co base url (release snapshot):
-    implementation 'com.github.Keyri-Co.keyri-android-whitelabel-sdk:keyrisdk:0.9.9'
-
-    // Or if you want to use debug SDK snapshot with https://dev-api.keyri.co base url:
-    // implementation 'com.github.Keyri-Co.keyri-android-whitelabel-sdk:keyrisdk-debug:0.9.9'
+    implementation 'com.github.Keyri-Co.keyri-android-whitelabel-sdk:keyrisdk:1.0.2'
 }
 ```
 
@@ -79,7 +75,7 @@ android {
     defaultConfig {
         // ...
         buildConfigField "String", "APP_KEY", "\"raB7SFWt27VoKqkPhaUrmWAsCJIO8Moj\""
-        buildConfigField "String", "PUBLIC_KEY", "\"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE56eKjQNfIbfWYCBQLCF2yV6VySbHMzuc07JYCOS6juySvUWE/ubYvw9pJGAgQfmNr2n4LAQggoapHgfHkTNqbg==\""
+        buildConfigField "String", "PUBLIC_KEY", "\"BOenio0DXyG31mAgUCwhdslelckmxzM7nNOyWAjkuo7skr1FhP7m2L8PaSRgIEH5ja9p+CwEIIKGqR4Hx5Ezam4=\""
         buildConfigField "String", "KEYRI_CALLBACK_URL", "\"http://18.234.222.59:5000/users/session-mobile\""
     }
     // ...
@@ -166,10 +162,10 @@ Alternatively, if you want to provide a custom authentication/authorization UI/U
 methods:
 
 * **handleSessionId()** - Call it after retrieving the sessionId from QR-code or deep link.
-* **sessionSignup()** - Must be called after **onReadSessionId()**. This method is needed to create a user
-  for Desktop agent (i.e., if the user does not already have an account and is trying to register).
-  Pass username, sessionId, service, and any custom param needed to work with your identity
-  management system.
+* **sessionSignup()** - Must be called after **handleSessionId()**. This method is needed to create
+  a user for Desktop agent (i.e., if the user does not already have an account and is trying to
+  register). Pass username, sessionId, service, and any custom param needed to work with your
+  identity management system.
 * **sessionLogin()** - This method needed to login user for Desktop agent. Must be called after
   **handleSessionId()**. Pass public account identifies (e.g., username), sessionId, service and
   custom param:
@@ -185,7 +181,7 @@ if (session.isNewUser) {
         CUSTOM_DATA_SIGNUP
     )
 } else {
-    val account = keyriSdk.accounts().firstOrNull() ?: throw AccountNotFoundException
+    val account = keyriSdk.getAccounts().firstOrNull() ?: throw AccountNotFoundException
     keyriSdk.sessionLogin(account, sessionId, session.service, CUSTOM_DATA_LOGIN)
 }
 ```
@@ -222,7 +218,7 @@ keyriSdk.getAccounts().firstOrNull { it.username == "User" && it.custom == "SOME
 
 ### Deep Link Handling
 
-To handle deeplinks (e.g., for QR login straight from the user's built-in camera app) you need to
+To handle deep links (e.g., for QR login straight from the user's built-in camera app) you need to
 define in your AndroidManifest.xml following intent-filter block:
 
 ```xml
