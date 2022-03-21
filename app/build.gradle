@@ -13,8 +13,8 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField "String", "APP_KEY", "\"DwUiRM3e2uIFUU9ECyh6f9jCbDw8HAAA\""
-        buildConfigField "String", "PUBLIC_KEY", "\"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE/UjxGpcDzl5lE9myTLFcqdsdQKDapspUaH7+GI1PdXAV5NpzcwJ8fLIk2SgmGpX7vOS+31XKbOGYnJRFzM8xjQ==\""
+        buildConfigField "String", "APP_KEY", "\"raB7SFWt27VoKqkPhaUrmWAsCJIO8Moj\""
+        buildConfigField "String", "PUBLIC_KEY", "\"BP1I8RqXA85eZRPZskyxXKnbHUCg2qbKVGh+/hiNT3VwFeTac3MCfHyyJNkoJhqV+7zkvt9VymzhmJyURczPMY0=\""
         buildConfigField "String", "KEYRI_CALLBACK_URL", "\"http://18.208.184.185:5000/users/session-mobile\""
     }
 
@@ -53,10 +53,10 @@ dependencies {
     implementation 'com.google.mlkit:barcode-scanning:17.0.2'
 
     // CameraX
-    implementation 'androidx.camera:camera-core:1.1.0-beta01'
-    implementation 'androidx.camera:camera-camera2:1.1.0-beta01'
-    implementation 'androidx.camera:camera-lifecycle:1.1.0-beta01'
-    implementation 'androidx.camera:camera-view:1.1.0-beta01'
+    implementation 'androidx.camera:camera-core:1.1.0-beta02'
+    implementation 'androidx.camera:camera-camera2:1.1.0-beta02'
+    implementation 'androidx.camera:camera-lifecycle:1.1.0-beta02'
+    implementation 'androidx.camera:camera-view:1.1.0-beta02'
 
     // Koin
     implementation 'io.insert-koin:koin-android:3.1.5'

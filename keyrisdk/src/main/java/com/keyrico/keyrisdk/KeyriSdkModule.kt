@@ -16,7 +16,10 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
-class KeyriSdkModule(private val context: Context, private val isDebug: Boolean) {
+class KeyriSdkModule(private val context: Context, private val appKey: String) {
+
+    private val isDebug
+        get() = appKey.takeIf { it.length > 4 }?.substring(0, 4) == "dev_"
 
     fun provideApiService(): ApiService {
         val okHttpClientBuilder = OkHttpClient.Builder()
