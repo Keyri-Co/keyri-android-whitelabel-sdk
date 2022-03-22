@@ -12,7 +12,9 @@ import java.security.KeyFactory
 import java.security.KeyPairGenerator
 import java.security.KeyStore
 import java.security.PublicKey
+import java.security.interfaces.ECPublicKey
 import java.security.spec.ECGenParameterSpec
+import java.security.spec.InvalidKeySpecException
 import java.security.spec.X509EncodedKeySpec
 import javax.crypto.Cipher
 import javax.crypto.KeyAgreement
@@ -30,10 +32,7 @@ class CryptoService(private val preferences: SharedPreferences) {
         if (getKeyStore().containsAlias(AES_KEY_NAME)) return
 
         val publicBytes = Base64.decode(backendPublicKey, Base64.NO_WRAP)
-        val pubKeySpec = X509EncodedKeySpec(publicBytes)
-        val keyFactory = KeyFactory.getInstance(KeyProperties.KEY_ALGORITHM_EC)
-        val publicKey = keyFactory.generatePublic(pubKeySpec)
-
+        val publicKey = generateP256PublicKeyFromUncompressedW(publicBytes)
         val kpg = KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_EC)
 
         kpg.initialize(ECGenParameterSpec("prime256v1"))
@@ -163,7 +162,29 @@ class CryptoService(private val preferences: SharedPreferences) {
         .getInstance(ANDROID_KEYSTORE)
         .also { it.load(null) }
 
+    private fun generateP256PublicKeyFromFlatW(w: ByteArray): ECPublicKey {
+        val head = Base64.decode(HEAD_256, Base64.NO_WRAP)
+        val encodedKey = ByteArray(head.size + w.size)
+
+        System.arraycopy(head, 0, encodedKey, 0, head.size)
+        System.arraycopy(w, 0, encodedKey, head.size, w.size)
+
+        val keyFactory = KeyFactory.getInstance(KeyProperties.KEY_ALGORITHM_EC)
+        val keySpec = X509EncodedKeySpec(encodedKey)
+
+        return keyFactory.generatePublic(keySpec) as ECPublicKey
+    }
+
+    private fun generateP256PublicKeyFromUncompressedW(w: ByteArray): ECPublicKey {
+        if (w[0].toInt() != 0x04) {
+            throw InvalidKeySpecException("W is not an uncompressed key")
+        }
+
+        return generateP256PublicKeyFromFlatW(w.copyOfRange(1, w.size))
+    }
+
     companion object {
+        private const val HEAD_256 = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE"
         private const val ANDROID_KEYSTORE = "AndroidKeyStore"
         private const val AES_TRANSFORMATION = "AES/CBC/PKCS7Padding"
         private const val AES_KEY_NAME = "AES_KEY_NAME"

@@ -26,30 +26,37 @@ class AuthVM(private val app: Application, private val keyriSdk: KeyriSdk) : And
 
     fun authenticated() = authenticatedLD as LiveData<Boolean>
 
-    fun authenticate(sessionId: String) {
+    fun authenticate(sessionId: String, isWhitelabelAuth: Boolean = false) {
         viewModelScope.launch {
             loadingLD.value = true
             try {
                 val session = keyriSdk.handleSessionId(sessionId)
-                if (session.isNewUser) {
-                    keyriSdk.sessionSignup(
-                        session.username,
-                        sessionId,
-                        session.service,
-                        CUSTOM_DATA_SIGNUP
-                    )
+
+                if (isWhitelabelAuth) {
+                    keyriSdk.whitelabelAuth(sessionId, CUSTOM_DATA_LOGIN)
                 } else {
-                    val account =
-                        keyriSdk.getAccounts().firstOrNull() ?: throw AccountNotFoundException
-                    keyriSdk.sessionLogin(account, sessionId, session.service, CUSTOM_DATA_LOGIN)
+                    if (session.isNewUser) {
+                        keyriSdk.sessionSignup(
+                            session.username,
+                            sessionId,
+                            session.service,
+                            CUSTOM_DATA_SIGNUP
+                        )
+                    } else {
+                        val account =
+                            keyriSdk.getAccounts().firstOrNull() ?: throw AccountNotFoundException
+                        keyriSdk.sessionLogin(account, sessionId, session.service, CUSTOM_DATA_LOGIN)
+                    }
                 }
+
                 authenticatedLD.value = true
             } catch (e: Throwable) {
                 Log.d("Keyri", "Authentication exception $e")
+
                 if (e is KeyriSdkException) {
                     messageLD.value = app.getString(e.errorMessage)
                 } else {
-                    messageLD.value = app.getString(R.string.error_general)
+                    messageLD.value = e.message ?: app.getString(R.string.error_general)
                 }
             }
             loadingLD.value = false

@@ -69,6 +69,29 @@ class SessionService(
         } ?: throw AuthorizationException
     }
 
+    suspend fun whitelabelAuth(sessionId: String, custom: String) {
+        val sessionKey = Utils.getRandomString(32)
+
+        val encryptedSessionKey = cryptoService.encryptAes(sessionKey)
+        val validationMessage = ValidateMessage(sessionId, encryptedSessionKey, false)
+
+        socketService.reconnect()
+        socketService.sendVerificationEvent(validationMessage)
+
+        withTimeoutOrNull(SOCKET_TIMEOUT) {
+            val timestamp = System.currentTimeMillis().toString()
+            val verificationDto = VerificationMessage(null, custom, timestamp)
+            val message = Gson().toJson(verificationDto)
+
+            val encryptedMessage = cryptoService.encryptAes(message)
+            val initializationVector = cryptoService.getIV()
+            val confirmationMessage =
+                VerifyApproveMessage(encryptedMessage, null, initializationVector)
+
+            socketService.sendConfirmationEvent(confirmationMessage)
+        } ?: throw AuthorizationException
+    }
+
     companion object {
         private const val SOCKET_TIMEOUT = 5000L
     }

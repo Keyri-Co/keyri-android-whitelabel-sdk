@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName
 data class VerificationMessage(
 
     @SerializedName("userId")
-    val userId: String,
+    val userId: String?,
 
     @SerializedName("custom")
     val custom: String?,
