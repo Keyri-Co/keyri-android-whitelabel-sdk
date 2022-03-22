@@ -24,7 +24,7 @@ import com.keyrico.keyrisdk.utils.makeApiCall
 class KeyriSdk(context: Context, private val config: KeyriConfig) {
 
     private var service: Service? = null
-    private val keyriSdkModule = KeyriSdkModule(context)
+    private val keyriSdkModule = KeyriSdkModule(context, config.appKey)
     internal val allowMultipleAccounts: Boolean
         get() = config.allowMultipleAccounts
 
@@ -232,10 +232,7 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
     }
 
     @Throws(AccountNotFoundException::class, NotInitializedException::class)
-    suspend fun whitelabelAuth(
-        sessionId: String,
-        custom: String,
-    ) {
+    suspend fun whitelabelAuth(sessionId: String, custom: String) {
         loadServiceIfNeeded()
         assertPermissionGranted(KeyriPermission.LOGIN)
 
@@ -258,8 +255,10 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
     }
 
     private fun generateDeviceIdIfNeeded() {
-        if (keyriSdkModule.provideStorageService().getDeviceId() == null) {
-            keyriSdkModule.provideStorageService().setDeviceId(Utils.getRandomString(32))
+        val storageService = keyriSdkModule.provideStorageService()
+
+        if (storageService.getDeviceId() == null) {
+            storageService.setDeviceId(Utils.getRandomString(32))
         }
     }
 

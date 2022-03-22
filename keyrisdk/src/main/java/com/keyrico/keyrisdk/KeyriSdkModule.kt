@@ -16,7 +16,10 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
-class KeyriSdkModule(private val context: Context) {
+class KeyriSdkModule(private val context: Context, private val appKey: String) {
+
+    private val isDebug
+        get() = appKey.takeIf { it.length > 4 }?.substring(0, 4) == "dev_"
 
     fun provideApiService(): ApiService {
         val okHttpClientBuilder = OkHttpClient.Builder()
@@ -31,7 +34,7 @@ class KeyriSdkModule(private val context: Context) {
         }
 
         return Retrofit.Builder()
-            .baseUrl(BuildConfig.API_URL)
+            .baseUrl(if (isDebug) DEV_API_URL else API_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .client(okHttpClientBuilder.build())
             .build()
@@ -58,12 +61,17 @@ class KeyriSdkModule(private val context: Context) {
     private fun provideSessionService() =
         SessionService(provideSocketService(), provideCryptoService())
 
-    private fun provideSocketService() = SocketService(BuildConfig.WS_URL)
+    private fun provideSocketService() = SocketService(if (isDebug) DEV_WS_URL else WS_URL)
 
     private fun getSharedPreferences(): SharedPreferences =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     companion object {
+        private const val DEV_API_URL = "https://dev-api.keyri.co"
+        private const val DEV_WS_URL = "wss://dev-api.keyri.co"
+        private const val API_URL = "https://api.keyri.co"
+        private const val WS_URL = "https://api.keyri.co"
+
         private const val PREFS_NAME = "keyri_prefs"
         private const val DB_NAME = "db_keyri_sdk"
         private const val CONNECT_TIMEOUT = 15L
