@@ -33,6 +33,18 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
         generateDeviceIdIfNeeded()
     }
 
+    suspend fun init(publicKey: String, serviceDomain: String) {
+
+    }
+
+    suspend fun generateAssociationKey(publicUserId: String) {
+
+    }
+
+    suspend fun getAssociationKey(publicUserId: String) {
+
+    }
+
     /**
      * Retrieves user session by given @sessionId.
      * If session doesn't match Keyri configuration, throws WrongConfigException exception
@@ -54,72 +66,13 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
         return session
     }
 
-    /**
-     * Create new user for Desktop agent. If @allowMultipleAccounts is false,
-     * throws MultipleAccountsNotAllowedException exception.
-     * Must be called after [handleSessionId], if @isNewUser is true.
-     *
-     * @username for new user.
-     * @sessionId scanned sessionId.
-     * @service obtained Session from [handleSessionId].
-     * @custom custom argument.
-     */
     @Throws(NotInitializedException::class, MultipleAccountsNotAllowedException::class)
-    suspend fun sessionSignup(
-        username: String,
-        sessionId: String,
-        service: Service,
-        custom: String?,
-        isTestEnv: Boolean = false
-    ) {
-        assertPermissionGranted(KeyriPermission.SIGNUP)
-
-        try {
-            keyriSdkModule
-                .provideUserService()
-                .signup(
-                    username,
-                    sessionId,
-                    service,
-                    custom,
-                    config.allowMultipleAccounts,
-                    isTestEnv
-                )
-        } catch (e: Throwable) {
-            removeAccount(PublicAccount(username, custom))
-            throw e
-        }
-    }
-
-    /**
-     * Login user for Desktop agent.
-     * Must be called after [handleSessionId], if @isNewUser is false.
-     *
-     * @account pass created earlier publicAccount.
-     * @sessionId scanned sessionId.
-     * @service obtained Session from [handleSessionId].
-     * @custom custom argument.
-     */
-    @Throws(AccountNotFoundException::class, NotInitializedException::class)
-    suspend fun sessionLogin(
-        account: PublicAccount,
-        sessionId: String,
-        service: Service,
-        custom: String?,
-        isTestEnv: Boolean = false
-    ) {
-        loadServiceIfNeeded()
-
-        assertPermissionGranted(KeyriPermission.LOGIN)
-
-        val acc = keyriSdkModule
-            .provideStorageService()
-            .getAccounts(service.serviceId)
-            .firstOrNull { it.username == account.username } ?: throw AccountNotFoundException
-
+    suspend fun challengeSession(sessionId: String) {
         keyriSdkModule
             .provideUserService()
-            .login(sessionId, acc, custom, isTestEnv)
+            .challengeSession()
+
+        // TODO Add Impl
     }
 
     /**
@@ -222,13 +175,13 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
      * Handle result with @AUTH_REQUEST_CODE (953) in activity result callback.
      */
     @Throws(IllegalStateException::class, NotInitializedException::class)
-    fun easyKeyriAuth(activity: Activity, customArg: String? = null) {
+    fun easyKeyriAuth(activity: Activity, requestCode: Int, customArg: String? = null) {
         val intent = Intent(activity, AuthWithScannerActivity::class.java).apply {
             putExtra(AuthWithScannerActivity.KEY_CONFIG, config)
             putExtra(AuthWithScannerActivity.KEY_CUSTOM_ARG, customArg)
         }
 
-        activity.startActivityForResult(intent, AUTH_REQUEST_CODE)
+        activity.startActivityForResult(intent, requestCode)
     }
 
     @Throws(AccountNotFoundException::class, NotInitializedException::class)
@@ -277,9 +230,5 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
             KeyriPermission.MOBILE_SIGNUP -> response.mobileSignup == true
         }
         if (!granted) throw PermissionsException */
-    }
-
-    companion object {
-        const val AUTH_REQUEST_CODE = 953
     }
 }

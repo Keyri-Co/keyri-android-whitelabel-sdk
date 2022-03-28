@@ -19,31 +19,10 @@ class UserService(
     private val cryptoService: CryptoService
 ) {
 
-    suspend fun signup(
-        username: String,
-        sessionId: String,
-        service: Service,
-        custom: String?,
-        allowMultipleAccounts: Boolean,
-        isTestEnv: Boolean
+    suspend fun challengeSession(
+        // TODO Add Impl
     ) {
-        val hasAccounts = storageService.getAllAccounts().isNotEmpty()
 
-        if (hasAccounts && !allowMultipleAccounts) {
-            throw MultipleAccountsNotAllowedException
-        }
-
-        val account = createAccount(service.serviceId, username, custom)
-        sessionService.verifyUserSession(true, account.userId, sessionId, custom, isTestEnv)
-    }
-
-    suspend fun login(
-        sessionId: String,
-        account: Account,
-        custom: String?,
-        isTestEnv: Boolean
-    ) {
-        sessionService.verifyUserSession(false, account.userId, sessionId, custom, isTestEnv)
     }
 
     suspend fun whitelabelAuth(sessionId: String, custom: String) {

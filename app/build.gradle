@@ -13,7 +13,7 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField "String", "APP_KEY", "\"raB7SFWt27VoKqkPhaUrmWAsCJIO8Moj\""
+        buildConfigField "String", "DOMAIN_NAME", "\"https ://dev.api.keyri.com\""
         buildConfigField "String", "PUBLIC_KEY", "\"BP1I8RqXA85eZRPZskyxXKnbHUCg2qbKVGh+/hiNT3VwFeTac3MCfHyyJNkoJhqV+7zkvt9VymzhmJyURczPMY0=\""
         buildConfigField "String", "KEYRI_CALLBACK_URL", "\"http://18.208.184.185:5000/users/session-mobile\""
     }

@@ -1,6 +1,5 @@
 package com.keyrico.keyrisdk.services.api
 
-import com.keyrico.keyrisdk.entity.Session
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -15,11 +14,17 @@ import retrofit2.http.Url
  */
 interface ApiService {
 
-    /**
-     * @GET Method for retrieving session by id
-     */
     @GET("api/session/{sessionId}")
-    suspend fun getSession(@Path("sessionId") sessionId: String): Response<Session>
+    suspend fun getSession(
+        @Path("sessionId") sessionId: String,
+        @Query("appKey") appKey: String
+    ): Response<FirstResponse>
+
+    @POST("api/session/{sessionId}")
+    suspend fun secondPost(
+        @Path("sessionId") sessionId: String,
+        @Body request: SecondRequest
+    ): Response<String>
 
     /**
      * @POST Method for mobile auth

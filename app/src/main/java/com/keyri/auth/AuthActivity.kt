@@ -37,7 +37,6 @@ import com.keyri.accounts.NewAccountActivity
 import com.keyri.auth_with_scanner.AuthWithScannerActivity
 import com.keyri.databinding.ActivityAuthBinding
 import com.keyri.home.HomeActivity
-import com.keyrico.keyrisdk.KeyriSdk
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.util.concurrent.Executors
 import kotlin.math.abs
@@ -139,7 +138,7 @@ class AuthActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == Activity.RESULT_OK && requestCode == KeyriSdk.AUTH_REQUEST_CODE) {
+        if (resultCode == Activity.RESULT_OK && requestCode == AUTH_REQUEST_CODE) {
             onMessage(getString(R.string.message_authenticated))
         }
     }
@@ -152,7 +151,7 @@ class AuthActivity : AppCompatActivity() {
 
     private fun initializeUi() {
         with(binding) {
-            bAuthQr.setOnClickListener { viewModel.authWithScanner(this@AuthActivity) }
+            bAuthQr.setOnClickListener { viewModel.authWithScanner(this@AuthActivity, AUTH_REQUEST_CODE) }
             bKeyriView.setOnClickListener {
                 AuthWithScannerActivity.openAuthWithScannerActivity(this@AuthActivity, CUSTOM)
             }
@@ -300,5 +299,7 @@ class AuthActivity : AppCompatActivity() {
 
         private const val RATIO_4_3_VALUE = 4.0 / 3.0
         private const val RATIO_16_9_VALUE = 16.0 / 9.0
+
+        const val AUTH_REQUEST_CODE = 953
     }
 }

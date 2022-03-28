@@ -1,11 +1,10 @@
-package com.keyrico.keyrisdk.new_auth_flow
+package com.keyrico.keyrisdk
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.keyrico.keyrisdk.BuildConfig
-import com.keyrico.keyrisdk.KeyriSdkModule
 import com.keyrico.keyrisdk.entity.Service
 import com.keyrico.keyrisdk.services.api.InitRequest
+import com.keyrico.keyrisdk.services.crypto.NewFlowCryptoService
 import com.keyrico.keyrisdk.utils.makeApiCall
 import java.util.concurrent.TimeUnit
 import okhttp3.OkHttpClient
@@ -19,17 +18,19 @@ class NewAuthFlow(
     private val keyriSdkModule: KeyriSdkModule
 ) {
 
+    // TODO Remove sessionL/S and add ...session
+    // TODO Чекнуть схему и отправить Андрею айос актуальную схему
+
     private val api = createNetworkApi()
-
     private val cryptoService = NewFlowCryptoService(getSharedPreferences())
-
     private var service: Service? = null
 
-    suspend fun startNewAuthFlow(sessionId: String, custom: String = "TEST CUSTOM") {
+    suspend fun handleSessionId(sessionId: String, custom: String = "TEST CUSTOM") {
         initSdk()
 
-        val headers = mapOf("appKey" to config.appKey)
-        val response = makeApiCall { api.firstPost(headers, FirstRequest(sessionId)) }.body()
+        service ?: throw IllegalStateException()
+
+        val response = makeApiCall { api.getSession(sessionId, config.appKey) }.body()
 
         if (response?.username != null) {
             // TODO Generate keypair for Username
@@ -55,22 +56,27 @@ class NewAuthFlow(
                 sessionId
             )
 
-            api.secondPost(request)
-            // TODO Return authenticated status based on response
+            val secondResponse = makeApiCall { api.secondPost(sessionId, request) }.body()
+
+            // TODO Need authenticated status based on response
+            if (secondResponse == "success") {
+                // TODO Show success
+            } else {
+                // TODO Show failure
+            }
         } else {
             // TODO Show user decline auth dialog
         }
     }
 
     private suspend fun initSdk() {
-        // TODO Init with [RP public key, appKey, service domain]
-
         if (service != null) return
         val deviceId =
             keyriSdkModule.provideStorageService().getDeviceId() ?: throw IllegalStateException()
 
         val request = InitRequest(deviceId, config.appKey)
         val response = makeApiCall { keyriSdkModule.provideApiService().init(request) }.body()
+
         service = response?.service
     }
 

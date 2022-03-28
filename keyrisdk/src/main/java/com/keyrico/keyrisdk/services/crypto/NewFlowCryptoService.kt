@@ -1,4 +1,4 @@
-package com.keyrico.keyrisdk.new_auth_flow
+package com.keyrico.keyrisdk.services.crypto
 
 import android.content.SharedPreferences
 import android.security.keystore.KeyProperties

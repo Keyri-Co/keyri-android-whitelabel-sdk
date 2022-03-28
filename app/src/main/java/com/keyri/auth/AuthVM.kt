@@ -63,8 +63,8 @@ class AuthVM(private val app: Application, private val keyriSdk: KeyriSdk) : And
         }
     }
 
-    fun authWithScanner(activity: Activity) {
-        keyriSdk.easyKeyriAuth(activity)
+    fun authWithScanner(activity: Activity, requestCode: Int) {
+        keyriSdk.easyKeyriAuth(activity, requestCode)
     }
 
     companion object {
