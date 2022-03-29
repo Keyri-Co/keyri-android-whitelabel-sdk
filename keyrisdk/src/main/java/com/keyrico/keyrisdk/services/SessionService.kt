@@ -84,9 +84,14 @@ class SessionService(
             val message = Gson().toJson(verificationDto)
 
             val encryptedMessage = cryptoService.encryptAes(message)
+            val publicKeyForVerification = cryptoService.getPublicKey()
             val initializationVector = cryptoService.getIV()
-            val confirmationMessage =
-                VerifyApproveMessage(encryptedMessage, null, initializationVector)
+
+            val confirmationMessage = VerifyApproveMessage(
+                encryptedMessage,
+                publicKeyForVerification,
+                initializationVector
+            )
 
             socketService.sendConfirmationEvent(confirmationMessage)
         } ?: throw AuthorizationException
