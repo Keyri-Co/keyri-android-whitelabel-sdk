@@ -4,8 +4,8 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import com.keyrico.keyrisdk.entity.PublicAccount
-import com.keyrico.keyrisdk.entity.Service
-import com.keyrico.keyrisdk.entity.Session
+import com.keyrico.keyrisdk.entity.session.service.Service
+import com.keyrico.keyrisdk.entity.session.Session
 import com.keyrico.keyrisdk.exception.AccountNotFoundException
 import com.keyrico.keyrisdk.exception.AuthorizationException
 import com.keyrico.keyrisdk.exception.MultipleAccountsNotAllowedException

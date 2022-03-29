@@ -2,7 +2,7 @@ package com.keyrico.keyrisdk.services
 
 import com.keyrico.keyrisdk.entity.Account
 import com.keyrico.keyrisdk.entity.PublicAccount
-import com.keyrico.keyrisdk.entity.Service
+import com.keyrico.keyrisdk.entity.session.service.Service
 import com.keyrico.keyrisdk.exception.AccountNotFoundException
 import com.keyrico.keyrisdk.exception.MultipleAccountsNotAllowedException
 import com.keyrico.keyrisdk.services.api.ApiService
