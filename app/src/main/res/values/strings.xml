@@ -15,4 +15,6 @@
     <string name="no_accounts">You don\'t have accounts</string>
     <string name="username">Username</string>
     <string name="whitelabel_auth">Whitelabel Auth</string>
+    <string name="enter_secure_custom">Enter secure custom:</string>
+    <string name="send">Send</string>
 </resources>
