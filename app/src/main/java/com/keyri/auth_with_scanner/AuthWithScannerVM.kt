@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.keyrico.keyrisdk.entity.PublicAccount
-import com.keyrico.keyrisdk.entity.Service
+import com.keyrico.keyrisdk.entity.session.service.Service
 
 class AuthWithScannerVM : ViewModel() {
 

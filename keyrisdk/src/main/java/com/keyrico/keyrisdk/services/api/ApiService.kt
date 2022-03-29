@@ -1,6 +1,6 @@
 package com.keyrico.keyrisdk.services.api
 
-import com.keyrico.keyrisdk.entity.Session
+import com.keyrico.keyrisdk.entity.session.Session
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
