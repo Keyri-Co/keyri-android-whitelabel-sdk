@@ -47,11 +47,5 @@ data class Service(
     val ironPlansUUID: String?,
 
     @SerializedName("qrLogo")
-    val qrLogo: String?,
-
-    @SerializedName("sessionType")
-    val sessionType: String,
-
-    @SerializedName("custom")
-    val custom: String?
+    val qrLogo: String?
 )

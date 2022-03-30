@@ -20,4 +20,10 @@ data class Session(
 
     @SerializedName("mobileIPData")
     val mobileIPData: IpData?,
+
+    @SerializedName("sessionType")
+    val sessionType: String,
+
+    @SerializedName("custom")
+    val custom: String?
 )
