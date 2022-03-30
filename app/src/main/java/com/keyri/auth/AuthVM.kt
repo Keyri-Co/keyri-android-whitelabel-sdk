@@ -37,7 +37,7 @@ class AuthVM(private val app: Application, private val keyriSdk: KeyriSdk) : And
                 } else {
                     if (session.isNewUser) {
                         keyriSdk.sessionSignup(
-                            session.username,
+                            session.username ?: "",
                             sessionId,
                             session.service,
                             CUSTOM_DATA_SIGNUP

@@ -35,7 +35,7 @@ import com.google.mlkit.vision.common.InputImage
 import com.keyrico.keyrisdk.R
 import com.keyrico.keyrisdk.databinding.LayoutKeyriScannerViewBinding
 import com.keyrico.keyrisdk.entity.PublicAccount
-import com.keyrico.keyrisdk.entity.Service
+import com.keyrico.keyrisdk.entity.session.service.Service
 import com.keyrico.keyrisdk.exception.AccountNotFoundException
 import com.keyrico.keyrisdk.exception.AuthorizationException
 import com.keyrico.keyrisdk.exception.CameraPermissionNotGrantedException
@@ -166,7 +166,7 @@ class KeyriScannerView @JvmOverloads constructor(
                 if (session.isNewUser) {
                     try {
                         params.keyriSdk.sessionSignup(
-                            session.username,
+                            session.username ?: "",
                             sessionId,
                             session.service,
                             params.customArgument

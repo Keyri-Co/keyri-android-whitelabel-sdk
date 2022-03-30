@@ -4,9 +4,11 @@ import android.util.MalformedJsonException
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
+import com.keyrico.keyrisdk.entity.IpDataError
 import com.keyrico.keyrisdk.exception.AuthorizationException
 import com.keyrico.keyrisdk.exception.InternalServerException
 import com.keyrico.keyrisdk.exception.NetworkException
+import com.keyrico.keyrisdk.exception.RiskErrorsException
 import com.keyrico.keyrisdk.exception.ServerErrorException
 import retrofit2.Response
 import java.io.IOException
@@ -21,12 +23,25 @@ suspend fun <T : Any> makeApiCall(call: suspend () -> Response<T>): Response<T> 
         if (!response.isSuccessful) {
             throw when (response.code()) {
                 in 500..599 -> InternalServerException(response.code())
-                else -> {
+                else -> try {
+                    val errorBody = response.errorBody()
+
+                    val errorResponse: IpDataError? = Gson().fromJson(
+                        errorBody?.charStream(),
+                        object : TypeToken<IpDataError?>() {}.type
+                    )
+
+                    errorBody?.close()
+                    RiskErrorsException(errorResponse?.riskErrors ?: emptyList())
+                } catch (e: JsonSyntaxException) {
+                    val errorBody = response.errorBody()
+
                     val errorResponse: String? = Gson().fromJson(
-                        response.errorBody()?.charStream(),
+                        errorBody?.charStream(),
                         object : TypeToken<String?>() {}.type
                     )
 
+                    errorBody?.close()
                     ServerErrorException(response.code(), errorResponse)
                 }
             }
