@@ -29,3 +29,5 @@ object CameraPermissionNotGrantedException : KeyriSdkException(R.string.keyri_ca
 
 object KeyriScannerViewInitializationException :
     KeyriSdkException(R.string.keyri_view_initialization_error)
+
+data class RiskErrorsException(val riskErrors: List<String> = emptyList()) : KeyriSdkException(R.string.keyri_err_risk_errors)
