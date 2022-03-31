@@ -8,7 +8,7 @@ data class IpData(
     val ip: String?,
 
     @SerializedName("is_eu")
-    val isEu: Boolean?,
+    val is_eu: Boolean?,
 
     @SerializedName("city")
     val city: String?,
@@ -17,19 +17,19 @@ data class IpData(
     val region: String?,
 
     @SerializedName("region_code")
-    val regionCode: String?,
+    val region_code: String?,
 
     @SerializedName("country_name")
-    val countryName: String?,
+    val country_name: String?,
 
     @SerializedName("country_code")
-    val countryCode: String?,
+    val country_code: String?,
 
     @SerializedName("continent_name")
-    val continentName: String?,
+    val continent_name: String?,
 
     @SerializedName("continent_code")
-    val continentCode: String?,
+    val continent_code: String?,
 
     @SerializedName("latitude")
     val latitude: Double?,
@@ -41,16 +41,16 @@ data class IpData(
     val postal: String?,
 
     @SerializedName("calling_code")
-    val callingCode: String?,
+    val calling_code: String?,
 
     @SerializedName("flag")
     val flag: String?,
 
     @SerializedName("emoji_flag")
-    val emojiFlag: String?,
+    val emoji_flag: String?,
 
     @SerializedName("emoji_unicode")
-    val emojiUnicode: String?,
+    val emoji_unicode: String?,
 
     @SerializedName("asn")
     val asn: Asn?,
@@ -62,7 +62,7 @@ data class IpData(
     val currency: IpCurrency?,
 
     @SerializedName("time_zone")
-    val timeZone: IpTimeZone?,
+    val time_zone: IpTimeZone?,
 
     @SerializedName("threat")
     val threat: Threat?,
