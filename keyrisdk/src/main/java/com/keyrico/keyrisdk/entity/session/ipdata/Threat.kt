@@ -5,23 +5,23 @@ import com.google.gson.annotations.SerializedName
 data class Threat(
 
     @SerializedName("is_tor")
-    val isTor: Boolean?,
+    val is_tor: Boolean?,
 
     @SerializedName("is_proxy")
-    val isProxy: Boolean?,
+    val is_proxy: Boolean?,
 
     @SerializedName("is_anonymous")
-    val isAnonymous: Boolean?,
+    val is_anonymous: Boolean?,
 
     @SerializedName("is_known_attacker")
-    val isKnownAttacker: Boolean?,
+    val is_known_attacker: Boolean?,
 
     @SerializedName("is_known_abuser")
-    val isKnownAbuser: Boolean?,
+    val is_known_abuser: Boolean?,
 
     @SerializedName("is_threat")
-    val isThreat: Boolean?,
+    val is_threat: Boolean?,
 
     @SerializedName("is_bogon")
-    val isBogon: Boolean?
+    val is_bogon: Boolean?
 )

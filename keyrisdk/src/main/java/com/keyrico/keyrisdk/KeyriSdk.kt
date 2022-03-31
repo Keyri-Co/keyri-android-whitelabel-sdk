@@ -50,7 +50,7 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
 
         val session =
             makeApiCall { keyriSdkModule.provideApiService().getSession(sessionId) }.body()
-        if (session?.service?.serviceId != service.serviceId) throw WrongConfigException
+        if (session?.service?.id != service.id) throw WrongConfigException
         return session
     }
 
@@ -114,7 +114,7 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
 
         val acc = keyriSdkModule
             .provideStorageService()
-            .getAccounts(service.serviceId)
+            .getAccounts(service.id)
             .firstOrNull { it.username == account.username } ?: throw AccountNotFoundException
 
         keyriSdkModule
@@ -196,7 +196,7 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
 
         return keyriSdkModule
             .provideStorageService()
-            .getAccounts(service.serviceId)
+            .getAccounts(service.id)
             .map { PublicAccount(it.username, it.custom) }
     }
 
@@ -214,7 +214,7 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
 
         keyriSdkModule
             .provideStorageService()
-            .removeAccount(service.serviceId, account)
+            .removeAccount(service.id, account)
     }
 
     /**
