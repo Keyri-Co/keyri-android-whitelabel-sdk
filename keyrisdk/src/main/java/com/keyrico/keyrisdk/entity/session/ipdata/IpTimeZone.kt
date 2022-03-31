@@ -14,8 +14,8 @@ data class IpTimeZone(
     val offset: String?,
 
     @SerializedName("is_dst")
-    val isDst: Boolean?,
+    val is_dst: Boolean?,
 
     @SerializedName("current_time")
-    val currentTime: String?
+    val current_time: String?
 )

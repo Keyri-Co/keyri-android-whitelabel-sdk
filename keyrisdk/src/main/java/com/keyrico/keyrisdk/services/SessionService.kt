@@ -71,7 +71,6 @@ class SessionService(
 
     suspend fun whitelabelAuth(sessionId: String, custom: String) {
         val sessionKey = Utils.getRandomString(32)
-
         val encryptedSessionKey = cryptoService.encryptAes(sessionKey)
         val validationMessage = ValidateMessage(sessionId, encryptedSessionKey, false)
 
@@ -79,6 +78,8 @@ class SessionService(
         socketService.sendVerificationEvent(validationMessage)
 
         withTimeoutOrNull(SOCKET_TIMEOUT) {
+            socketService.verifyMessageChannel.consumeAsFlow().first()
+
             val timestamp = System.currentTimeMillis().toString()
             val verificationDto = VerificationMessage(null, custom, timestamp)
             val message = Gson().toJson(verificationDto)

@@ -4,9 +4,6 @@ import com.google.gson.annotations.SerializedName
 
 data class IosAppSettings(
 
-    @SerializedName("iosAppId")
-    val iosAppId: String?,
-
     @SerializedName("iosAppStoreLink")
     val iosAppStoreLink: String?,
 

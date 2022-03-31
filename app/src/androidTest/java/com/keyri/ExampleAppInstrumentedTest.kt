@@ -91,7 +91,7 @@ class ExampleAppInstrumentedTest {
         val session = keyriSdk.handleSessionId(sessionId)
 
         if (session.isNewUser) {
-            keyriSdk.sessionSignup(session.username, sessionId, session.service, "Custom", true)
+            keyriSdk.sessionSignup(session.username ?: "", sessionId, session.service, "Custom", true)
         } else {
             val account = keyriSdk.getAccounts().firstOrNull() ?: throw AccountNotFoundException
             keyriSdk.sessionLogin(account, sessionId, session.service, "Custom", true)
@@ -117,7 +117,7 @@ class ExampleAppInstrumentedTest {
         }
 
         return Retrofit.Builder()
-            .baseUrl(com.keyrico.keyrisdk.BuildConfig.API_URL)
+            .baseUrl("")
             .addConverterFactory(GsonConverterFactory.create())
             .client(okHttpClientBuilder.build())
             .build()

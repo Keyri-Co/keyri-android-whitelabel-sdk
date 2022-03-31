@@ -23,7 +23,7 @@ data class Service(
     val originalDomain: OriginalDomain?,
 
     @SerializedName("_id")
-    val serviceId: String,
+    val id: String,
 
     @SerializedName("name")
     val name: String?,
@@ -31,17 +31,11 @@ data class Service(
     @SerializedName("logo")
     val logo: String?,
 
-    @SerializedName("key")
-    val key: String?,
-
     @SerializedName("createdAt")
     val createdAt: String?,
 
     @SerializedName("updatedAt")
     val updatedAt: String?,
-
-    @SerializedName("__v")
-    val version: Int?,
 
     @SerializedName("ironPlansUUID")
     val ironPlansUUID: String?,
