@@ -5,53 +5,47 @@ import com.google.gson.annotations.SerializedName
 data class Service(
 
     @SerializedName("isValid")
-    val isValid: Boolean,
+    val isValid: Boolean?,
 
     @SerializedName("qrCodeType")
-    val qrCodeType: String,
+    val qrCodeType: String?,
 
     @SerializedName("androidAppSettings")
-    val androidAppSettings: AndroidAppSettings,
+    val androidAppSettings: AndroidAppSettings?,
 
     @SerializedName("iosAppSettings")
-    val iosAppSettings: IosAppSettings,
+    val iosAppSettings: IosAppSettings?,
 
     @SerializedName("subDomainName")
     val subDomainName: String?,
 
     @SerializedName("originalDomain")
-    val originalDomain: OriginalDomain,
+    val originalDomain: OriginalDomain?,
 
     @SerializedName("_id")
     val serviceId: String,
 
     @SerializedName("name")
-    val name: String,
+    val name: String?,
 
     @SerializedName("logo")
-    val logo: String,
+    val logo: String?,
 
     @SerializedName("key")
-    val key: String,
+    val key: String?,
 
     @SerializedName("createdAt")
-    val createdAt: String,
+    val createdAt: String?,
 
     @SerializedName("updatedAt")
-    val updatedAt: String,
+    val updatedAt: String?,
 
     @SerializedName("__v")
-    val version: Int,
+    val version: Int?,
 
     @SerializedName("ironPlansUUID")
     val ironPlansUUID: String?,
 
     @SerializedName("qrLogo")
-    val qrLogo: String?,
-
-    @SerializedName("sessionType")
-    val sessionType: String,
-
-    @SerializedName("custom")
-    val custom: String?
+    val qrLogo: String?
 )

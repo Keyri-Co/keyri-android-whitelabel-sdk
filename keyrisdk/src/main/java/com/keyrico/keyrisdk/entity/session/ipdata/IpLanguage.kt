@@ -5,11 +5,11 @@ import com.google.gson.annotations.SerializedName
 data class IpLanguage(
 
     @SerializedName("name")
-    val name: String,
+    val name: String?,
 
     @SerializedName("native")
-    val native: String,
+    val native: String?,
 
     @SerializedName("code")
-    val code: String
+    val code: String?
 )
