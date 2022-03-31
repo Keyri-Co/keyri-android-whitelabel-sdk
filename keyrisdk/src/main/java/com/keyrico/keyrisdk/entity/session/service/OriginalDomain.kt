@@ -11,5 +11,5 @@ data class OriginalDomain(
     val verifiedRecord: String?,
 
     @SerializedName("isDomainApproved")
-    val isDomainApproved: Boolean
+    val isDomainApproved: Boolean?
 )

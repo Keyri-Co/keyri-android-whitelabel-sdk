@@ -22,7 +22,7 @@ data class Session(
     val mobileIPData: IpData?,
 
     @SerializedName("sessionType")
-    val sessionType: String,
+    val sessionType: String?,
 
     @SerializedName("custom")
     val custom: String?
