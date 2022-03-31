@@ -5,17 +5,17 @@ import com.google.gson.annotations.SerializedName
 data class Asn(
 
     @SerializedName("asn")
-    val asn: String,
+    val asn: String?,
 
     @SerializedName("name")
-    val name: String,
+    val name: String?,
 
     @SerializedName("domain")
-    val domain: String,
+    val domain: String?,
 
     @SerializedName("route")
-    val route: String,
+    val route: String?,
 
     @SerializedName("type")
-    val type: String
+    val type: String?
 )

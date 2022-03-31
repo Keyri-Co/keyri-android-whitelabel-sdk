@@ -5,17 +5,17 @@ import com.google.gson.annotations.SerializedName
 data class IpTimeZone(
 
     @SerializedName("name")
-    val name: String,
+    val name: String?,
 
     @SerializedName("abbr")
-    val abbr: String,
+    val abbr: String?,
 
     @SerializedName("offset")
-    val offset: String,
+    val offset: String?,
 
     @SerializedName("is_dst")
-    val isDst: Boolean,
+    val isDst: Boolean?,
 
     @SerializedName("current_time")
-    val currentTime: String
+    val currentTime: String?
 )

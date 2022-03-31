@@ -5,17 +5,17 @@ import com.google.gson.annotations.SerializedName
 data class IpCurrency(
 
     @SerializedName("name")
-    val name: String,
+    val name: String?,
 
     @SerializedName("code")
-    val code: String,
+    val code: String?,
 
     @SerializedName("symbol")
-    val symbol: String,
+    val symbol: String?,
 
     @SerializedName("native")
-    val native: String,
+    val native: String?,
 
     @SerializedName("plural")
-    val plural: String
+    val plural: String?
 )
