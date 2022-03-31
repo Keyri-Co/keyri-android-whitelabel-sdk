@@ -2,7 +2,7 @@ package com.keyrico.keyrisdk.services
 
 import com.keyrico.keyrisdk.entity.Account
 import com.keyrico.keyrisdk.entity.PublicAccount
-import com.keyrico.keyrisdk.entity.Service
+import com.keyrico.keyrisdk.entity.session.service.Service
 import com.keyrico.keyrisdk.exception.AccountNotFoundException
 import com.keyrico.keyrisdk.exception.MultipleAccountsNotAllowedException
 import com.keyrico.keyrisdk.services.api.ApiService
@@ -43,7 +43,7 @@ class UserService(
             throw MultipleAccountsNotAllowedException
         }
 
-        val account = createAccount(service.serviceId, username, custom)
+        val account = createAccount(service.id, username, custom)
         val request = AuthMobileRequest(account.userId, username, cryptoService.getPublicKey())
 
         return makeApiCall { apiService.authMobile(extendedHeaders, callbackUrl, request) }.body()
@@ -56,7 +56,7 @@ class UserService(
         callbackUrl: String
     ): AuthMobileResponse? {
         val account = storageService
-            .getAccounts(service.serviceId)
+            .getAccounts(service.id)
             .find { it.username == publicAccount.username } ?: throw AccountNotFoundException
 
         val request =

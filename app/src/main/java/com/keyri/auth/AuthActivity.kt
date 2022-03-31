@@ -37,6 +37,8 @@ import com.keyri.accounts.NewAccountActivity
 import com.keyri.auth_with_scanner.AuthWithScannerActivity
 import com.keyri.databinding.ActivityAuthBinding
 import com.keyri.home.HomeActivity
+import com.keyri.secure_custom.InputSecureCustomActivity
+import com.keyrico.keyrisdk.KeyriSdk
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.util.concurrent.Executors
 import kotlin.math.abs
@@ -107,13 +109,15 @@ class AuthActivity : AppCompatActivity() {
                 .addOnSuccessListener { barcodes ->
                     barcodes.firstOrNull()
                         ?.displayValue
-                        ?.let { processScannedData(it, true) }
+                        ?.let { processScannedData(it, secureCustom) }
                 }
                 .addOnCompleteListener {
                     imageProxy.close()
                 }
         } ?: imageProxy.close()
     }
+
+    private var secureCustom: String? = null
 
     private lateinit var binding: ActivityAuthBinding
 
@@ -138,6 +142,15 @@ class AuthActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == Activity.RESULT_OK) {
+            when (requestCode) {
+                KeyriSdk.AUTH_REQUEST_CODE -> onMessage(getString(R.string.message_authenticated))
+                REQUEST_SECURE_CUSTOM -> {
+                    secureCustom = data?.getStringExtra(SECURE_CUSTOM)
+
+                    openScanner(true)
+                }
+            }
         if (resultCode == Activity.RESULT_OK && requestCode == AUTH_REQUEST_CODE) {
             onMessage(getString(R.string.message_authenticated))
         }
@@ -157,7 +170,12 @@ class AuthActivity : AppCompatActivity() {
             }
             bSignup.setOnClickListener { openScanner() }
             bLogin.setOnClickListener { openScanner() }
-            bWhitelabelAuth.setOnClickListener { openScanner(true) }
+            bWhitelabelAuth.setOnClickListener {
+                startActivityForResult(
+                    Intent(this@AuthActivity, InputSecureCustomActivity::class.java),
+                    REQUEST_SECURE_CUSTOM
+                )
+            }
             bSignupMobile.setOnClickListener { NewAccountActivity.openNewAccountActivity(this@AuthActivity) }
             bLoginMobile.setOnClickListener { openAccountsActivity(AccountsMode.LOGIN) }
             bAccounts.setOnClickListener { openAccountsActivity(AccountsMode.ACCOUNTS) }
@@ -276,25 +294,28 @@ class AuthActivity : AppCompatActivity() {
         requestPermissionLauncher.launch(Manifest.permission.CAMERA)
     }
 
-    private fun processScannedData(scannedData: String, isWhitelabelAuth: Boolean = false) {
+    private fun processScannedData(scannedData: String, secureCustom: String? = null) {
         Log.d("Keyri", "QR processed: $scannedData")
 
         try {
             // Try to parse link and process it
-            processLink(scannedData.toUri(), isWhitelabelAuth)
+            processLink(scannedData.toUri(), secureCustom)
         } catch (e: java.lang.Exception) {
             Log.d("Keyri", "Not valid link: $scannedData")
         }
     }
 
-    private fun processLink(uri: Uri?, isWhitelabelAuth: Boolean = false) {
+    private fun processLink(uri: Uri?, secureCustom: String? = null) {
         uri?.getQueryParameters("sessionId")?.firstOrNull()?.let { sessionId ->
             cameraProvider?.unbindAll()
-            viewModel.authenticate(sessionId, isWhitelabelAuth)
+            viewModel.authenticate(sessionId, secureCustom)
         } ?: Log.e("Keyri", "Failed to process link")
     }
 
     companion object {
+        const val REQUEST_SECURE_CUSTOM = 125
+
+        const val SECURE_CUSTOM = "SECURE_CUSTOM"
         private const val CUSTOM = "test custom data"
 
         private const val RATIO_4_3_VALUE = 4.0 / 3.0

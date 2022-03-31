@@ -4,8 +4,8 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import com.keyrico.keyrisdk.entity.PublicAccount
-import com.keyrico.keyrisdk.entity.Service
-import com.keyrico.keyrisdk.entity.Session
+import com.keyrico.keyrisdk.entity.session.Session
+import com.keyrico.keyrisdk.entity.session.service.Service
 import com.keyrico.keyrisdk.exception.AccountNotFoundException
 import com.keyrico.keyrisdk.exception.AuthorizationException
 import com.keyrico.keyrisdk.exception.MultipleAccountsNotAllowedException
@@ -62,7 +62,7 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
 
         val session =
             makeApiCall { keyriSdkModule.provideApiService().getSession(sessionId) }.body()
-        if (session?.service?.serviceId != service.serviceId) throw WrongConfigException
+        if (session?.service?.id != service.id) throw WrongConfigException
         return session
     }
 
@@ -149,7 +149,7 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
 
         return keyriSdkModule
             .provideStorageService()
-            .getAccounts(service.serviceId)
+            .getAccounts(service.id)
             .map { PublicAccount(it.username, it.custom) }
     }
 
@@ -167,7 +167,7 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
 
         keyriSdkModule
             .provideStorageService()
-            .removeAccount(service.serviceId, account)
+            .removeAccount(service.id, account)
     }
 
     /**

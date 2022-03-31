@@ -88,9 +88,7 @@ afterEvaluate {
                 from components.release
 
                 groupId = 'com.keyrico.keyrisdk'
-
                 artifactId = 'keyrisdk'
-                version = '1.0.2'
             }
         }
     }

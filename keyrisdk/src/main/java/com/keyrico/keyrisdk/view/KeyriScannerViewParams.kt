@@ -3,7 +3,7 @@ package com.keyrico.keyrisdk.view
 import androidx.appcompat.app.AppCompatActivity
 import com.keyrico.keyrisdk.KeyriSdk
 import com.keyrico.keyrisdk.entity.PublicAccount
-import com.keyrico.keyrisdk.entity.Service
+import com.keyrico.keyrisdk.entity.session.service.Service
 import com.keyrico.keyrisdk.exception.KeyriSdkException
 
 /**
