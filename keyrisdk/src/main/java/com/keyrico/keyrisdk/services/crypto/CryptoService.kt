@@ -5,7 +5,6 @@ import android.security.keystore.KeyProperties
 import android.security.keystore.KeyProtection
 import android.util.Base64
 import androidx.core.content.edit
-import com.keyrico.keyrisdk.exception.NotInitializedException
 import com.keyrico.keyrisdk.utils.toByteArrayFromBase64String
 import com.keyrico.keyrisdk.utils.toStringBase64
 import java.security.KeyFactory
@@ -23,13 +22,8 @@ import javax.crypto.spec.IvParameterSpec
 
 class CryptoService(private val preferences: SharedPreferences) {
 
-    /**
-     * Function for generating AES secret key with ECDH key agreement.
-     *
-     * @backendPublicKey base64 string of backend EC public key.
-     */
-    fun generateSecretKey(backendPublicKey: String) {
-        if (getKeyStore().containsAlias(AES_KEY_NAME)) return
+    fun generateAssociationKey(publicUserId: String, backendPublicKey: String) {
+        if (getKeyStore().containsAlias(AES_KEY_NAME + publicUserId)) return
 
         val publicBytes = Base64.decode(backendPublicKey, Base64.NO_WRAP)
         val publicKey = generateP256PublicKeyFromUncompressedW(publicBytes)
@@ -45,54 +39,48 @@ class CryptoService(private val preferences: SharedPreferences) {
 
         val secretKey = keyAgreement.generateSecret(KeyProperties.KEY_ALGORITHM_AES)
 
-        saveSecretKey(secretKey)
-        savePublicKey(keyPair.public)
+        saveSecretKey(secretKey, publicUserId)
+        savePublicKey(keyPair.public, publicUserId)
     }
 
-    /**
-     * Function for retrieving EC public key. Must be called after [generateSecretKey] invocation.
-     */
-    fun getPublicKey(): String {
-        val secretKeyBytes = getSecretKey()
-        val encryptedKey = getEncryptedString() ?: throw NotInitializedException
-        val key = decryptAes(secretKeyBytes, encryptedKey.toByteArrayFromBase64String())
+    fun getAssociationKey(publicUserId: String): String {
+        val secretKeyBytes = getSecretKey(publicUserId)
+        val encryptedKey = getEncryptedString(publicUserId) ?: throw Exception("Error")
+        val key =
+            decryptAes(secretKeyBytes, encryptedKey.toByteArrayFromBase64String(), publicUserId)
 
         return key.toStringBase64()
     }
 
-    fun getIV(): String? {
-        return preferences.getString(IV_KEY_NAME, null)
+    fun getIV(publicUserId: String): String? {
+        return preferences.getString(IV_KEY_NAME + publicUserId, null)
     }
 
-    /**
-     * Encrypts a string using AES symmetric encryption.
-     *
-     * @data string to encrypt.
-     * @return encrypted string in Base64 encoding.
-     */
-    fun encryptAes(data: String): String {
-        val secretKey = getSecretKey()
+    fun saveIV(iv: String, publicUserId: String) {
+        if (getIV(publicUserId) != null) return
+
+        preferences.edit(true) {
+            putString(IV_KEY_NAME + publicUserId, iv)
+        }
+    }
+
+    fun encryptAes(data: String, publicUserId: String): String {
+        val secretKey = getSecretKey(publicUserId)
         val dataBytes = data.encodeToByteArray()
-        val encrypted = encryptAes(secretKey, dataBytes)
+        val encrypted = encryptAes(secretKey, dataBytes, publicUserId)
 
         return encrypted.toStringBase64()
     }
 
-    /**
-     * Decrypts a string using AES symmetric encryption.
-     *
-     * @data string to decrypt (Base64 encoding).
-     * @return decrypted string.
-     */
-    fun decryptAes(data: String): String {
-        val secretKey = getSecretKey()
+    fun decryptAes(data: String, publicUserId: String): String {
+        val secretKey = getSecretKey(publicUserId)
         val dataBytes = data.toByteArrayFromBase64String()
-        val decrypted = decryptAes(secretKey, dataBytes)
+        val decrypted = decryptAes(secretKey, dataBytes, publicUserId)
 
         return decrypted.decodeToString()
     }
 
-    private fun saveSecretKey(secretKey: SecretKey) {
+    private fun saveSecretKey(secretKey: SecretKey, publicUserId: String) {
         val entry = KeyStore.SecretKeyEntry(secretKey)
         val keyStore = getKeyStore()
         val keyProtection =
@@ -102,22 +90,22 @@ class CryptoService(private val preferences: SharedPreferences) {
                 .setRandomizedEncryptionRequired(false)
                 .build()
 
-        keyStore.setEntry(AES_KEY_NAME, entry, keyProtection)
+        keyStore.setEntry(AES_KEY_NAME + publicUserId, entry, keyProtection)
     }
 
-    private fun savePublicKey(publicKey: PublicKey) {
-        val secretKey = getSecretKey()
-        val encryptedKey = encryptAes(secretKey, publicKey.encoded)
+    private fun savePublicKey(publicKey: PublicKey, publicUserId: String) {
+        val secretKey = getSecretKey(publicUserId)
+        val encryptedKey = encryptAes(secretKey, publicKey.encoded, publicUserId)
         val encryptedKeyString = encryptedKey.toStringBase64()
 
         preferences.edit(true) {
-            putString(EC_KEY_NAME, encryptedKeyString)
+            putString(EC_KEY_NAME + publicUserId, encryptedKeyString)
         }
     }
 
-    private fun encryptAes(secretKey: SecretKey, data: ByteArray): ByteArray {
+    private fun encryptAes(secretKey: SecretKey, data: ByteArray, publicUserId: String): ByteArray {
         val cipher = Cipher.getInstance(AES_TRANSFORMATION)
-        val iv = getIV()
+        val iv = getIV(publicUserId)
 
         if (iv != null) {
             val ivParameterSpec = IvParameterSpec(iv.toByteArrayFromBase64String())
@@ -126,15 +114,15 @@ class CryptoService(private val preferences: SharedPreferences) {
         } else {
             cipher.init(Cipher.ENCRYPT_MODE, secretKey)
 
-            saveIV(cipher.iv)
+            saveIV(cipher.iv, publicUserId)
         }
 
         return cipher.doFinal(data)
     }
 
-    private fun decryptAes(secretKey: SecretKey, data: ByteArray): ByteArray {
+    private fun decryptAes(secretKey: SecretKey, data: ByteArray, publicUserId: String): ByteArray {
         val cipher = Cipher.getInstance(AES_TRANSFORMATION)
-        val iv = getIV()?.toByteArrayFromBase64String() ?: byteArrayOf()
+        val iv = getIV(publicUserId)?.toByteArrayFromBase64String() ?: byteArrayOf()
         val ivParameterSpec = IvParameterSpec(iv)
 
         cipher.init(Cipher.DECRYPT_MODE, secretKey, ivParameterSpec)
@@ -142,25 +130,24 @@ class CryptoService(private val preferences: SharedPreferences) {
         return cipher.doFinal(data)
     }
 
-    private fun getSecretKey(): SecretKey {
-        val secretKeyEntry = getKeyStore().getEntry(AES_KEY_NAME, null) as KeyStore.SecretKeyEntry
+    private fun getSecretKey(publicUserId: String): SecretKey {
+        val secretKeyEntry =
+            getKeyStore().getEntry(AES_KEY_NAME + publicUserId, null) as KeyStore.SecretKeyEntry
 
         return secretKeyEntry.secretKey
     }
 
-    private fun getEncryptedString(): String? {
-        return preferences.getString(EC_KEY_NAME, null)
+    private fun getEncryptedString(publicUserId: String): String? {
+        return preferences.getString(EC_KEY_NAME + publicUserId, null)
     }
 
-    private fun saveIV(iv: ByteArray) {
+    private fun saveIV(iv: ByteArray, publicUserId: String) {
         preferences.edit(true) {
-            putString(IV_KEY_NAME, iv.toStringBase64())
+            putString(IV_KEY_NAME + publicUserId, iv.toStringBase64())
         }
     }
 
-    private fun getKeyStore() = KeyStore
-        .getInstance(ANDROID_KEYSTORE)
-        .also { it.load(null) }
+    private fun getKeyStore() = KeyStore.getInstance(ANDROID_KEYSTORE).also { it.load(null) }
 
     private fun generateP256PublicKeyFromFlatW(w: ByteArray): ECPublicKey {
         val head = Base64.decode(HEAD_256, Base64.NO_WRAP)

@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
-import com.keyrico.keyrisdk.KeyriConfig
 import com.keyrico.keyrisdk.KeyriSdk
 import com.keyrico.keyrisdk.databinding.ActivityAuthWithScannerBinding
 import com.keyrico.keyrisdk.entity.PublicAccount

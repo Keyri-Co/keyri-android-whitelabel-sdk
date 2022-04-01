@@ -4,22 +4,20 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.room.Room
 import com.keyrico.keyrisdk.db.AppDb
-import com.keyrico.keyrisdk.services.SessionService
 import com.keyrico.keyrisdk.services.StorageService
 import com.keyrico.keyrisdk.services.UserService
 import com.keyrico.keyrisdk.services.api.ApiService
 import com.keyrico.keyrisdk.services.crypto.CryptoService
-import com.keyrico.keyrisdk.services.socket.SocketService
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
-class KeyriSdkModule(private val context: Context, private val appKey: String) {
+class KeyriSdkModule(private val context: Context, private val rpPublicKey: String) {
 
-    private val isDebug
-        get() = appKey.takeIf { it.length > 4 }?.substring(0, 4) == "dev_"
+    // TODO How to handle isDebug?
+    private val isDebug = true
 
     fun provideApiService(): ApiService {
         val okHttpClientBuilder = OkHttpClient.Builder()
@@ -46,9 +44,9 @@ class KeyriSdkModule(private val context: Context, private val appKey: String) {
 
     fun provideUserService() = UserService(
         provideStorageService(),
-        provideSessionService(),
         provideApiService(),
-        provideCryptoService()
+        provideCryptoService(),
+        rpPublicKey
     )
 
     fun provideCryptoService() = CryptoService(getSharedPreferences())
@@ -58,19 +56,12 @@ class KeyriSdkModule(private val context: Context, private val appKey: String) {
 
     private fun provideUserDao() = provideAppDb().userDao()
 
-    private fun provideSessionService() =
-        SessionService(provideSocketService(), provideCryptoService())
-
-    private fun provideSocketService() = SocketService(if (isDebug) DEV_WS_URL else WS_URL)
-
     private fun getSharedPreferences(): SharedPreferences =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     companion object {
         private const val DEV_API_URL = "https://dev-api.keyri.co"
-        private const val DEV_WS_URL = "wss://dev-api.keyri.co"
         private const val API_URL = "https://api.keyri.co"
-        private const val WS_URL = "https://api.keyri.co"
 
         private const val PREFS_NAME = "keyri_prefs"
         private const val DB_NAME = "db_keyri_sdk"

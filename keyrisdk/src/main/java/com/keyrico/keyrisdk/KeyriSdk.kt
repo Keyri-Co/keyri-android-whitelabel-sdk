@@ -10,7 +10,6 @@ import com.keyrico.keyrisdk.exception.AccountNotFoundException
 import com.keyrico.keyrisdk.exception.AuthorizationException
 import com.keyrico.keyrisdk.exception.MultipleAccountsNotAllowedException
 import com.keyrico.keyrisdk.exception.NotInitializedException
-import com.keyrico.keyrisdk.exception.PermissionsException
 import com.keyrico.keyrisdk.exception.WrongConfigException
 import com.keyrico.keyrisdk.services.api.AuthMobileResponse
 import com.keyrico.keyrisdk.services.api.InitRequest
@@ -21,28 +20,32 @@ import com.keyrico.keyrisdk.utils.makeApiCall
 /**
  * Keyri SDK public API.
  */
-class KeyriSdk(context: Context, private val config: KeyriConfig) {
+class KeyriSdk(context: Context) {
 
     private var service: Service? = null
-    private val keyriSdkModule = KeyriSdkModule(context, config.appKey)
-    internal val allowMultipleAccounts: Boolean
-        get() = config.allowMultipleAccounts
+    private val keyriSdkModule by lazy { KeyriSdkModule(context, publicKey) }
 
     init {
-        initKeys()
         generateDeviceIdIfNeeded()
     }
 
-    suspend fun init(publicKey: String, serviceDomain: String) {
+    internal var allowMultipleAccounts: Boolean = false
 
+    private lateinit var publicKey: String
+    private lateinit var serviceDomain: String
+
+    suspend fun init(publicKey: String, serviceDomain: String, allowMultipleAccounts: Boolean) {
+        this.publicKey = publicKey
+        this.serviceDomain = serviceDomain
+        this.allowMultipleAccounts = allowMultipleAccounts
     }
 
     suspend fun generateAssociationKey(publicUserId: String) {
-
+        keyriSdkModule.provideCryptoService().generateAssociationKey(publicUserId, publicKey)
     }
 
-    suspend fun getAssociationKey(publicUserId: String) {
-
+    suspend fun getAssociationKey(publicUserId: String): String {
+        return keyriSdkModule.provideCryptoService().getAssociationKey(publicUserId)
     }
 
     /**
@@ -58,21 +61,24 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
         loadServiceIfNeeded()
         val service = service ?: throw IllegalStateException()
 
-        assertPermissionGranted(KeyriPermission.SESSION)
-
         val session =
-            makeApiCall { keyriSdkModule.provideApiService().getSession(sessionId) }.body()
+            makeApiCall {
+                keyriSdkModule.provideApiService().getSession(sessionId, serviceDomain)
+            }.body()
         if (session?.service?.id != service.id) throw WrongConfigException
         return session
     }
 
     @Throws(NotInitializedException::class, MultipleAccountsNotAllowedException::class)
-    suspend fun challengeSession(sessionId: String) {
+    suspend fun challengeSession(
+        publicUserId: String,
+        sessionId: String,
+        secureCustom: String?,
+        publicCustom: String?
+    ) {
         keyriSdkModule
             .provideUserService()
-            .challengeSession()
-
-        // TODO Add Impl
+            .challengeSession(publicUserId, sessionId, secureCustom, publicCustom)
     }
 
     /**
@@ -97,17 +103,15 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
         loadServiceIfNeeded()
         val service = service ?: throw IllegalStateException()
 
-        assertPermissionGranted(KeyriPermission.MOBILE_SIGNUP)
-
         return keyriSdkModule
             .provideUserService()
             .signupMobile(
                 username,
                 service,
                 extendedHeaders,
-                config.callbackUrl,
+                callbackUrl,
                 custom,
-                config.allowMultipleAccounts
+                allowMultipleAccounts
             ) ?: throw AuthorizationException
     }
 
@@ -129,11 +133,9 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
         loadServiceIfNeeded()
         val service = service ?: throw IllegalStateException()
 
-        assertPermissionGranted(KeyriPermission.MOBILE_LOGIN)
-
         return keyriSdkModule
             .provideUserService()
-            .loginMobile(account, service, extendedHeaders, config.callbackUrl)
+            .loginMobile(account, service, extendedHeaders, callbackUrl)
             ?: throw AuthorizationException
     }
 
@@ -144,8 +146,6 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
     suspend fun getAccounts(): List<PublicAccount> {
         loadServiceIfNeeded()
         val service = service ?: throw IllegalStateException()
-
-        assertPermissionGranted(KeyriPermission.ACCOUNTS)
 
         return keyriSdkModule
             .provideStorageService()
@@ -163,8 +163,6 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
         loadServiceIfNeeded()
         val service = service ?: throw IllegalStateException()
 
-        assertPermissionGranted(KeyriPermission.ACCOUNTS)
-
         keyriSdkModule
             .provideStorageService()
             .removeAccount(service.id, account)
@@ -172,7 +170,7 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
 
     /**
      * Open auth with scanner activity.
-     * Handle result with @AUTH_REQUEST_CODE (953) in activity result callback.
+     * Handle result with @requestCode in activity result callback.
      */
     @Throws(IllegalStateException::class, NotInitializedException::class)
     fun easyKeyriAuth(activity: Activity, requestCode: Int, customArg: String? = null) {
@@ -187,7 +185,6 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
     @Throws(AccountNotFoundException::class, NotInitializedException::class)
     suspend fun whitelabelAuth(sessionId: String, custom: String) {
         loadServiceIfNeeded()
-        assertPermissionGranted(KeyriPermission.LOGIN)
 
         keyriSdkModule.provideUserService().whitelabelAuth(sessionId, custom)
     }
@@ -198,37 +195,13 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
         val deviceId =
             keyriSdkModule.provideStorageService().getDeviceId() ?: throw IllegalStateException()
 
-        val request = InitRequest(deviceId, config.appKey)
+        val request = InitRequest(deviceId, serviceDomain)
         val response = makeApiCall { keyriSdkModule.provideApiService().init(request) }.body()
         service = response?.service
     }
 
-    private fun initKeys() {
-        keyriSdkModule.provideCryptoService().generateSecretKey(config.publicKey)
-    }
-
     private fun generateDeviceIdIfNeeded() {
-        val storageService = keyriSdkModule.provideStorageService()
-
-        if (storageService.getDeviceId() == null) {
-            storageService.setDeviceId(Utils.getRandomString(32))
-        }
-    }
-
-    @Throws(PermissionsException::class)
-    private suspend fun assertPermissionGranted(permission: KeyriPermission) {
-        /* val serviceId = service?.serviceId ?: throw IllegalStateException()
-
-        val permissionName = permission.id
-        val response = makeApiCall { keyriSdkModule.provideApiService().getPermissions(serviceId, listOf(permissionName)) }.body() ?: throw IllegalStateException()
-        val granted: Boolean = when(permission) {
-            KeyriPermission.SESSION -> response.session == true
-            KeyriPermission.ACCOUNTS -> response.accounts == true
-            KeyriPermission.LOGIN -> response.login == true
-            KeyriPermission.SIGNUP -> response.signup == true
-            KeyriPermission.MOBILE_LOGIN -> response.mobileLogin == true
-            KeyriPermission.MOBILE_SIGNUP -> response.mobileSignup == true
-        }
-        if (!granted) throw PermissionsException */
+        keyriSdkModule.provideStorageService()
+            .takeIf { it.getDeviceId() == null }?.setDeviceId(Utils.getRandomString(32))
     }
 }

@@ -14,19 +14,22 @@ import com.keyrico.keyrisdk.utils.makeApiCall
 
 class UserService(
     private val storageService: StorageService,
-    private val sessionService: SessionService,
     private val apiService: ApiService,
-    private val cryptoService: CryptoService
+    private val cryptoService: CryptoService,
+    private val rpPublicKey: String
 ) {
 
     suspend fun challengeSession(
-        // TODO Add Impl
+        publicUserId: String,
+        sessionId: String,
+        secureCustom: String?,
+        publicCustom: String?
     ) {
-
+        // TODO Add Impl
     }
 
     suspend fun whitelabelAuth(sessionId: String, custom: String) {
-        sessionService.whitelabelAuth(sessionId, custom)
+        // TODO Add Impl
     }
 
     suspend fun signupMobile(
@@ -44,7 +47,11 @@ class UserService(
         }
 
         val account = createAccount(service.id, username, custom)
-        val request = AuthMobileRequest(account.userId, username, cryptoService.getPublicKey())
+        val request = AuthMobileRequest(
+            account.userId,
+            username,
+            cryptoService.getAssociationKey(account.userId)
+        )
 
         return makeApiCall { apiService.authMobile(extendedHeaders, callbackUrl, request) }.body()
     }
@@ -60,15 +67,29 @@ class UserService(
             .find { it.username == publicAccount.username } ?: throw AccountNotFoundException
 
         val request =
-            AuthMobileRequest(account.userId, account.username, cryptoService.getPublicKey())
+            AuthMobileRequest(
+                account.userId,
+                account.username,
+                cryptoService.getAssociationKey(account.userId)
+            )
 
         return makeApiCall { apiService.authMobile(extendedHeaders, callbackUrl, request) }.body()
     }
 
-    private suspend fun createAccount(serviceId: String, username: String, custom: String?) =
-        Account(generateUserId(), serviceId, username, custom).also {
-            storageService.addAccount(it)
-        }
+    private suspend fun createAccount(
+        serviceId: String,
+        username: String,
+        custom: String?
+    ): Account {
+        val publicUserId = Utils.getRandomString(32)
 
-    private fun generateUserId() = cryptoService.encryptAes(Utils.getRandomString(32))
+        cryptoService.generateAssociationKey(publicUserId, rpPublicKey)
+
+        return Account(generateUserId(publicUserId), serviceId, username, custom).also {
+            storageService.addAccount(it, publicUserId)
+        }
+    }
+
+    private fun generateUserId(publicUserId: String) =
+        cryptoService.encryptAes(publicUserId, publicUserId)
 }

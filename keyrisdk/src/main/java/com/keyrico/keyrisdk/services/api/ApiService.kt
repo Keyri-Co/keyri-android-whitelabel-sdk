@@ -1,5 +1,6 @@
 package com.keyrico.keyrisdk.services.api
 
+import com.keyrico.keyrisdk.entity.session.Session
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -17,8 +18,8 @@ interface ApiService {
     @GET("api/session/{sessionId}")
     suspend fun getSession(
         @Path("sessionId") sessionId: String,
-        @Query("appKey") appKey: String
-    ): Response<FirstResponse>
+        @Query("origin") serviceDomain: String
+    ): Response<Session>
 
     @POST("api/session/{sessionId}")
     suspend fun secondPost(

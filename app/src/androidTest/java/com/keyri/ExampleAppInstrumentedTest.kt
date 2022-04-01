@@ -10,7 +10,6 @@ import com.google.gson.annotations.SerializedName
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
-import com.keyrico.keyrisdk.KeyriConfig
 import com.keyrico.keyrisdk.KeyriSdk
 import com.keyrico.keyrisdk.exception.AccountNotFoundException
 import kotlinx.coroutines.delay

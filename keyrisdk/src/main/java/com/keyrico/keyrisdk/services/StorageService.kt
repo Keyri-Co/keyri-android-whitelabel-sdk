@@ -17,17 +17,11 @@ class StorageService(
     private val cryptoService: CryptoService
 ) {
 
-    private fun applyString(key: String, value: String) {
-        preferences.edit(commit = true) {
-            putString(key, value)
-        }
-    }
-
     /**
      * Stores account in local storage with encrypted userId
      */
-    suspend fun addAccount(account: Account) {
-        val encryptedUserId = cryptoService.encryptAes(account.userId)
+    suspend fun addAccount(account: Account, publicUserId: String) {
+        val encryptedUserId = cryptoService.encryptAes(account.userId, publicUserId)
         val encryptedAccount = account.copy(userId = encryptedUserId)
 
         userDao.addOrUpdateAccount(encryptedAccount)
@@ -39,9 +33,7 @@ class StorageService(
     suspend fun getAccounts(serviceId: String) =
         userDao
             .getAccountsByServiceId(serviceId)
-            .map {
-                it.copy(userId = cryptoService.decryptAes(it.userId))
-            }
+            .map { it.copy(userId = cryptoService.decryptAes(it.userId)) }
 
     /**
      * Retrieves all accounts
@@ -49,9 +41,7 @@ class StorageService(
     suspend fun getAllAccounts() =
         userDao
             .getAllAccounts()
-            .map {
-                it.copy(userId = cryptoService.decryptAes(it.userId))
-            }
+            .map { it.copy(userId = cryptoService.decryptAes(it.userId)) }
 
     /**
      * Removing passed account
@@ -63,7 +53,9 @@ class StorageService(
     fun getDeviceId() = preferences.getString(KEY_DEVICE_ID, null)
 
     fun setDeviceId(deviceId: String) {
-        applyString(KEY_DEVICE_ID, deviceId)
+        preferences.edit(commit = true) {
+            putString(KEY_DEVICE_ID, deviceId)
+        }
     }
 
     companion object {

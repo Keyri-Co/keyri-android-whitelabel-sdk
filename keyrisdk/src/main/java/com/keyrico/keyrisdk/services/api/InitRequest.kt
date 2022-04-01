@@ -7,6 +7,6 @@ data class InitRequest(
     @SerializedName("device_id")
     val deviceId: String,
 
-    @SerializedName("mobileAppKey")
-    val mobileAppKey: String
+    @SerializedName("serviceDomain")
+    val serviceDomain: String
 )
