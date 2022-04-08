@@ -40,7 +40,7 @@ class ExampleAppInstrumentedTest {
     private val config by lazy {
         KeyriConfig(
             appKey = BuildConfig.APP_KEY,
-            publicKey = BuildConfig.PUBLIC_KEY,
+            rpPublicKey = BuildConfig.RP_PUBLIC_KEY,
             callbackUrl = BuildConfig.KEYRI_CALLBACK_URL,
             allowMultipleAccounts = false
         )

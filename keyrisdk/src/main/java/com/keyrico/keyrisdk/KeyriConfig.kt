@@ -9,7 +9,7 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class KeyriConfig(
     val appKey: String,
-    val publicKey: String,
+    val rpPublicKey: String,
     val callbackUrl: String,
     val allowMultipleAccounts: Boolean = false
 ) : Parcelable

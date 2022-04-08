@@ -7,7 +7,6 @@
     <string name="keyri_err_internal_server">Internal server error. Service is unavailable</string>
     <string name="keyri_err_wrong_config">Wrong configuration</string>
     <string name="keyri_err_account_not_found">Account not found</string>
-    <string name="keyri_err_no_permissions">Permissions are not granted</string>
     <string name="keyri_powered_by_keyri">Powered by Keyri</string>
     <string name="keyri_multiple_accounts_not_allowed">Multiple accounts not allowed</string>
     <string name="keyri_camera_not_granted">Camera permission is not granted</string>

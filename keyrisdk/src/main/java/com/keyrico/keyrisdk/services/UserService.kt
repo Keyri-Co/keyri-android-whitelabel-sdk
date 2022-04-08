@@ -46,8 +46,12 @@ class UserService(
         sessionService.verifyUserSession(false, account.userId, sessionId, custom, isTestEnv)
     }
 
-    suspend fun whitelabelAuth(sessionId: String, custom: String) {
-        sessionService.whitelabelAuth(sessionId, custom)
+    suspend fun whitelabelAuth(sessionId: String, custom: String, extensionKey: String?) {
+        if (extensionKey != null) {
+            sessionService.customAuthChallengeRequest(sessionId, custom, extensionKey)
+        } else {
+            sessionService.whitelabelAuth(sessionId, custom)
+        }
     }
 
     suspend fun signupMobile(
