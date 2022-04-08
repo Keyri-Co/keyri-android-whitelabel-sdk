@@ -76,24 +76,6 @@ class KeyriScannerView @JvmOverloads constructor(
             .build()
     }
 
-    @SuppressLint("UnsafeOptInUsageError")
-    private val qrAnalyzer = ImageAnalysis.Analyzer { imageProxy ->
-        imageProxy.image?.takeIf { !isLoading }?.let { mediaImage ->
-            val image =
-                InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
-
-            BarcodeScanning.getClient(options).process(image)
-                .addOnSuccessListener { barcodes ->
-                    barcodes.firstOrNull()
-                        ?.displayValue
-                        ?.let(::processScannedData)
-                }
-                .addOnCompleteListener {
-                    imageProxy.close()
-                }
-        } ?: imageProxy.close()
-    }
-
     private var binding: LayoutKeyriScannerViewBinding =
         LayoutKeyriScannerViewBinding.inflate(LayoutInflater.from(context), this, true)
 
@@ -414,7 +396,7 @@ class KeyriScannerView @JvmOverloads constructor(
             .setTargetRotation(rotation)
             .build()
 
-        imageAnalyzer?.setAnalyzer(cameraExecutor, qrAnalyzer)
+        imageAnalyzer?.setAnalyzer(cameraExecutor, initQrAnalyzer())
         cameraProvider?.unbindAll()
 
         try {
@@ -433,6 +415,24 @@ class KeyriScannerView @JvmOverloads constructor(
         }
     }
 
+    @SuppressLint("UnsafeOptInUsageError")
+    private fun initQrAnalyzer(): ImageAnalysis.Analyzer = ImageAnalysis.Analyzer { imageProxy ->
+        imageProxy.image?.takeIf { !isLoading }?.let { mediaImage ->
+            val image =
+                InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+
+            BarcodeScanning.getClient(options).process(image)
+                .addOnSuccessListener { barcodes ->
+                    barcodes.firstOrNull()
+                        ?.displayValue
+                        ?.let(::processScannedData)
+                }
+                .addOnCompleteListener {
+                    imageProxy.close()
+                }
+        } ?: imageProxy.close()
+    }
+
     private fun aspectRatio(width: Int, height: Int): Int {
         val previewRatio = width.coerceAtLeast(height).toDouble() / width.coerceAtMost(height)
 
@@ -445,12 +445,11 @@ class KeyriScannerView @JvmOverloads constructor(
 
     private fun onLoading(isLoading: Boolean) {
         launch(Dispatchers.Main) {
-            keyriScannerViewParams?.onLoading?.invoke(isLoading) ?: with(binding) {
-                flProgress.progress.isVisible = isLoading
+            keyriScannerViewParams?.onLoading?.invoke(isLoading) ?: let {
+                binding.flProgress.progress.isVisible = isLoading
 
                 if (isLoading) {
                     imageAnalyzer?.clearAnalyzer()
-//                    cameraProvider?.unbindAll()
                 } else {
                     bindCameraUseCases()
                 }

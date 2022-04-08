@@ -3,6 +3,7 @@ package com.keyrico.keyrisdk.services.socket
 import android.util.Log
 import com.google.gson.JsonParser
 import com.keyrico.keyrisdk.exception.AuthorizationException
+import com.keyrico.keyrisdk.services.socket.messages.CustomAuthChallengeMessage
 import com.keyrico.keyrisdk.services.socket.messages.ValidateMessage
 import com.keyrico.keyrisdk.services.socket.messages.VerifyApproveMessage
 import com.keyrico.keyrisdk.services.socket.messages.VerifyRequestMessage
@@ -96,6 +97,13 @@ class SocketService(private val url: String) : WebSocketListener() {
      */
     fun sendConfirmationEvent(message: VerifyApproveMessage) {
         Log.d(TAG, "Sending confirmation event...")
+
+        connectIfNeeded()
+        webSocket?.send(message.toSocketData().toString())
+    }
+
+    fun sendCustomAuthChallengeEvent(message: CustomAuthChallengeMessage) {
+        Log.d(TAG, "Sending custom auth challenge event...")
 
         connectIfNeeded()
         webSocket?.send(message.toSocketData().toString())

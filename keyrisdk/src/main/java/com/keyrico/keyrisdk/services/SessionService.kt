@@ -1,9 +1,11 @@
 package com.keyrico.keyrisdk.services
 
 import com.google.gson.Gson
+import com.google.gson.JsonObject
 import com.keyrico.keyrisdk.exception.AuthorizationException
 import com.keyrico.keyrisdk.services.crypto.CryptoService
 import com.keyrico.keyrisdk.services.socket.SocketService
+import com.keyrico.keyrisdk.services.socket.messages.CustomAuthChallengeMessage
 import com.keyrico.keyrisdk.services.socket.messages.ValidateMessage
 import com.keyrico.keyrisdk.services.socket.messages.VerificationMessage
 import com.keyrico.keyrisdk.services.socket.messages.VerifyApproveMessage
@@ -95,6 +97,35 @@ class SessionService(
             )
 
             socketService.sendConfirmationEvent(confirmationMessage)
+        } ?: throw AuthorizationException
+    }
+
+    suspend fun customAuthChallengeRequest(
+        sessionId: String,
+        custom: String,
+        extensionKey: String
+    ) {
+        val timestamp = System.currentTimeMillis()
+
+        val message = JsonObject().also {
+            it.addProperty("timestamp", timestamp)
+            it.addProperty("custom", custom)
+        }.toString()
+
+        val iv = cryptoService.getIV()
+        val cipher = cryptoService.encryptAes(message, extensionKey)
+
+        val customAuthChallengeMessage = CustomAuthChallengeMessage(
+            sessionId,
+            timestamp.toString(),
+            cipher,
+            iv ?: throw AuthorizationException,
+            true
+        )
+
+        withTimeoutOrNull(SOCKET_TIMEOUT) {
+            socketService.reconnect()
+            socketService.sendCustomAuthChallengeEvent(customAuthChallengeMessage)
         } ?: throw AuthorizationException
     }
 

@@ -5,8 +5,8 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.1.2'
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.10'
+        classpath 'com.android.tools.build:gradle:7.1.3'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.20'
     }
 }
 
@@ -49,14 +49,14 @@ allprojects {
 
     task ktlint(type: JavaExec, group: "verification") {
         description = "Check Kotlin code style."
-        main = "com.pinterest.ktlint.Main"
+        mainClass.set("com.pinterest.ktlint.Main")
         classpath = configurations.kotlinlint
         args "src/**/*.kt"
     }
 
     task ktlintFormat(type: JavaExec, group: "formatting") {
         description = "Fix Kotlin code style deviations."
-        main = "com.pinterest.ktlint.Main"
+        mainClass.set("com.pinterest.ktlint.Main")
         classpath = configurations.kotlinlint
         args "-F", "src/**/*.kt"
     }
