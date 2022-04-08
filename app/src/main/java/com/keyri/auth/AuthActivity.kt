@@ -65,6 +65,11 @@ class AuthActivity : AppCompatActivity() {
             if (isGranted) openScanner() else finish()
         }
 
+    private val requestPermissionCustomLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+            if (isGranted) getSecureCustom() else finish()
+        }
+
     private var displayId: Int = -1
     private var imageAnalyzer: ImageAnalysis? = null
     private var camera: Camera? = null
@@ -75,48 +80,6 @@ class AuthActivity : AppCompatActivity() {
         BarcodeScannerOptions.Builder()
             .setBarcodeFormats(Barcode.FORMAT_QR_CODE, Barcode.FORMAT_AZTEC)
             .build()
-    }
-
-    private var tempSecureCustom: String? = null
-
-    @SuppressLint("UnsafeOptInUsageError")
-    private fun initQrAnalyzer(): ImageAnalysis.Analyzer {
-        return ImageAnalysis.Analyzer { imageProxy ->
-            imageProxy.image?.takeIf { viewModel.loading().value != true }?.let { mediaImage ->
-                val image =
-                    InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
-
-                BarcodeScanning.getClient(options).process(image)
-                    .addOnSuccessListener { barcodes ->
-                        barcodes.firstOrNull()
-                            ?.displayValue
-                            ?.let(::processScannedData)
-                    }
-                    .addOnCompleteListener {
-                        imageProxy.close()
-                    }
-            } ?: imageProxy.close()
-        }
-    }
-
-    @SuppressLint("UnsafeOptInUsageError")
-    private fun initWhitelabelAnalyzer(secureCustom: String?): ImageAnalysis.Analyzer {
-        return ImageAnalysis.Analyzer { imageProxy ->
-            imageProxy.image?.takeIf { viewModel.loading().value != true }?.let { mediaImage ->
-                val image =
-                    InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
-
-                BarcodeScanning.getClient(options).process(image)
-                    .addOnSuccessListener { barcodes ->
-                        barcodes.firstOrNull()
-                            ?.displayValue
-                            ?.let { processScannedData(it, secureCustom) }
-                    }
-                    .addOnCompleteListener {
-                        imageProxy.close()
-                    }
-            } ?: imageProxy.close()
-        }
     }
 
     private lateinit var binding: ActivityAuthBinding
@@ -145,7 +108,7 @@ class AuthActivity : AppCompatActivity() {
         if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {
                 KeyriSdk.AUTH_REQUEST_CODE -> onMessage(getString(R.string.message_authenticated))
-                REQUEST_SECURE_CUSTOM -> openScanner(data?.getStringExtra(SECURE_CUSTOM))
+                REQUEST_SECURE_CUSTOM -> initCamera(data?.getStringExtra(SECURE_CUSTOM))
             }
         }
     }
@@ -165,10 +128,11 @@ class AuthActivity : AppCompatActivity() {
             bSignup.setOnClickListener { openScanner() }
             bLogin.setOnClickListener { openScanner() }
             bWhitelabelAuth.setOnClickListener {
-                startActivityForResult(
-                    Intent(this@AuthActivity, InputSecureCustomActivity::class.java),
-                    REQUEST_SECURE_CUSTOM
-                )
+                if (!hasCameraPermission()) {
+                    requestPermissionCustomLauncher.launch(Manifest.permission.CAMERA)
+                } else {
+                    getSecureCustom()
+                }
             }
             bSignupMobile.setOnClickListener { NewAccountActivity.openNewAccountActivity(this@AuthActivity) }
             bLoginMobile.setOnClickListener { openAccountsActivity(AccountsMode.LOGIN) }
@@ -181,19 +145,20 @@ class AuthActivity : AppCompatActivity() {
         AccountsActivity.openAccountsActivity(this, mode)
     }
 
-    private fun openScanner(secureCustom: String? = null) {
+    private fun openScanner() {
         if (!hasCameraPermission()) {
-            if (tempSecureCustom == null) {
-                tempSecureCustom = secureCustom
-            }
-
             requestCameraPermission()
             return
         }
 
-        initCamera(secureCustom ?: tempSecureCustom)
+        initCamera()
+    }
 
-        tempSecureCustom = null
+    private fun getSecureCustom() {
+        startActivityForResult(
+            Intent(this@AuthActivity, InputSecureCustomActivity::class.java),
+            REQUEST_SECURE_CUSTOM
+        )
     }
 
     private fun initCamera(secureCustom: String? = null) {
@@ -250,6 +215,42 @@ class AuthActivity : AppCompatActivity() {
             Log.d("Keyri", "Failed to init Camera")
         }
     }
+
+    @SuppressLint("UnsafeOptInUsageError")
+    private fun initQrAnalyzer(): ImageAnalysis.Analyzer = ImageAnalysis.Analyzer { imageProxy ->
+        imageProxy.image?.takeIf { viewModel.loading().value != true }?.let { mediaImage ->
+            val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+
+            BarcodeScanning.getClient(options).process(image)
+                .addOnSuccessListener { barcodes ->
+                    barcodes.firstOrNull()
+                        ?.displayValue
+                        ?.let(::processScannedData)
+                }
+                .addOnCompleteListener {
+                    imageProxy.close()
+                }
+        } ?: imageProxy.close()
+    }
+
+    @SuppressLint("UnsafeOptInUsageError")
+    private fun initWhitelabelAnalyzer(secureCustom: String?): ImageAnalysis.Analyzer =
+        ImageAnalysis.Analyzer { imageProxy ->
+            imageProxy.image?.takeIf { viewModel.loading().value != true }?.let { mediaImage ->
+                val image =
+                    InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+
+                BarcodeScanning.getClient(options).process(image)
+                    .addOnSuccessListener { barcodes ->
+                        barcodes.firstOrNull()
+                            ?.displayValue
+                            ?.let { processScannedData(it, secureCustom) }
+                    }
+                    .addOnCompleteListener {
+                        imageProxy.close()
+                    }
+            } ?: imageProxy.close()
+        }
 
     private fun aspectRatio(width: Int, height: Int): Int {
         val previewRatio = width.coerceAtLeast(height).toDouble() / width.coerceAtMost(height)

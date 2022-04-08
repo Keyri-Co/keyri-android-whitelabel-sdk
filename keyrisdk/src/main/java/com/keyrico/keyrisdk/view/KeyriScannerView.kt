@@ -76,24 +76,6 @@ class KeyriScannerView @JvmOverloads constructor(
             .build()
     }
 
-    @SuppressLint("UnsafeOptInUsageError")
-    private val qrAnalyzer = ImageAnalysis.Analyzer { imageProxy ->
-        imageProxy.image?.takeIf { !isLoading }?.let { mediaImage ->
-            val image =
-                InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
-
-            BarcodeScanning.getClient(options).process(image)
-                .addOnSuccessListener { barcodes ->
-                    barcodes.firstOrNull()
-                        ?.displayValue
-                        ?.let(::processScannedData)
-                }
-                .addOnCompleteListener {
-                    imageProxy.close()
-                }
-        } ?: imageProxy.close()
-    }
-
     private var binding: LayoutKeyriScannerViewBinding =
         LayoutKeyriScannerViewBinding.inflate(LayoutInflater.from(context), this, true)
 
@@ -414,7 +396,7 @@ class KeyriScannerView @JvmOverloads constructor(
             .setTargetRotation(rotation)
             .build()
 
-        imageAnalyzer?.setAnalyzer(cameraExecutor, qrAnalyzer)
+        imageAnalyzer?.setAnalyzer(cameraExecutor, initQrAnalyzer())
         cameraProvider?.unbindAll()
 
         try {
@@ -431,6 +413,24 @@ class KeyriScannerView @JvmOverloads constructor(
         } catch (exc: Exception) {
             Log.d("Keyri", "Failed to init Camera")
         }
+    }
+
+    @SuppressLint("UnsafeOptInUsageError")
+    private fun initQrAnalyzer(): ImageAnalysis.Analyzer = ImageAnalysis.Analyzer { imageProxy ->
+        imageProxy.image?.takeIf { !isLoading }?.let { mediaImage ->
+            val image =
+                InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+
+            BarcodeScanning.getClient(options).process(image)
+                .addOnSuccessListener { barcodes ->
+                    barcodes.firstOrNull()
+                        ?.displayValue
+                        ?.let(::processScannedData)
+                }
+                .addOnCompleteListener {
+                    imageProxy.close()
+                }
+        } ?: imageProxy.close()
     }
 
     private fun aspectRatio(width: Int, height: Int): Int {
