@@ -10,7 +10,6 @@ import com.keyrico.keyrisdk.exception.AccountNotFoundException
 import com.keyrico.keyrisdk.exception.AuthorizationException
 import com.keyrico.keyrisdk.exception.MultipleAccountsNotAllowedException
 import com.keyrico.keyrisdk.exception.NotInitializedException
-import com.keyrico.keyrisdk.exception.PermissionsException
 import com.keyrico.keyrisdk.exception.WrongConfigException
 import com.keyrico.keyrisdk.services.api.AuthMobileResponse
 import com.keyrico.keyrisdk.services.api.InitRequest
@@ -46,8 +45,6 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
         loadServiceIfNeeded()
         val service = service ?: throw IllegalStateException()
 
-        assertPermissionGranted(KeyriPermission.SESSION)
-
         val session =
             makeApiCall { keyriSdkModule.provideApiService().getSession(sessionId) }.body()
         if (session?.service?.id != service.id) throw WrongConfigException
@@ -72,8 +69,6 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
         custom: String?,
         isTestEnv: Boolean = false
     ) {
-        assertPermissionGranted(KeyriPermission.SIGNUP)
-
         try {
             keyriSdkModule
                 .provideUserService()
@@ -110,8 +105,6 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
     ) {
         loadServiceIfNeeded()
 
-        assertPermissionGranted(KeyriPermission.LOGIN)
-
         val acc = keyriSdkModule
             .provideStorageService()
             .getAccounts(service.id)
@@ -144,8 +137,6 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
         loadServiceIfNeeded()
         val service = service ?: throw IllegalStateException()
 
-        assertPermissionGranted(KeyriPermission.MOBILE_SIGNUP)
-
         return keyriSdkModule
             .provideUserService()
             .signupMobile(
@@ -176,8 +167,6 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
         loadServiceIfNeeded()
         val service = service ?: throw IllegalStateException()
 
-        assertPermissionGranted(KeyriPermission.MOBILE_LOGIN)
-
         return keyriSdkModule
             .provideUserService()
             .loginMobile(account, service, extendedHeaders, config.callbackUrl)
@@ -191,8 +180,6 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
     suspend fun getAccounts(): List<PublicAccount> {
         loadServiceIfNeeded()
         val service = service ?: throw IllegalStateException()
-
-        assertPermissionGranted(KeyriPermission.ACCOUNTS)
 
         return keyriSdkModule
             .provideStorageService()
@@ -209,8 +196,6 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
     suspend fun removeAccount(account: PublicAccount) {
         loadServiceIfNeeded()
         val service = service ?: throw IllegalStateException()
-
-        assertPermissionGranted(KeyriPermission.ACCOUNTS)
 
         keyriSdkModule
             .provideStorageService()
@@ -232,11 +217,10 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
     }
 
     @Throws(AccountNotFoundException::class, NotInitializedException::class)
-    suspend fun whitelabelAuth(sessionId: String, custom: String) {
+    suspend fun whitelabelAuth(sessionId: String, custom: String, extensionKey: String? = null) {
         loadServiceIfNeeded()
-        assertPermissionGranted(KeyriPermission.LOGIN)
 
-        keyriSdkModule.provideUserService().whitelabelAuth(sessionId, custom)
+        keyriSdkModule.provideUserService().whitelabelAuth(sessionId, custom, extensionKey)
     }
 
     @Throws(IllegalStateException::class)
@@ -260,23 +244,6 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
         if (storageService.getDeviceId() == null) {
             storageService.setDeviceId(Utils.getRandomString(32))
         }
-    }
-
-    @Throws(PermissionsException::class)
-    private suspend fun assertPermissionGranted(permission: KeyriPermission) {
-        /* val serviceId = service?.serviceId ?: throw IllegalStateException()
-
-        val permissionName = permission.id
-        val response = makeApiCall { keyriSdkModule.provideApiService().getPermissions(serviceId, listOf(permissionName)) }.body() ?: throw IllegalStateException()
-        val granted: Boolean = when(permission) {
-            KeyriPermission.SESSION -> response.session == true
-            KeyriPermission.ACCOUNTS -> response.accounts == true
-            KeyriPermission.LOGIN -> response.login == true
-            KeyriPermission.SIGNUP -> response.signup == true
-            KeyriPermission.MOBILE_LOGIN -> response.mobileLogin == true
-            KeyriPermission.MOBILE_SIGNUP -> response.mobileSignup == true
-        }
-        if (!granted) throw PermissionsException */
     }
 
     companion object {

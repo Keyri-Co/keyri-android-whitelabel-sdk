@@ -445,12 +445,11 @@ class KeyriScannerView @JvmOverloads constructor(
 
     private fun onLoading(isLoading: Boolean) {
         launch(Dispatchers.Main) {
-            keyriScannerViewParams?.onLoading?.invoke(isLoading) ?: with(binding) {
-                flProgress.progress.isVisible = isLoading
+            keyriScannerViewParams?.onLoading?.invoke(isLoading) ?: let {
+                binding.flProgress.progress.isVisible = isLoading
 
                 if (isLoading) {
                     imageAnalyzer?.clearAnalyzer()
-//                    cameraProvider?.unbindAll()
                 } else {
                     bindCameraUseCases()
                 }
