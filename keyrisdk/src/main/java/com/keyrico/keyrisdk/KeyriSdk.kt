@@ -235,7 +235,7 @@ class KeyriSdk(context: Context, private val config: KeyriConfig) {
     }
 
     private fun initKeys() {
-        keyriSdkModule.provideCryptoService().generateSecretKey(config.publicKey)
+        keyriSdkModule.provideCryptoService().generateSecretKey(config.rpPublicKey)
     }
 
     private fun generateDeviceIdIfNeeded() {

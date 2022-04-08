@@ -14,7 +14,7 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField "String", "APP_KEY", "\"dev_raB7SFWt27VoKqkPhaUrmWAsCJIO8Moj\""
-        buildConfigField "String", "PUBLIC_KEY", "\"BOenio0DXyG31mAgUCwhdslelckmxzM7nNOyWAjkuo7skr1FhP7m2L8PaSRgIEH5ja9p+CwEIIKGqR4Hx5Ezam4=\""
+        buildConfigField "String", "RP_PUBLIC_KEY", "\"BOenio0DXyG31mAgUCwhdslelckmxzM7nNOyWAjkuo7skr1FhP7m2L8PaSRgIEH5ja9p+CwEIIKGqR4Hx5Ezam4=\""
         buildConfigField "String", "KEYRI_CALLBACK_URL", "\"http://18.208.184.185:5000/users/session-mobile\""
     }
 
