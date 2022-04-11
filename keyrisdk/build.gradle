@@ -19,11 +19,9 @@ android {
     buildTypes {
         debug {
             minifyEnabled false
-            debuggable true
         }
         release {
             minifyEnabled false
-            debuggable false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -68,10 +66,10 @@ dependencies {
     implementation 'androidx.room:room-ktx:2.4.2'
     kapt 'androidx.room:room-compiler:2.4.2'
 
-    implementation 'androidx.camera:camera-core:1.1.0-beta02'
-    implementation 'androidx.camera:camera-camera2:1.1.0-beta02'
-    implementation 'androidx.camera:camera-lifecycle:1.1.0-beta02'
-    implementation 'androidx.camera:camera-view:1.1.0-beta02'
+    implementation 'androidx.camera:camera-core:1.1.0-beta03'
+    implementation 'androidx.camera:camera-camera2:1.1.0-beta03'
+    implementation 'androidx.camera:camera-lifecycle:1.1.0-beta03'
+    implementation 'androidx.camera:camera-view:1.1.0-beta03'
 
     // Unit testing
     testImplementation 'junit:junit:4.13.2'

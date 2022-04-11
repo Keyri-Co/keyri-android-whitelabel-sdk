@@ -26,14 +26,14 @@ class AuthVM(private val app: Application, private val keyriSdk: KeyriSdk) : And
 
     fun authenticated() = authenticatedLD as LiveData<Boolean>
 
-    fun authenticate(sessionId: String, secureCustom: String? = null) {
+    fun authenticate(sessionId: String, secureCustom: String? = null, extensionKey: String? = null) {
         viewModelScope.launch {
             loadingLD.value = true
             try {
                 val session = keyriSdk.handleSessionId(sessionId)
 
                 if (secureCustom != null) {
-                    keyriSdk.whitelabelAuth(sessionId, secureCustom)
+                    keyriSdk.whitelabelAuth(sessionId, secureCustom, extensionKey)
                 } else {
                     if (session.isNewUser) {
                         keyriSdk.sessionSignup(

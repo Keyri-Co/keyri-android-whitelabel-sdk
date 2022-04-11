@@ -7,7 +7,6 @@ import retrofit2.http.GET
 import retrofit2.http.HeaderMap
 import retrofit2.http.POST
 import retrofit2.http.Path
-import retrofit2.http.Query
 import retrofit2.http.Url
 
 /**
@@ -42,19 +41,4 @@ interface ApiService {
      */
     @POST("api/sdk/whitelabel-init")
     suspend fun init(@Body request: InitRequest): Response<InitResponse>
-
-    /**
-     * @GET Method for retrieving permissions by service id
-     */
-    @GET("service/{serviceId}/permissions")
-    suspend fun getPermissions(
-        @Path("serviceId") serviceId: String,
-        @Query("queryPermissions[]") permissions: List<String>
-    ): Response<PermissionsResponse>
-
-    /**
-     * @GET Method for retrieving deep links prefix
-     */
-    @GET("application/deep-link")
-    suspend fun getDeepLinksPrefix(@Query("appKey") appKey: String): Response<PrefixesResponse>
 }
