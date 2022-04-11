@@ -28,7 +28,7 @@ class UserService(
         // TODO Add Impl
     }
 
-    suspend fun whitelabelAuth(sessionId: String, custom: String) {
+    suspend fun whitelabelAuth(sessionId: String, custom: String, externalKey: String? = null) {
         // TODO Add Impl
     }
 

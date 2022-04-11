@@ -183,10 +183,12 @@ class KeyriSdk(context: Context) {
     }
 
     @Throws(AccountNotFoundException::class, NotInitializedException::class)
-    suspend fun whitelabelAuth(sessionId: String, custom: String) {
+    suspend fun whitelabelAuth(sessionId: String, custom: String, externalKey: String? = null) {
         loadServiceIfNeeded()
 
-        keyriSdkModule.provideUserService().whitelabelAuth(sessionId, custom)
+        // TODO maybe handleSessionId here (to check service)
+
+        keyriSdkModule.provideUserService().whitelabelAuth(sessionId, custom, externalKey)
     }
 
     @Throws(IllegalStateException::class)

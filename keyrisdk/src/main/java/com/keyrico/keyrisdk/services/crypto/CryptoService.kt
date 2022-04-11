@@ -19,6 +19,7 @@ import javax.crypto.Cipher
 import javax.crypto.KeyAgreement
 import javax.crypto.SecretKey
 import javax.crypto.spec.IvParameterSpec
+import javax.crypto.spec.SecretKeySpec
 
 class CryptoService(private val preferences: SharedPreferences) {
 
@@ -66,6 +67,16 @@ class CryptoService(private val preferences: SharedPreferences) {
 
     fun encryptAes(data: String, publicUserId: String): String {
         val secretKey = getSecretKey(publicUserId)
+        val dataBytes = data.encodeToByteArray()
+        val encrypted = encryptAes(secretKey, dataBytes, publicUserId)
+
+        return encrypted.toStringBase64()
+    }
+
+    fun encryptAes(data: String, key: String, publicUserId: String): String {
+        val decodedKey: ByteArray = Base64.decode(key, Base64.NO_WRAP)
+        val secretKey: SecretKey = SecretKeySpec(decodedKey, KeyProperties.KEY_ALGORITHM_AES)
+
         val dataBytes = data.encodeToByteArray()
         val encrypted = encryptAes(secretKey, dataBytes, publicUserId)
 
