@@ -4,41 +4,18 @@ import com.keyrico.keyrisdk.entity.session.Session
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
-import retrofit2.http.HeaderMap
 import retrofit2.http.POST
 import retrofit2.http.Path
-import retrofit2.http.Url
+import retrofit2.http.Query
 
-/**
- * Keyri SDK REST API
- */
 interface ApiService {
 
     @GET("api/session/{sessionId}")
     suspend fun getSession(
         @Path("sessionId") sessionId: String,
-        @Query("origin") serviceDomain: String
+        @Query("appKey") appKey: String
     ): Response<Session>
 
     @POST("api/session/{sessionId}")
-    suspend fun secondPost(
-        @Path("sessionId") sessionId: String,
-        @Body request: SecondRequest
-    ): Response<String>
-
-    /**
-     * @POST Method for mobile auth
-     */
-    @POST
-    suspend fun authMobile(
-        @HeaderMap headers: Map<String, String>?,
-        @Url url: String,
-        @Body request: AuthMobileRequest
-    ): Response<AuthMobileResponse>
-
-    /**
-     * @POST Method for init SDK
-     */
-    @POST("api/sdk/whitelabel-init")
-    suspend fun init(@Body request: InitRequest): Response<InitResponse>
+    suspend fun challengeSession(@Body request: ChallengeSessionRequest): Response<String>
 }

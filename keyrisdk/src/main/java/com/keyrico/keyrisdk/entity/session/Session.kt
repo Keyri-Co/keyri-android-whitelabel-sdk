@@ -1,29 +1,33 @@
 package com.keyrico.keyrisdk.entity.session
 
 import com.google.gson.annotations.SerializedName
-import com.keyrico.keyrisdk.entity.session.ipdata.IpData
-import com.keyrico.keyrisdk.entity.session.service.Service
 
 data class Session(
 
-    @SerializedName("service")
-    val service: Service,
+    @SerializedName("WidgetEndPoint")
+    val widgetEndPoint: String,
 
-    @SerializedName("username")
-    val username: String?,
+    @SerializedName("WidgetOrigin")
+    val widgetOrigin: String,
 
-    @SerializedName("isNewUser")
-    val isNewUser: Boolean,
+    @SerializedName("WidgetUserAgent")
+    val widgetUserAgent: String,
 
-    @SerializedName("widgetIPData")
-    val widgetIPData: IpData?,
+    @SerializedName("action")
+    val action: String,
 
-    @SerializedName("mobileIPData")
-    val mobileIPData: IpData?,
+    @SerializedName("sessionId")
+    val sessionId: String,
 
     @SerializedName("sessionType")
-    val sessionType: String?,
+    val ttl: String,
 
-    @SerializedName("custom")
-    val custom: String?
+    @SerializedName("logo")
+    val logo: String,
+
+    @SerializedName("__salt")
+    val salt: String,
+
+    @SerializedName("__hash")
+    val hash: String
 )

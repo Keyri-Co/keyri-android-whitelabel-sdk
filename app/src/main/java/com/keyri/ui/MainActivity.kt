@@ -1,10 +1,8 @@
-package com.keyri.auth
+package com.keyri.ui
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.hardware.display.DisplayManager
 import android.net.Uri
@@ -13,7 +11,6 @@ import android.util.DisplayMetrics
 import android.util.Log
 import android.util.Size
 import android.view.View
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.AspectRatio
@@ -30,22 +27,14 @@ import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
-import com.keyri.R
-import com.keyri.accounts.AccountsActivity
-import com.keyri.accounts.AccountsMode
-import com.keyri.accounts.NewAccountActivity
-import com.keyri.auth_with_scanner.AuthWithScannerActivity
 import com.keyri.databinding.ActivityAuthBinding
-import com.keyri.home.HomeActivity
-import com.keyri.secure_custom.InputSecureCustomActivity
-import com.keyrico.keyrisdk.KeyriSdk
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.util.concurrent.Executors
 import kotlin.math.abs
 
-class AuthActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity() {
 
-    private val viewModel by viewModel<AuthVM>()
+    private val viewModel by viewModel<MainViewModel>()
 
     private val displayManager by lazy { getSystemService(Context.DISPLAY_SERVICE) as DisplayManager }
     private val cameraExecutor by lazy { Executors.newSingleThreadExecutor() }
@@ -54,7 +43,7 @@ class AuthActivity : AppCompatActivity() {
         override fun onDisplayAdded(displayId: Int) = Unit
         override fun onDisplayRemoved(displayId: Int) = Unit
         override fun onDisplayChanged(displayId: Int) = window.decorView.let { view ->
-            if (displayId == this@AuthActivity.displayId) {
+            if (displayId == this@MainActivity.displayId) {
                 imageAnalyzer?.targetRotation = view.display.rotation
             }
         }
@@ -62,12 +51,9 @@ class AuthActivity : AppCompatActivity() {
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-            if (isGranted) openScanner() else finish()
-        }
-
-    private val requestPermissionCustomLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-            if (isGranted) getSecureCustom() else finish()
+            if (isGranted) {
+                openScanner()
+            }
         }
 
     private var displayId: Int = -1
@@ -89,30 +75,9 @@ class AuthActivity : AppCompatActivity() {
         binding = ActivityAuthBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        intent.data?.let(::processLink)
-
-        viewModel.message().observe(this, Observer(::onMessage))
         viewModel.loading().observe(this, Observer(::onLoading))
-        viewModel.authenticated().observe(this) { HomeActivity.openHomeActivity(this) }
 
         initializeUi()
-    }
-
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        processLink(intent.data)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == Activity.RESULT_OK) {
-            when (requestCode) {
-                KeyriSdk.AUTH_REQUEST_CODE -> onMessage(getString(R.string.message_authenticated))
-                REQUEST_SECURE_CUSTOM -> initCamera(data?.getStringExtra(SECURE_CUSTOM))
-            }
-        if (resultCode == Activity.RESULT_OK && requestCode == AUTH_REQUEST_CODE) {
-            onMessage(getString(R.string.message_authenticated))
-        }
     }
 
     override fun onDestroy() {
@@ -122,29 +87,11 @@ class AuthActivity : AppCompatActivity() {
     }
 
     private fun initializeUi() {
-        with(binding) {
-            bAuthQr.setOnClickListener { viewModel.authWithScanner(this@AuthActivity, AUTH_REQUEST_CODE) }
-            bKeyriView.setOnClickListener {
-                AuthWithScannerActivity.openAuthWithScannerActivity(this@AuthActivity, CUSTOM)
-            }
-            bSignup.setOnClickListener { openScanner() }
-            bLogin.setOnClickListener { openScanner() }
-            bWhitelabelAuth.setOnClickListener {
-                if (!hasCameraPermission()) {
-                    requestPermissionCustomLauncher.launch(Manifest.permission.CAMERA)
-                } else {
-                    getSecureCustom()
-                }
-            }
-            bSignupMobile.setOnClickListener { NewAccountActivity.openNewAccountActivity(this@AuthActivity) }
-            bLoginMobile.setOnClickListener { openAccountsActivity(AccountsMode.LOGIN) }
-            bAccounts.setOnClickListener { openAccountsActivity(AccountsMode.ACCOUNTS) }
-            bRemoveAccount.setOnClickListener { openAccountsActivity(AccountsMode.REMOVE) }
+        binding.bAuthQr.setOnClickListener {
+            // TODO Remove
+            viewModel.test()
+//                openScanner()
         }
-    }
-
-    private fun openAccountsActivity(mode: AccountsMode) {
-        AccountsActivity.openAccountsActivity(this, mode)
     }
 
     private fun openScanner() {
@@ -156,14 +103,7 @@ class AuthActivity : AppCompatActivity() {
         initCamera()
     }
 
-    private fun getSecureCustom() {
-        startActivityForResult(
-            Intent(this@AuthActivity, InputSecureCustomActivity::class.java),
-            REQUEST_SECURE_CUSTOM
-        )
-    }
-
-    private fun initCamera(secureCustom: String? = null) {
+    private fun initCamera() {
         binding.scannerPreview.isGone = false
         binding.actionsPanel.isGone = true
 
@@ -177,12 +117,12 @@ class AuthActivity : AppCompatActivity() {
             cameraProviderFuture.addListener({
                 cameraProvider = cameraProviderFuture.get()
 
-                bindCameraUseCases(secureCustom)
+                bindCameraUseCases()
             }, ContextCompat.getMainExecutor(this))
         }
     }
 
-    private fun bindCameraUseCases(secureCustom: String?) {
+    private fun bindCameraUseCases() {
         val metrics = DisplayMetrics().also { binding.scannerPreview.display.getRealMetrics(it) }
         val screenAspectRatio = aspectRatio(metrics.widthPixels, metrics.heightPixels)
         val rotation = binding.scannerPreview.display.rotation
@@ -200,13 +140,7 @@ class AuthActivity : AppCompatActivity() {
             .setTargetRotation(rotation)
             .build()
 
-        val analyzer = if (secureCustom != null) {
-            initWhitelabelAnalyzer(secureCustom)
-        } else {
-            initQrAnalyzer()
-        }
-
-        imageAnalyzer?.setAnalyzer(cameraExecutor, analyzer)
+        imageAnalyzer?.setAnalyzer(cameraExecutor, initQrAnalyzer())
         cameraProvider?.unbindAll()
 
         try {
@@ -235,25 +169,6 @@ class AuthActivity : AppCompatActivity() {
         } ?: imageProxy.close()
     }
 
-    @SuppressLint("UnsafeOptInUsageError")
-    private fun initWhitelabelAnalyzer(secureCustom: String?): ImageAnalysis.Analyzer =
-        ImageAnalysis.Analyzer { imageProxy ->
-            imageProxy.image?.takeIf { viewModel.loading().value != true }?.let { mediaImage ->
-                val image =
-                    InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
-
-                BarcodeScanning.getClient(options).process(image)
-                    .addOnSuccessListener { barcodes ->
-                        barcodes.firstOrNull()
-                            ?.displayValue
-                            ?.let { processScannedData(it, secureCustom) }
-                    }
-                    .addOnCompleteListener {
-                        imageProxy.close()
-                    }
-            } ?: imageProxy.close()
-        }
-
     private fun aspectRatio(width: Int, height: Int): Int {
         val previewRatio = width.coerceAtLeast(height).toDouble() / width.coerceAtMost(height)
 
@@ -262,17 +177,6 @@ class AuthActivity : AppCompatActivity() {
         } else {
             AspectRatio.RATIO_16_9
         }
-    }
-
-    private fun onMessage(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-
-        with(binding) {
-            scannerPreview.isGone = true
-            actionsPanel.isGone = false
-        }
-
-        imageAnalyzer?.clearAnalyzer()
     }
 
     private fun onLoading(isLoading: Boolean) {
@@ -301,35 +205,27 @@ class AuthActivity : AppCompatActivity() {
         requestPermissionLauncher.launch(Manifest.permission.CAMERA)
     }
 
-    private fun processScannedData(scannedData: String, secureCustom: String? = null) {
+    private fun processScannedData(scannedData: String) {
         Log.d("Keyri", "QR processed: $scannedData")
 
         try {
             // Try to parse link and process it
-            processLink(scannedData.toUri(), secureCustom)
+            processLink(scannedData.toUri())
         } catch (e: java.lang.Exception) {
             Log.d("Keyri", "Not valid link: $scannedData")
         }
     }
 
-    private fun processLink(uri: Uri?, secureCustom: String? = null) {
-        uri?.getQueryParameters("sessionId")?.firstOrNull()?.let { sessionId ->
-            val extensionKey = uri.getQueryParameters("aesKey")?.firstOrNull()
+    private fun processLink(uri: Uri?) {
+        uri?.getQueryParameters("sessionid")?.firstOrNull()?.let { sessionId ->
 
             cameraProvider?.unbindAll()
-            viewModel.authenticate(sessionId, secureCustom, extensionKey)
+            viewModel.onReadSessionId(sessionId)
         } ?: Log.e("Keyri", "Failed to process link")
     }
 
     companion object {
-        const val REQUEST_SECURE_CUSTOM = 125
-
-        const val SECURE_CUSTOM = "SECURE_CUSTOM"
-        private const val CUSTOM = "test custom data"
-
         private const val RATIO_4_3_VALUE = 4.0 / 3.0
         private const val RATIO_16_9_VALUE = 16.0 / 9.0
-
-        const val AUTH_REQUEST_CODE = 953
     }
 }
