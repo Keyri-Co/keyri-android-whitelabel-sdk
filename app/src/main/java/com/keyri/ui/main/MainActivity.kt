@@ -1,4 +1,4 @@
-package com.keyri.ui
+package com.keyri.ui.main
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -87,11 +87,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initializeUi() {
-        binding.bAuthQr.setOnClickListener {
-            // TODO Remove
-            viewModel.test()
-//                openScanner()
-        }
+        binding.bAuthQr.setOnClickListener { openScanner() }
     }
 
     private fun openScanner() {

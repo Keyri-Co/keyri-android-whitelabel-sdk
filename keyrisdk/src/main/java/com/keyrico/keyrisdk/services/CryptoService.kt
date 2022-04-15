@@ -4,14 +4,13 @@ import android.content.SharedPreferences
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
-import android.util.Log
 import androidx.core.content.edit
 import com.keyrico.keyrisdk.utils.toByteArrayFromBase64String
 import com.keyrico.keyrisdk.utils.toStringBase64
-import java.lang.IllegalStateException
 import java.security.KeyFactory
 import java.security.KeyPairGenerator
 import java.security.KeyStore
+import java.security.PrivateKey
 import java.security.interfaces.ECPublicKey
 import java.security.spec.ECGenParameterSpec
 import java.security.spec.InvalidKeySpecException
@@ -49,32 +48,19 @@ internal class CryptoService(private val preferences: SharedPreferences) {
 
         val encryptedPublicKey = encryptAes(secretKey, keyPair.public.encoded, publicUserId)
         val encryptedPrivateKey = encryptAes(secretKey, keyPair.private.encoded, publicUserId)
-        val encryptedPublicUserId =
-            encryptAes(secretKey, publicUserId.encodeToByteArray(), publicUserId)
 
-        Log.e("Saving", "userId: $publicUserId pub: ${keyPair.public.encoded.toStringBase64()} priv: ${keyPair.private.encoded.toStringBase64()}")
-
-        // TODO Uncomment
-//        saveEncryptedPublic(
-//            encryptedPublicUserId.toStringBase64(),
-//            encryptedPublicKey.toStringBase64()
-//        )
-//        saveEncryptedPrivate(
-//            encryptedPublicUserId.toStringBase64(),
-//            encryptedPrivateKey.toStringBase64()
-//        )
-
-        saveEncryptedPublic(publicUserId, encryptedPublicKey.toStringBase64())
-        saveEncryptedPrivate(publicUserId, encryptedPrivateKey.toStringBase64())
+        saveEncryptedPublic(publicUserId, encryptedPublicKey)
+        saveEncryptedPrivate(publicUserId, encryptedPrivateKey)
 
         return encryptedPublicKey.toStringBase64()
     }
 
     fun getAssociationKey(publicUserId: String): String? {
-        val encryptedPrivate = getEncryptedPublic(publicUserId)?.encodeToByteArray() ?: return null
+        val encryptedPublic =
+            getEncryptedPublic(publicUserId)?.toByteArrayFromBase64String() ?: return null
         val secretKey = getSecretKey(publicUserId) ?: return null
 
-        return decryptAes(secretKey, encryptedPrivate, publicUserId).toStringBase64()
+        return decryptAes(secretKey, encryptedPublic, publicUserId).toStringBase64()
     }
 
     fun getIV(publicUserId: String): String? {
@@ -82,31 +68,41 @@ internal class CryptoService(private val preferences: SharedPreferences) {
     }
 
     fun encryptAes(data: String, publicUserId: String, rpPublicKey: String): String {
-        val keyAgreement = KeyAgreement.getInstance("ECDH")
-
-        val publicBytes = Base64.decode(rpPublicKey, Base64.NO_WRAP)
-        val publicKey = generateP256PublicKeyFromUncompressedW(publicBytes)
-
-        val encryptedPrivate = getEncryptedPrivate(publicUserId)?.encodeToByteArray()
-            ?: throw IllegalStateException("Private key is null")
-
-        val secretKey =
-            getSecretKey(publicUserId) ?: throw IllegalStateException("Secret key is null")
-
-        val privateString = decryptAes(secretKey, encryptedPrivate, publicUserId)
-
-        val privateBytes = Base64.decode(privateString, Base64.NO_WRAP)
-        val privateKey = generateP256PublicKeyFromUncompressedW(privateBytes)
-
-        keyAgreement.init(privateKey)
-        keyAgreement.doPhase(publicKey, true)
-
-        val aesKey = keyAgreement.generateSecret(KeyProperties.KEY_ALGORITHM_AES)
+        val aesKey = createSessionSecretKey(publicUserId, rpPublicKey)
 
         val dataBytes = data.encodeToByteArray()
         val encrypted = encryptAes(aesKey, dataBytes, publicUserId)
 
         return encrypted.toStringBase64()
+    }
+
+    private fun createSessionSecretKey(publicUserId: String, rpPublicKey: String): SecretKey {
+        val keyAgreement = KeyAgreement.getInstance("ECDH")
+
+        val publicBytes = Base64.decode(rpPublicKey, Base64.NO_WRAP)
+        val publicKey = generateP256PublicKeyFromUncompressedW(publicBytes)
+
+        val encryptedPrivate = getEncryptedPrivate(publicUserId)?.toByteArrayFromBase64String()
+            ?: throw IllegalStateException("Private key is null")
+
+        val secretKey =
+            getSecretKey(publicUserId) ?: throw IllegalStateException("Secret key is null")
+
+        val privateString = decryptAes(secretKey, encryptedPrivate, publicUserId).toStringBase64()
+        val privateBytes = Base64.decode(privateString, Base64.NO_WRAP)
+
+        val privateKey = object : PrivateKey {
+            override fun getAlgorithm() = "EC"
+
+            override fun getFormat() = "PKCS#8"
+
+            override fun getEncoded(): ByteArray = privateBytes
+        }
+
+        keyAgreement.init(privateKey)
+        keyAgreement.doPhase(publicKey, true)
+
+        return keyAgreement.generateSecret(KeyProperties.KEY_ALGORITHM_AES)
     }
 
     private fun encryptAes(secretKey: SecretKey, data: ByteArray, publicUserId: String): ByteArray {
@@ -128,7 +124,8 @@ internal class CryptoService(private val preferences: SharedPreferences) {
 
     private fun decryptAes(secretKey: SecretKey, data: ByteArray, publicUserId: String): ByteArray {
         val cipher = Cipher.getInstance(AES_TRANSFORMATION)
-        val iv = getIV(publicUserId)?.toByteArrayFromBase64String() ?: byteArrayOf()
+        val iv = getIV(publicUserId)?.toByteArrayFromBase64String()
+            ?: throw IllegalStateException("IV is null")
         val ivParameterSpec = IvParameterSpec(iv)
 
         cipher.init(Cipher.DECRYPT_MODE, secretKey, ivParameterSpec)
@@ -144,42 +141,23 @@ internal class CryptoService(private val preferences: SharedPreferences) {
     }
 
     private fun getEncryptedPublic(publicUserId: String): String? {
-        val secretKey = getSecretKey(publicUserId) ?: return null
-        val encryptedPublicUserId =
-            encryptAes(secretKey, publicUserId.encodeToByteArray(), publicUserId)
-
-        Log.e("Get Enc $KEY_PUBLIC$encryptedPublicUserId", getEncryptedString(KEY_PUBLIC + encryptedPublicUserId) ?: "null")
-
-        return getEncryptedString(KEY_PUBLIC + encryptedPublicUserId)
+        return getEncryptedString(KEY_PUBLIC + publicUserId)
     }
 
     private fun getEncryptedPrivate(publicUserId: String): String? {
-        val secretKey = getSecretKey(publicUserId) ?: return null
-
-        val encryptedPublicUserId =
-            encryptAes(secretKey, publicUserId.encodeToByteArray(), publicUserId)
-
-        Log.e("Get Enc $KEY_PRIVATE$encryptedPublicUserId", getEncryptedString(KEY_PRIVATE + encryptedPublicUserId) ?: "null")
-
-        return getEncryptedString(KEY_PRIVATE + encryptedPublicUserId)
+        return getEncryptedString(KEY_PRIVATE + publicUserId)
     }
 
     private fun getEncryptedString(key: String): String? {
         return preferences.getString(key, null)
     }
 
-    private fun saveEncryptedPublic(encryptedUserId: String, data: String) {
-        // TODO Remove logs
-        Log.e("Save Enc $KEY_PUBLIC$encryptedUserId", data)
-
-        saveEncryptedString(KEY_PUBLIC + encryptedUserId, data)
+    private fun saveEncryptedPublic(publicUserId: String, data: ByteArray) {
+        saveEncryptedString(KEY_PUBLIC + publicUserId, data.toStringBase64())
     }
 
-    private fun saveEncryptedPrivate(encryptedUserId: String, data: String) {
-        // TODO Remove logs
-        Log.e("Save Enc $KEY_PRIVATE$encryptedUserId", data)
-
-        saveEncryptedString(KEY_PRIVATE + encryptedUserId, data)
+    private fun saveEncryptedPrivate(publicUserId: String, data: ByteArray) {
+        saveEncryptedString(KEY_PRIVATE + publicUserId, data.toStringBase64())
     }
 
     private fun saveIV(iv: ByteArray, publicUserId: String) {

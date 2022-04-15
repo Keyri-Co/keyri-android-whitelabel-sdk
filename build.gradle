@@ -14,7 +14,7 @@ allprojects {
     apply plugin: 'checkstyle'
 
     checkstyle {
-        toolVersion '10.0.2'
+        toolVersion '10.1'
     }
 
     configurations {
@@ -23,7 +23,7 @@ allprojects {
     }
 
     dependencies {
-        kotlinlint("com.pinterest:ktlint:0.43.1") {
+        kotlinlint('com.pinterest:ktlint:0.45.2') {
             attributes {
                 attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling, Bundling.EXTERNAL))
             }

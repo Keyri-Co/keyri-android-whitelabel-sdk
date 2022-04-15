@@ -1,4 +1,4 @@
-package com.keyri.ui
+package com.keyri.ui.main
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -28,18 +28,6 @@ class MainViewModel(private val keyriSdk: KeyriSdk) : ViewModel() {
             )
 
             loadingLD.postValue(false)
-        }
-    }
-
-    // TODO Remove
-    fun test() {
-        viewModelScope.launch(Dispatchers.IO) {
-            keyriSdk.challengeSession(
-                "mocked-public-user-id",
-               "mocked-session-id",
-                "secure custom",
-                "public custom"
-            )
         }
     }
 }

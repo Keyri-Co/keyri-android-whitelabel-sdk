@@ -11,5 +11,12 @@ data class ChallengeSessionRequest(
     val publicObject: String,
 
     @SerializedName("cipher")
-    val cipher: String
+    val cipher: String,
+
+    // TODO Remove
+    @SerializedName("__salt")
+    val salt: String,
+
+    @SerializedName("__hash")
+    val hash: String
 )

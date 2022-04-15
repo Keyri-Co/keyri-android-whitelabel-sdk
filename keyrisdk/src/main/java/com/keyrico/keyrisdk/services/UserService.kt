@@ -14,7 +14,9 @@ internal class UserService(
         publicUserId: String,
         sessionId: String,
         secureCustom: String?,
-        publicCustom: String?
+        publicCustom: String?,
+        salt: String,
+        hash: String
     ) {
         val associationKey = cryptoService.getAssociationKey(publicUserId)
 
@@ -43,12 +45,8 @@ internal class UserService(
 
         public.addProperty("IV", cryptoService.getIV(publicUserId))
 
-        val request = ChallengeSessionRequest(
-            sessionId = sessionId,
-            publicObject = public.toString(),
-            cipher = cipher
-        )
+        val request = ChallengeSessionRequest(sessionId, public.toString(), cipher, salt, hash)
 
-        apiService.challengeSession(request)
+        apiService.challengeSession(sessionId, request)
     }
 }

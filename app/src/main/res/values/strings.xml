@@ -2,11 +2,6 @@
     <string name="app_name">Keyri Demo app</string>
     <string name="error_general">Something went wrong</string>
     <string name="easy_keyri_auth">Easy Keyri Auth</string>
-    <string name="session_signup">Session Signup</string>
-    <string name="direct_signup">Direct Signup</string>
-    <string name="session_login">Session Login</string>
-    <string name="direct_login">Direct Login</string>
-    <string name="keyri_view">Keyri view</string>
     <string name="accounts">Accounts</string>
     <string name="remove_account">Remove account</string>
     <string name="message_authenticated">You have been successfully authenticated</string>

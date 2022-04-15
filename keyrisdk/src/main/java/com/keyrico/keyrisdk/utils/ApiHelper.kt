@@ -16,7 +16,7 @@ import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 
-suspend fun <T : Any> makeApiCall(call: suspend () -> Response<T>): Response<T> {
+internal suspend fun <T : Any> makeApiCall(call: suspend () -> Response<T>): Response<T> {
     try {
         val response = call.invoke()
 

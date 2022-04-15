@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".ui.MainActivity">
+    tools:context=".ui.main.MainActivity">
 
     <FrameLayout
         android:id="@+id/panelContent"
@@ -32,40 +32,10 @@
                 android:text="@string/easy_keyri_auth" />
 
             <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/bKeyriView"
-                style="@style/KeyriButton"
-                android:layout_marginTop="8dp"
-                android:text="@string/keyri_view" />
-
-            <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/bSignup"
-                style="@style/KeyriButton"
-                android:layout_marginTop="8dp"
-                android:text="@string/session_signup" />
-
-            <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/bLogin"
-                style="@style/KeyriButton"
-                android:layout_marginTop="8dp"
-                android:text="@string/session_login" />
-
-            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/bWhitelabelAuth"
                 style="@style/KeyriButton"
                 android:layout_marginTop="8dp"
                 android:text="@string/whitelabel_auth" />
-
-            <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/bSignupMobile"
-                style="@style/KeyriButton"
-                android:layout_marginTop="24dp"
-                android:text="@string/direct_signup" />
-
-            <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/bLoginMobile"
-                style="@style/KeyriButton"
-                android:layout_marginTop="8dp"
-                android:text="@string/direct_login" />
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/bAccounts"

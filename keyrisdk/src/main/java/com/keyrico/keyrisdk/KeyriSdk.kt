@@ -2,11 +2,11 @@ package com.keyrico.keyrisdk
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.keyrico.keyrisdk.entity.session.Session
+import com.keyrico.keyrisdk.entity.Session
 import com.keyrico.keyrisdk.exception.AuthorizationException
+import com.keyrico.keyrisdk.services.CryptoService
 import com.keyrico.keyrisdk.services.UserService
 import com.keyrico.keyrisdk.services.api.ApiService
-import com.keyrico.keyrisdk.services.CryptoService
 import com.keyrico.keyrisdk.utils.makeApiCall
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -24,6 +24,12 @@ class KeyriSdk(
     private val userService by lazy { provideUserService() }
     private val cryptoService by lazy { provideCryptoService() }
 
+    // TODO Remove
+    private var salt = ""
+    private var hash = ""
+
+    // TODO Add Throws to all public methods
+    // TODO Remove all unused methods
     suspend fun generateAssociationKey(publicUserId: String) {
         cryptoService.generateAssociationKey(publicUserId)
     }
@@ -34,12 +40,20 @@ class KeyriSdk(
 
     @Throws(AuthorizationException::class)
     suspend fun handleSessionId(sessionId: String): Session {
-        return makeApiCall {
+        val session = makeApiCall {
             apiService.getSession(sessionId, "IT7VrTQ0r4InzsvCNJpRCRpi1qzfgpaj")
         }.body() ?: throw AuthorizationException
 
+        salt = session.salt
+        hash = session.hash
+
         // TODO Compare returned serviceDomain from Keyri API to serviceDomain from SDK setup
-        // TODO Show confirmation screen and risk characteristics (if allowed)
+        serviceDomain == session.widgetOrigin
+
+        return session
+
+        // TODO Show confirmation screen and risk characteristics (if allowed and outer of SDK)
+        // TODO Auth with scanner - Show confirmation screen
     }
 
     suspend fun challengeSession(
@@ -48,7 +62,16 @@ class KeyriSdk(
         secureCustom: String?,
         publicCustom: String?
     ) {
-        userService.challengeSession(publicUserId, sessionId, secureCustom, publicCustom)
+        userService.challengeSession(publicUserId, sessionId, secureCustom, publicCustom, salt, hash)
+    }
+
+    suspend fun easyKeyriAuth(
+        publicUserId: String,
+        secureCustom: String?,
+        publicCustom: String?
+    ) {
+
+        // TODO Add Implementation
     }
 
     private fun provideApiService(): ApiService {

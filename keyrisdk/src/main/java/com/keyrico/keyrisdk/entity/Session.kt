@@ -1,4 +1,4 @@
-package com.keyrico.keyrisdk.entity.session
+package com.keyrico.keyrisdk.entity
 
 import com.google.gson.annotations.SerializedName
 
