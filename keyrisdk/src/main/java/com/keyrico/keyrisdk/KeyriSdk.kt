@@ -1,12 +1,15 @@
 package com.keyrico.keyrisdk
 
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
+import androidx.appcompat.app.AppCompatActivity
 import com.keyrico.keyrisdk.entity.Session
 import com.keyrico.keyrisdk.exception.AuthorizationException
 import com.keyrico.keyrisdk.services.CryptoService
 import com.keyrico.keyrisdk.services.UserService
 import com.keyrico.keyrisdk.services.api.ApiService
+import com.keyrico.keyrisdk.ui.auth.AuthWithScannerActivity
 import com.keyrico.keyrisdk.utils.makeApiCall
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -29,12 +32,11 @@ class KeyriSdk(
     private var hash = ""
 
     // TODO Add Throws to all public methods
-    // TODO Remove all unused methods
-    suspend fun generateAssociationKey(publicUserId: String) {
+    fun generateAssociationKey(publicUserId: String) {
         cryptoService.generateAssociationKey(publicUserId)
     }
 
-    suspend fun getAssociationKey(publicUserId: String): String? {
+    fun getAssociationKey(publicUserId: String): String? {
         return cryptoService.getAssociationKey(publicUserId)
     }
 
@@ -47,13 +49,7 @@ class KeyriSdk(
         salt = session.salt
         hash = session.hash
 
-        // TODO Compare returned serviceDomain from Keyri API to serviceDomain from SDK setup
-        serviceDomain == session.widgetOrigin
-
         return session
-
-        // TODO Show confirmation screen and risk characteristics (if allowed and outer of SDK)
-        // TODO Auth with scanner - Show confirmation screen
     }
 
     suspend fun challengeSession(
@@ -62,16 +58,34 @@ class KeyriSdk(
         secureCustom: String?,
         publicCustom: String?
     ) {
-        userService.challengeSession(publicUserId, sessionId, secureCustom, publicCustom, salt, hash)
+        userService.challengeSession(
+            publicUserId,
+            sessionId,
+            secureCustom,
+            publicCustom,
+            salt,
+            hash
+        )
     }
 
-    suspend fun easyKeyriAuth(
+    fun easyKeyriAuth(
         publicUserId: String,
+        appCompatActivity: AppCompatActivity,
+        requestCode: Int,
         secureCustom: String?,
-        publicCustom: String?
+        publicCustom: String?,
     ) {
+        // TODO Add Implementation with ActivityResult
 
-        // TODO Add Implementation
+        val intent = Intent(appCompatActivity, AuthWithScannerActivity::class.java).apply {
+            putExtra(AuthWithScannerActivity.RP_PUBLIC_KEY, rpPublicKey)
+            putExtra(AuthWithScannerActivity.SERVICE_DOMAIN, serviceDomain)
+            putExtra(AuthWithScannerActivity.PUBLIC_USER_ID, publicUserId)
+            putExtra(AuthWithScannerActivity.PUBLIC_CUSTOM, publicCustom)
+            putExtra(AuthWithScannerActivity.SECURE_CUSTOM, secureCustom)
+        }
+
+        appCompatActivity.startActivityForResult(intent, requestCode)
     }
 
     private fun provideApiService(): ApiService {

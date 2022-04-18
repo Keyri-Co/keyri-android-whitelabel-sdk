@@ -1,15 +1,5 @@
 <resources>
     <string name="app_name">Keyri Demo app</string>
-    <string name="error_general">Something went wrong</string>
     <string name="easy_keyri_auth">Easy Keyri Auth</string>
-    <string name="accounts">Accounts</string>
-    <string name="remove_account">Remove account</string>
     <string name="message_authenticated">You have been successfully authenticated</string>
-    <string name="select_account">Select your account to login with</string>
-    <string name="your_accounts">Your accounts</string>
-    <string name="no_accounts">You don\'t have accounts</string>
-    <string name="username">Username</string>
-    <string name="whitelabel_auth">Whitelabel Auth</string>
-    <string name="enter_secure_custom">Enter secure custom:</string>
-    <string name="send">Send</string>
 </resources>

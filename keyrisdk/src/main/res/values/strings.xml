@@ -16,6 +16,8 @@
     <string name="keyri_auth_complete">You have been successfully authenticated</string>
     <string name="keyri_view_initialization_error">You need to provide onChooseAccount callback, when allowMultipleAccounts is true</string>
     <string name="keyri_err_risk_errors">There are some risk analytics issues</string>
+    <string name="keyri_confirmation_screen_title">Keyri</string>
+    <string name="keyri_confirmation_screen_subtitle">Are you trying to sign in?</string>
     <string name="keyri_confirmation_screen_positive">Yes, it\'s me</string>
     <string name="keyri_confirmation_screen_negative">No, don\'t allow</string>
 </resources>

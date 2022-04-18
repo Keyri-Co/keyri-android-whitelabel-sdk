@@ -1,4 +1,4 @@
-package com.keyrico.keyrisdk.ui
+package com.keyrico.keyrisdk.ui.auth
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -25,14 +25,21 @@ import androidx.camera.core.SurfaceOrientedMeteringPointFactory
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import androidx.core.view.isVisible
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import com.keyrico.keyrisdk.KeyriSdk
 import com.keyrico.keyrisdk.R
 import com.keyrico.keyrisdk.databinding.ActivityAuthWithScannerBinding
+import com.keyrico.keyrisdk.ui.confirmation.ShowConfirmation
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 internal class AuthWithScannerActivity : AppCompatActivity() {
@@ -69,22 +76,82 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
             }
         }
 
+    private val confirmationDialogLauncher = registerForActivityResult(ShowConfirmation()) {
+        if (it) {
+            val publicUserId = intent.getStringExtra(RP_PUBLIC_KEY) ?: ""
+            val publicCustom = intent.getStringExtra(PUBLIC_CUSTOM) ?: ""
+            val secureCustom = intent.getStringExtra(SECURE_CUSTOM) ?: ""
+
+            viewModel.challengeSession(publicUserId, publicCustom, secureCustom, keyriSdk, this)
+        } else {
+            setResult(RESULT_CANCELED)
+            finish()
+        }
+    }
+
     private lateinit var binding: ActivityAuthWithScannerBinding
 
     private val viewModel by viewModels<AuthWithScannerVM>()
 
-    private var autoFocusEnabled = true
-    private var flashEnabled = false
+    private val keyriSdk by lazy {
+        val publicKey = intent.getStringExtra(RP_PUBLIC_KEY) ?: ""
+        val serviceDomain = intent.getStringExtra(SERVICE_DOMAIN) ?: ""
+
+        KeyriSdk(this, publicKey, serviceDomain)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAuthWithScannerBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        observeViewModel()
         initializeUi()
     }
 
-    private fun initializeUi() {
+    override fun onDestroy() {
+        super.onDestroy()
+        cameraExecutor?.shutdown()
+        displayManager.unregisterDisplayListener(displayListener)
+    }
 
+    private fun observeViewModel() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.CREATED) {
+                viewModel.uiState.collect { uiState ->
+                    val isLoading = when (uiState) {
+                        is AuthWithScannerState.Confirmation -> processConfirmationMessage(uiState)
+                        is AuthWithScannerState.Authenticated -> {
+                            setResult(RESULT_OK)
+                            finish()
+
+                            false
+                        }
+                        is AuthWithScannerState.Error -> {
+                            uiState.message
+
+                            // TODO Hide loading and Show error
+
+                            false
+                        }
+                        is AuthWithScannerState.Loading -> true
+                        is AuthWithScannerState.Empty -> false
+                    }
+
+                    binding.flProgress.progress.isVisible = isLoading
+                }
+            }
+        }
+    }
+
+    private fun processConfirmationMessage(uiState: AuthWithScannerState.Confirmation): Boolean {
+        confirmationDialogLauncher.launch(uiState)
+
+        return false
+    }
+
+    private fun initializeUi() {
+        openScanner()
+        initButtons()
     }
 
     private fun openScanner() {
@@ -144,19 +211,20 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
 
     @SuppressLint("UnsafeOptInUsageError")
     private fun initQrAnalyzer(): ImageAnalysis.Analyzer = ImageAnalysis.Analyzer { imageProxy ->
-//        imageProxy.image?.takeIf { viewModel.loading().value != true }?.let { mediaImage ->
-//            val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
-//
-//            BarcodeScanning.getClient(options).process(image)
-//                .addOnSuccessListener { barcodes ->
-//                    barcodes.firstOrNull()
-//                        ?.displayValue
-//                        ?.let(::processScannedData)
-//                }
-//                .addOnCompleteListener {
-//                    imageProxy.close()
-//                }
-//        } ?: imageProxy.close()
+        imageProxy.image?.takeIf { viewModel.uiState.value is AuthWithScannerState.Empty }?.let {
+            val image =
+                InputImage.fromMediaImage(it, imageProxy.imageInfo.rotationDegrees)
+
+            BarcodeScanning.getClient(options).process(image)
+                .addOnSuccessListener { barcodes ->
+                    barcodes.firstOrNull()
+                        ?.displayValue
+                        ?.let(::processScannedData)
+                }
+                .addOnCompleteListener {
+                    imageProxy.close()
+                }
+        } ?: imageProxy.close()
     }
 
     private fun aspectRatio(width: Int, height: Int): Int {
@@ -188,85 +256,92 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
 
     private fun processLink(uri: Uri?) {
         uri?.getQueryParameters("sessionid")?.firstOrNull()?.let { sessionId ->
-
-            cameraProvider?.unbindAll()
-//            viewModel.onReadSessionId(sessionId)
+            cameraProvider?.unbind(imageAnalyzer)
+            viewModel.handleSessionId(sessionId, keyriSdk, this)
         } ?: Log.e("Keyri", "Failed to process link")
     }
 
-    @SuppressLint("ClickableViewAccessibility")
     private fun initButtons() {
-        binding.ivAutofocus.setOnClickListener {
-            if (autoFocusEnabled) {
-                val preview = binding.scannerPreview
+        binding.ivAutofocus.setOnClickListener { initAutofocus() }
+        binding.ivFlash.setOnClickListener { initFlashButton() }
+    }
 
-                preview.setOnTouchListener { _, event ->
-                    return@setOnTouchListener when (event.action) {
-                        MotionEvent.ACTION_DOWN -> true
-                        MotionEvent.ACTION_UP -> {
-                            val factory = SurfaceOrientedMeteringPointFactory(
-                                preview.width.toFloat(),
-                                preview.height.toFloat()
-                            )
-                            val autoFocusPoint = factory.createPoint(event.x, event.y)
-                            try {
-                                camera?.cameraControl?.startFocusAndMetering(
-                                    FocusMeteringAction.Builder(
-                                        autoFocusPoint,
-                                        FocusMeteringAction.FLAG_AF
-                                    ).apply {
-                                        // Focus only when the user tap the preview
-                                        disableAutoCancel()
-                                    }.build()
-                                )
-                            } catch (e: CameraInfoUnavailableException) {
-                                Log.d("Keyri", "cannot access camera, $e")
-                            }
-                            true
-                        }
-                        else -> false
-                    }
-                }
-            } else {
-                val autoFocusPoint =
-                    SurfaceOrientedMeteringPointFactory(1f, 1f).createPoint(.5f, .5f)
+    private fun initFlashButton() {
+        viewModel.isFlashEnabled.value.let { isFlashEnabled ->
+            val fleshRes = if (isFlashEnabled) R.drawable.ic_flash_off else R.drawable.ic_flash_on
 
-                try {
-                    val autoFocusAction =
-                        FocusMeteringAction.Builder(autoFocusPoint, FocusMeteringAction.FLAG_AF)
-                            .apply {
-                                // Start auto-focusing after 2 seconds
-                                setAutoCancelDuration(2, TimeUnit.SECONDS)
-                            }.build()
+            binding.ivFlash.setImageResource(fleshRes)
 
-                    camera?.cameraControl?.startFocusAndMetering(autoFocusAction)
-                } catch (e: CameraInfoUnavailableException) {
-                    Log.d("Keyri", "cannot access camera, $e")
-                }
-            }
-
-            val focusRes =
-                if (autoFocusEnabled) R.drawable.ic_autofocus_off else R.drawable.ic_autofocus_on
-
-            binding.ivAutofocus.setImageResource(focusRes)
-
-            autoFocusEnabled = !autoFocusEnabled
-        }
-
-        binding.ivFlash.setOnClickListener {
-            camera?.let {
-                val fleshRes = if (flashEnabled) R.drawable.ic_flash_off else R.drawable.ic_flash_on
-
-                binding.ivFlash.setImageResource(fleshRes)
-
-                it.cameraControl.enableTorch(!flashEnabled)
-
-                flashEnabled = !flashEnabled
-            }
+            camera?.cameraControl?.enableTorch(isFlashEnabled.not())
+            viewModel.setFlashEnabled(isFlashEnabled.not())
         }
     }
 
+    private fun initAutofocus() {
+        val isAutofocusEnabled = viewModel.isAutofocusEnabled.value
+
+        if (isAutofocusEnabled) {
+            binding.scannerPreview.setOnTouchListener { view, event ->
+                return@setOnTouchListener when (event.action) {
+                    MotionEvent.ACTION_DOWN -> true
+                    MotionEvent.ACTION_UP -> {
+                        val factory = SurfaceOrientedMeteringPointFactory(
+                            view.width.toFloat(),
+                            view.height.toFloat()
+                        )
+
+                        val autoFocusPoint = factory.createPoint(event.x, event.y)
+
+                        try {
+                            val focusMeteringAction = FocusMeteringAction.Builder(
+                                autoFocusPoint,
+                                FocusMeteringAction.FLAG_AF
+                            ).disableAutoCancel().build()
+
+                            camera?.cameraControl?.startFocusAndMetering(focusMeteringAction)
+                        } catch (e: CameraInfoUnavailableException) {
+                            Log.d("Keyri", "cannot access camera, $e")
+                        }
+
+                        view.performClick()
+
+                        true
+                    }
+                    else -> false
+                }
+            }
+        } else {
+            binding.scannerPreview.setOnTouchListener(null)
+
+            val autoFocusPoint =
+                SurfaceOrientedMeteringPointFactory(1f, 1f).createPoint(.5f, .5f)
+
+            try {
+                val autoFocusAction =
+                    FocusMeteringAction.Builder(autoFocusPoint, FocusMeteringAction.FLAG_AF)
+                        .setAutoCancelDuration(2, TimeUnit.SECONDS)
+                        .build()
+
+                camera?.cameraControl?.startFocusAndMetering(autoFocusAction)
+            } catch (e: CameraInfoUnavailableException) {
+                Log.d("Keyri", "cannot access camera, $e")
+            }
+        }
+
+        val focusRes =
+            if (isAutofocusEnabled) R.drawable.ic_autofocus_off else R.drawable.ic_autofocus_on
+
+        binding.ivAutofocus.setImageResource(focusRes)
+        viewModel.setAutofocusEnabled(isAutofocusEnabled.not())
+    }
+
     companion object {
+        const val SERVICE_DOMAIN = "SERVICE_DOMAIN"
+        const val RP_PUBLIC_KEY = "RP_PUBLIC_KEY"
+        const val PUBLIC_USER_ID = "PUBLIC_USER_ID"
+        const val PUBLIC_CUSTOM = "PUBLIC_CUSTOM"
+        const val SECURE_CUSTOM = "SECURE_CUSTOM"
+
         private const val RATIO_4_3_VALUE = 4.0 / 3.0
         private const val RATIO_16_9_VALUE = 16.0 / 9.0
     }

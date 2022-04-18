@@ -29,5 +29,8 @@ data class Session(
     val salt: String,
 
     @SerializedName("__hash")
-    val hash: String
+    val hash: String,
+
+    @SerializedName("username")
+    val username: String?
 )

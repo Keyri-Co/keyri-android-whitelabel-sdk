@@ -17,6 +17,7 @@
         android:layout_alignParentTop="true"
         android:layout_margin="16dp"
         android:background="?selectableItemBackgroundBorderless"
+        android:elevation="1dp"
         android:padding="8dp"
         app:srcCompat="@drawable/ic_autofocus_on" />
 
@@ -28,6 +29,7 @@
         android:layout_alignParentEnd="true"
         android:layout_margin="16dp"
         android:background="?selectableItemBackgroundBorderless"
+        android:elevation="1dp"
         android:padding="8dp"
         app:srcCompat="@drawable/ic_flash_off" />
 

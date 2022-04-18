@@ -7,7 +7,12 @@
     <application>
 
         <activity
-            android:name=".ui.AuthWithScannerActivity"
+            android:name=".ui.auth.AuthWithScannerActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar" />
+
+        <activity
+            android:name=".ui.confirmation.ConfirmationActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.DayNight.NoActionBar" />
 
