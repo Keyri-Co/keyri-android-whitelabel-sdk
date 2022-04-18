@@ -7,6 +7,7 @@ import com.keyrico.keyrisdk.KeyriSdk
 import com.keyrico.keyrisdk.R
 import com.keyrico.keyrisdk.exception.KeyriSdkException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,13 +34,7 @@ internal class AuthWithScannerVM : ViewModel() {
 
                 keyriSdk.handleSessionId(sessionId)
 
-                // TODO Add implementation
-//                _uiState.value = AuthWithScannerState.Confirmation
-
                 _uiState.value = AuthWithScannerState.Confirmation.Message("Some message")
-//                _uiState.value = AuthWithScannerState.Confirmation.RiskCharacteristics(
-//                    listOf("First", "Second", "Third")
-//                )
             } catch (e: Throwable) {
                 processError(e, context)
             }
@@ -74,7 +69,7 @@ internal class AuthWithScannerVM : ViewModel() {
         _isFlashEnabled.value = isEnabled
     }
 
-    private fun processError(e: Throwable, context: Context) {
+    private suspend fun processError(e: Throwable, context: Context) {
         val errorMessage = if (e is KeyriSdkException) {
             context.getString(e.errorMessage)
         } else {
@@ -82,5 +77,9 @@ internal class AuthWithScannerVM : ViewModel() {
         }
 
         _uiState.value = AuthWithScannerState.Error(errorMessage)
+
+        delay(3_000L)
+
+        _uiState.value = AuthWithScannerState.Empty
     }
 }

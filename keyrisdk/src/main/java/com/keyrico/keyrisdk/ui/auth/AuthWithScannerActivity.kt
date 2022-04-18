@@ -11,6 +11,7 @@ import android.util.DisplayMetrics
 import android.util.Log
 import android.util.Size
 import android.view.MotionEvent
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -127,9 +128,9 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
                             false
                         }
                         is AuthWithScannerState.Error -> {
-                            uiState.message
+                            val context = this@AuthWithScannerActivity
 
-                            // TODO Hide loading and Show error
+                            Toast.makeText(context, uiState.message, Toast.LENGTH_LONG).show()
 
                             false
                         }
@@ -256,7 +257,6 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
 
     private fun processLink(uri: Uri?) {
         uri?.getQueryParameters("sessionid")?.firstOrNull()?.let { sessionId ->
-            cameraProvider?.unbind(imageAnalyzer)
             viewModel.handleSessionId(sessionId, keyriSdk, this)
         } ?: Log.e("Keyri", "Failed to process link")
     }
