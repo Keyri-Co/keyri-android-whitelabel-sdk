@@ -13,7 +13,6 @@ data class ChallengeSessionRequest(
     @SerializedName("cipher")
     val cipher: String,
 
-    // TODO Remove
     @SerializedName("__salt")
     val salt: String,
 

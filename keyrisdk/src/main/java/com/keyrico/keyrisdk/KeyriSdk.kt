@@ -27,11 +27,9 @@ class KeyriSdk(
     private val userService by lazy { provideUserService() }
     private val cryptoService by lazy { provideCryptoService() }
 
-    // TODO Remove
-    private var salt = ""
-    private var hash = ""
+    private var sessionSalt = ""
+    private var sessionHash = ""
 
-    // TODO Add Throws to all public methods
     fun generateAssociationKey(publicUserId: String) {
         cryptoService.generateAssociationKey(publicUserId)
     }
@@ -40,14 +38,13 @@ class KeyriSdk(
         return cryptoService.getAssociationKey(publicUserId)
     }
 
-    @Throws(AuthorizationException::class)
     suspend fun handleSessionId(sessionId: String): Session {
         val session = makeApiCall {
             apiService.getSession(sessionId, "IT7VrTQ0r4InzsvCNJpRCRpi1qzfgpaj")
         }.body() ?: throw AuthorizationException
 
-        salt = session.salt
-        hash = session.hash
+        sessionSalt = session.salt
+        sessionHash = session.hash
 
         return session
     }
@@ -63,8 +60,8 @@ class KeyriSdk(
             sessionId,
             secureCustom,
             publicCustom,
-            salt,
-            hash
+            sessionSalt,
+            sessionHash
         )
     }
 
@@ -75,8 +72,6 @@ class KeyriSdk(
         secureCustom: String?,
         publicCustom: String?,
     ) {
-        // TODO Add Implementation with ActivityResult
-
         val intent = Intent(appCompatActivity, AuthWithScannerActivity::class.java).apply {
             putExtra(AuthWithScannerActivity.RP_PUBLIC_KEY, rpPublicKey)
             putExtra(AuthWithScannerActivity.SERVICE_DOMAIN, serviceDomain)
