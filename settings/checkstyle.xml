@@ -23,7 +23,6 @@ page at http://checkstyle.sourceforge.net/config.html -->
         <property name="severity" value="warning" />
     </module>
 
-
     <module name="RegexpSingleline">
         <!-- Checks that FIXME is not used in comments.  TODO is preferred.
         -->
@@ -142,7 +141,6 @@ page at http://checkstyle.sourceforge.net/config.html -->
             <property name="severity" value="warning" />
         </module>
 
-
         <!--
         MODIFIERS CHECKS
         -->
@@ -155,7 +153,6 @@ page at http://checkstyle.sourceforge.net/config.html -->
               -->
         </module>
         <module name="RedundantModifier" />
-
 
         <!--
         WHITESPACE CHECKS

@@ -11,9 +11,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
-        android:text="@string/message_authenticated"
         android:textColor="@color/colorPrimary"
         android:textSize="24sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        tools:text="You have been successfully authenticated" />
 
 </LinearLayout>

@@ -1,15 +1,13 @@
 package com.keyrico.keyrisdk
 
 import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.result.ActivityResultLauncher
 import com.keyrico.keyrisdk.entity.Session
 import com.keyrico.keyrisdk.exception.AuthorizationException
 import com.keyrico.keyrisdk.services.CryptoService
 import com.keyrico.keyrisdk.services.UserService
 import com.keyrico.keyrisdk.services.api.ApiService
-import com.keyrico.keyrisdk.ui.auth.AuthWithScannerActivity
 import com.keyrico.keyrisdk.utils.makeApiCall
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -39,9 +37,9 @@ class KeyriSdk(
     }
 
     suspend fun handleSessionId(sessionId: String): Session {
-        val session = makeApiCall {
-            apiService.getSession(sessionId, "IT7VrTQ0r4InzsvCNJpRCRpi1qzfgpaj")
-        }.body() ?: throw AuthorizationException
+        val appKey = "IT7VrTQ0r4InzsvCNJpRCRpi1qzfgpaj"
+        val session = makeApiCall { apiService.getSession(sessionId, appKey) }.body()
+            ?: throw AuthorizationException("Unable to authorize")
 
         sessionSalt = session.salt
         sessionHash = session.hash
@@ -66,21 +64,20 @@ class KeyriSdk(
     }
 
     fun easyKeyriAuth(
+        launcher: ActivityResultLauncher<EasyKeyriAuthParams>,
         publicUserId: String,
-        appCompatActivity: AppCompatActivity,
-        requestCode: Int,
         secureCustom: String?,
-        publicCustom: String?,
+        publicCustom: String?
     ) {
-        val intent = Intent(appCompatActivity, AuthWithScannerActivity::class.java).apply {
-            putExtra(AuthWithScannerActivity.RP_PUBLIC_KEY, rpPublicKey)
-            putExtra(AuthWithScannerActivity.SERVICE_DOMAIN, serviceDomain)
-            putExtra(AuthWithScannerActivity.PUBLIC_USER_ID, publicUserId)
-            putExtra(AuthWithScannerActivity.PUBLIC_CUSTOM, publicCustom)
-            putExtra(AuthWithScannerActivity.SECURE_CUSTOM, secureCustom)
-        }
+        val params = EasyKeyriAuthParams(
+            rpPublicKey,
+            serviceDomain,
+            publicUserId,
+            publicCustom,
+            secureCustom
+        )
 
-        appCompatActivity.startActivityForResult(intent, requestCode)
+        launcher.launch(params)
     }
 
     private fun provideApiService(): ApiService {
@@ -90,9 +87,9 @@ class KeyriSdk(
             .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
 
         if (BuildConfig.DEBUG) {
-            val loggingInterceptor = HttpLoggingInterceptor()
-            loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
-            okHttpClientBuilder.addInterceptor(loggingInterceptor)
+            HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.BODY
+            }.let(okHttpClientBuilder::addInterceptor)
         }
 
         return Retrofit.Builder()

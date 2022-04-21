@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName
 data class AccountData(
 
     @SerializedName("ttl")
-    val ttl: Long,
+    val ttl: Double,
 
     @SerializedName("id")
     val id: String

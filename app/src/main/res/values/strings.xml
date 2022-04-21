@@ -1,5 +1,4 @@
 <resources>
     <string name="app_name">Keyri Demo app</string>
     <string name="easy_keyri_auth">Easy Keyri Auth</string>
-    <string name="message_authenticated">You have been successfully authenticated</string>
 </resources>

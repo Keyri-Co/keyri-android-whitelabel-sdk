@@ -1,11 +1,8 @@
 package com.keyrico.keyrisdk.ui.auth
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.keyrico.keyrisdk.KeyriSdk
-import com.keyrico.keyrisdk.R
-import com.keyrico.keyrisdk.exception.KeyriSdkException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +22,7 @@ internal class AuthWithScannerVM : ViewModel() {
 
     private var sessionId: String = ""
 
-    fun handleSessionId(sessionId: String, keyriSdk: KeyriSdk, context: Context) {
+    fun handleSessionId(sessionId: String, keyriSdk: KeyriSdk) {
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.value = AuthWithScannerState.Loading
 
@@ -34,9 +31,14 @@ internal class AuthWithScannerVM : ViewModel() {
 
                 keyriSdk.handleSessionId(sessionId)
 
-                _uiState.value = AuthWithScannerState.Confirmation.Message("Some message")
+                _uiState.value =
+                    AuthWithScannerState.Confirmation(
+                        "Andrew Kuliahin",
+                        "Some important message about login Risk",
+                        null
+                    )
             } catch (e: Throwable) {
-                processError(e, context)
+                processError(e)
             }
         }
     }
@@ -45,8 +47,7 @@ internal class AuthWithScannerVM : ViewModel() {
         publicUserId: String,
         publicCustom: String?,
         secureCustom: String?,
-        keyriSdk: KeyriSdk,
-        context: Context
+        keyriSdk: KeyriSdk
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.value = AuthWithScannerState.Loading
@@ -56,7 +57,7 @@ internal class AuthWithScannerVM : ViewModel() {
 
                 _uiState.value = AuthWithScannerState.Authenticated
             } catch (e: Throwable) {
-                processError(e, context)
+                processError(e)
             }
         }
     }
@@ -69,12 +70,8 @@ internal class AuthWithScannerVM : ViewModel() {
         _isFlashEnabled.value = isEnabled
     }
 
-    private suspend fun processError(e: Throwable, context: Context) {
-        val errorMessage = if (e is KeyriSdkException) {
-            context.getString(e.errorMessage)
-        } else {
-            e.message ?: context.getString(R.string.keyri_err_authorization)
-        }
+    private suspend fun processError(e: Throwable) {
+        val errorMessage = e.message ?: "Unable to authorize"
 
         _uiState.value = AuthWithScannerState.Error(errorMessage)
 

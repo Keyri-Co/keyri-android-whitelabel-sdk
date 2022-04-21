@@ -20,7 +20,7 @@ data class Session(
     val sessionId: String,
 
     @SerializedName("sessionType")
-    val ttl: String,
+    val sessionType: String,
 
     @SerializedName("logo")
     val logo: String,

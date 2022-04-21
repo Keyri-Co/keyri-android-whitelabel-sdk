@@ -1,18 +1,13 @@
 package com.keyrico.keyrisdk.exception
 
-import com.keyrico.keyrisdk.R
+sealed class KeyriSdkException(override val message: String) : Throwable(message = message)
 
-sealed class KeyriSdkException(open val errorMessage: Int = R.string.keyri_empty) : Throwable()
+data class NetworkException(override val message: String) : KeyriSdkException(message)
 
-object NetworkException : KeyriSdkException(R.string.keyri_err_network)
+data class AuthorizationException(override val message: String) : KeyriSdkException(message)
 
-object AuthorizationException : KeyriSdkException(R.string.keyri_err_authorization)
+data class InternalServerException(override val message: String) : KeyriSdkException(message)
 
-data class InternalServerException(val httpCode: Int? = null) :
-    KeyriSdkException(R.string.keyri_err_internal_server)
+data class ServerErrorException(override val message: String) : KeyriSdkException(message)
 
-data class ServerErrorException(val httpCode: Int? = null, val errorResponse: String?) :
-    KeyriSdkException()
-
-data class RiskErrorsException(val riskErrors: List<String> = emptyList()) :
-    KeyriSdkException(R.string.keyri_err_risk_errors)
+data class RiskErrorsException(override val message: String) : KeyriSdkException(message)

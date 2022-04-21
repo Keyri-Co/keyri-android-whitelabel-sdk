@@ -34,13 +34,14 @@ import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import com.keyrico.keyrisdk.EasyKeyriAuthParams
 import com.keyrico.keyrisdk.KeyriSdk
 import com.keyrico.keyrisdk.R
 import com.keyrico.keyrisdk.databinding.ActivityAuthWithScannerBinding
 import com.keyrico.keyrisdk.ui.confirmation.ShowConfirmation
+import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
-import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 internal class AuthWithScannerActivity : AppCompatActivity() {
@@ -79,11 +80,12 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
 
     private val confirmationDialogLauncher = registerForActivityResult(ShowConfirmation()) {
         if (it) {
-            val publicUserId = intent.getStringExtra(RP_PUBLIC_KEY) ?: ""
-            val publicCustom = intent.getStringExtra(PUBLIC_CUSTOM) ?: ""
-            val secureCustom = intent.getStringExtra(SECURE_CUSTOM) ?: ""
+            val params = intent.getParcelableExtra<EasyKeyriAuthParams>(KEY_AUTH_PARAMS)
+            val publicUserId = params?.publicUserId ?: ""
+            val publicCustom = params?.publicCustom ?: ""
+            val secureCustom = params?.secureCustom ?: ""
 
-            viewModel.challengeSession(publicUserId, publicCustom, secureCustom, keyriSdk, this)
+            viewModel.challengeSession(publicUserId, publicCustom, secureCustom, keyriSdk)
         } else {
             setResult(RESULT_CANCELED)
             finish()
@@ -95,10 +97,11 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
     private val viewModel by viewModels<AuthWithScannerVM>()
 
     private val keyriSdk by lazy {
-        val publicKey = intent.getStringExtra(RP_PUBLIC_KEY) ?: ""
-        val serviceDomain = intent.getStringExtra(SERVICE_DOMAIN) ?: ""
+        val params = intent.getParcelableExtra<EasyKeyriAuthParams>(KEY_AUTH_PARAMS)
+        val rpPublicKey = params?.rpPublicKey ?: ""
+        val serviceDomain = params?.serviceDomain ?: ""
 
-        KeyriSdk(this, publicKey, serviceDomain)
+        KeyriSdk(this, rpPublicKey, serviceDomain)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -256,8 +259,8 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
     }
 
     private fun processLink(uri: Uri?) {
-        uri?.getQueryParameters("sessionid")?.firstOrNull()?.let { sessionId ->
-            viewModel.handleSessionId(sessionId, keyriSdk, this)
+        uri?.getQueryParameters("sessionId".lowercase())?.firstOrNull()?.let { sessionId ->
+            viewModel.handleSessionId(sessionId, keyriSdk)
         } ?: Log.e("Keyri", "Failed to process link")
     }
 
@@ -300,7 +303,7 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
 
                             camera?.cameraControl?.startFocusAndMetering(focusMeteringAction)
                         } catch (e: CameraInfoUnavailableException) {
-                            Log.d("Keyri", "cannot access camera, $e")
+                            Log.d("Keyri", "Cannot access camera, $e")
                         }
 
                         view.performClick()
@@ -314,7 +317,7 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
             binding.scannerPreview.setOnTouchListener(null)
 
             val autoFocusPoint =
-                SurfaceOrientedMeteringPointFactory(1f, 1f).createPoint(.5f, .5f)
+                SurfaceOrientedMeteringPointFactory(1F, 1F).createPoint(.5F, .5F)
 
             try {
                 val autoFocusAction =
@@ -324,7 +327,7 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
 
                 camera?.cameraControl?.startFocusAndMetering(autoFocusAction)
             } catch (e: CameraInfoUnavailableException) {
-                Log.d("Keyri", "cannot access camera, $e")
+                Log.d("Keyri", "Cannot access camera, $e")
             }
         }
 
@@ -336,11 +339,7 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
     }
 
     companion object {
-        const val SERVICE_DOMAIN = "SERVICE_DOMAIN"
-        const val RP_PUBLIC_KEY = "RP_PUBLIC_KEY"
-        const val PUBLIC_USER_ID = "PUBLIC_USER_ID"
-        const val PUBLIC_CUSTOM = "PUBLIC_CUSTOM"
-        const val SECURE_CUSTOM = "SECURE_CUSTOM"
+        const val KEY_AUTH_PARAMS = "KEY_AUTH_PARAMS"
 
         private const val RATIO_4_3_VALUE = 4.0 / 3.0
         private const val RATIO_16_9_VALUE = 16.0 / 9.0

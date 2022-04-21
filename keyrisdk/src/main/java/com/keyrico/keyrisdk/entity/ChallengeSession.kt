@@ -14,7 +14,7 @@ data class ChallengeSession(
     val widgetSocket: String,
 
     @SerializedName("ttl")
-    val ttl: Long,
+    val ttl: Double,
 
     @SerializedName("publicObject")
     val publicObject: String,

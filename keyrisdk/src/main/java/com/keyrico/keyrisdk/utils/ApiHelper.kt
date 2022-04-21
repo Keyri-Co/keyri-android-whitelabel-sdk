@@ -22,18 +22,7 @@ internal suspend fun <T : Any> makeApiCall(call: suspend () -> Response<T>): Res
 
         if (!response.isSuccessful) {
             throw when (response.code()) {
-                in 500..599 -> InternalServerException(response.code())
-                else -> try {
-                    val errorBody = response.errorBody()
-
-                    val errorResponse: IpDataError? = Gson().fromJson(
-                        errorBody?.charStream(),
-                        object : TypeToken<IpDataError?>() {}.type
-                    )
-
-                    errorBody?.close()
-                    RiskErrorsException(errorResponse?.riskErrors ?: emptyList())
-                } catch (e: JsonSyntaxException) {
+                in 500..599 -> {
                     val errorBody = response.errorBody()
 
                     val errorResponse: String? = Gson().fromJson(
@@ -42,7 +31,26 @@ internal suspend fun <T : Any> makeApiCall(call: suspend () -> Response<T>): Res
                     )
 
                     errorBody?.close()
-                    ServerErrorException(response.code(), errorResponse)
+
+                    InternalServerException(errorResponse ?: "Unable to authorize")
+                }
+                else -> try {
+                    val errorBody = response.errorBody()
+                    val type = object : TypeToken<IpDataError?>() {}.type
+                    val errorResponse: IpDataError? = Gson().fromJson(errorBody?.charStream(), type)
+
+                    errorBody?.close()
+
+                    val error = errorResponse?.riskErrors?.toString()
+
+                    RiskErrorsException(error ?: "Unable to authorize")
+                } catch (e: JsonSyntaxException) {
+                    val errorBody = response.errorBody()
+                    val type = object : TypeToken<String?>() {}.type
+                    val errorResponse: String? = Gson().fromJson(errorBody?.charStream(), type)
+
+                    errorBody?.close()
+                    ServerErrorException(errorResponse ?: "Unable to authorize")
                 }
             }
         }
@@ -54,11 +62,12 @@ internal suspend fun <T : Any> makeApiCall(call: suspend () -> Response<T>): Res
                 when (e) {
                     is UnknownHostException,
                     is SocketTimeoutException,
-                    is ConnectException -> NetworkException
+                    is ConnectException -> NetworkException("No internet connection")
                     else -> e
                 }
             }
-            is MalformedJsonException, is JsonSyntaxException -> AuthorizationException
+            is MalformedJsonException,
+            is JsonSyntaxException -> AuthorizationException("Unable to authorize")
             else -> e
         }
     }

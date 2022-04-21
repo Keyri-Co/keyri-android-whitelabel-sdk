@@ -56,17 +56,16 @@ allprojects {
 ```groovy
 dependencies {
     // ...
-    implementation 'com.github.Keyri-Co.keyri-android-whitelabel-sdk:keyrisdk:1.0.2'
+    implementation "com.github.Keyri-Co:keyri-android-whitelabel-sdk:1.0.10"
 }
 ```
 
 ### Provisioning Keyri config parameters
 
-Supply these three parameters to your app:
+Supply these parameters to your app:
 
-* App Key
-* Public Key
-* Callback URL
+* Service Domain
+* RP Public Key
 
 For example:
 
@@ -74,9 +73,8 @@ For example:
 android {
     defaultConfig {
         // ...
-        buildConfigField "String", "APP_KEY", "\"raB7SFWt27VoKqkPhaUrmWAsCJIO8Moj\""
-        buildConfigField "String", "PUBLIC_KEY", "\"BOenio0DXyG31mAgUCwhdslelckmxzM7nNOyWAjkuo7skr1FhP7m2L8PaSRgIEH5ja9p+CwEIIKGqR4Hx5Ezam4=\""
-        buildConfigField "String", "KEYRI_CALLBACK_URL", "\"http://18.234.222.59:5000/users/session-mobile\""
+        buildConfigField "String", "SERVICE_DOMAIN", "\"misc.keyri.com\""
+        buildConfigField "String", "RP_PUBLIC_KEY", "\"BOenio0DXyG31mAgUCwhdslelckmxzM7nNOyWAjkuo7skr1FhP7m2L8PaSRgIEH5ja9p+CwEIIKGqR4Hx5Ezam4=\""
     }
     // ...
 }
@@ -87,12 +85,8 @@ And then use them to initialize the SDK:
 ```kotlin
 val keyriSdk = KeyriSdk(
     requireContext(),
-    KeyriConfig(
-        appKey = BuildConfig.APP_KEY,
-        publicKey = BuildConfig.PUBLIC_KEY,
-        callbackUrl = BuildConfig.KEYRI_CALLBACK_URL,
-        allowMultipleAccounts = true
-    )
+    rpPublicKey = BuildConfig.RP_PUBLIC_KEY,
+    serviceDomain = BuildConfig.SERVICE_DOMAIN
 ) 
 ```
 
@@ -100,120 +94,55 @@ Or with koin DI:
 
 ```kotlin
 val keyriModule = module {
-    single {
-        KeyriConfig(
-            appKey = BuildConfig.APP_KEY,
-            publicKey = BuildConfig.PUBLIC_KEY,
-            callbackUrl = BuildConfig.KEYRI_CALLBACK_URL,
-            allowMultipleAccounts = true
-        )
-    }
-    single { KeyriSdk(get(), get()) }
+    single { KeyriSdk(get(), BuildConfig.RP_PUBLIC_KEY, BuildConfig.SERVICE_DOMAIN) }
 }
 ```
 
 ## Usage
 
 Note that the SDK object must not be destroyed between calling **handleSessionId()** and retrieving
-the result of authorization methods.
+the result of **challengeSession()**.
 
-### Option 1: Use the built-in QR login UI/UX
-
-* Add KeyriScannerView in your layout:
-
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent"
-    android:orientation="vertical">
-
-    <com.keyrico.keyrisdk.view.KeyriScannerView android:id="@+id/vKeyriScanner"
-        android:layout_width="match_parent" android:layout_height="match_parent" />
-
-</LinearLayout>
-```
-
-* Init with:
+### Option 1: Use **easyKeyriAuth()** method to delegate authentication to SDK (ActivityResult API)
 
 ```kotlin
-val customArg: String = intent.getStringExtra(KEY_CUSTOM_ARG)
+private val easyKeyriAuthLauncher = registerForActivityResult(ShowEasyKeyriAuth()) { isSuccess ->
+    // Handle authentication result
+    // ...
+}
 
-val params = KeyriScannerViewParams(
-    activity = this,
-    keyriSdk = keyriSdk,
-    customArgument = customArg,
-    onChooseAccount = { accounts, sessionId, service ->
-        // Here init accounts list and call vKeyriScanner.continueAuth(publicAccount, sessionId, service) after item click
-        // ... 
-    },
-    onCompleted = { showToast("Auth completed!") }
-)
-
-binding.vKeyriScanner.initView(params)
+override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    // ...
+    binding.bEasyKeyriAuth.setOnClickListener {
+        keyriSdk.easyKeyriAuth(
+            easyKeyriAuthLauncher,
+            "public-user-id",
+            "secure custom",
+            "public custom"
+        )
+    }
+}
 ```
 
 You could check full code
-in [AuthWithScannerActivity](app/src/main/java/com/keyri/auth_with_scanner/AuthWithScannerActivity.kt)
-.
+in [AuthWithScannerActivity](app/src/main/java/com/keyri/ui/main/MainActivity.kt).
 
 ### Option 2: Build a custom authentication/authorization UI/UX
 
 Alternatively, if you want to provide a custom authentication/authorization UI/UX, use the following
 methods:
 
-* **handleSessionId()** - Call it after retrieving the sessionId from QR-code or deep link.
-* **sessionSignup()** - Must be called after **handleSessionId()**. This method is needed to create
-  a user for Desktop agent (i.e., if the user does not already have an account and is trying to
-  register). Pass username, sessionId, service, and any custom param needed to work with your
-  identity management system.
-* **sessionLogin()** - This method needed to login user for Desktop agent. Must be called after
-  **handleSessionId()**. Pass public account identifies (e.g., username), sessionId, service and
-  custom param:
+* **handleSessionId()** - Call it after retrieving the sessionId from QR-code or deep link. It will
+  provide Session object or Risk Analytics information (needed to show confirmation screen).
+* **challengeSession()** - Call this function to finish user authentication.
 
 ```kotlin
 val session = keyriSdk.handleSessionId(sessionId)
 
-if (session.isNewUser) {
-    keyriSdk.sessionSignup(
-        session.username,
-        sessionId,
-        session.service,
-        CUSTOM_DATA_SIGNUP
-    )
-} else {
-    val account = keyriSdk.getAccounts().firstOrNull() ?: throw AccountNotFoundException
-    keyriSdk.sessionLogin(account, sessionId, session.service, CUSTOM_DATA_LOGIN)
-}
-```
+// Show confirmation screen and if positive do next:
 
-* **directSignup()** - method to create user on mobile device:
-
-```kotlin
-val authResponse = keyriSdk.directSignup(username, CUSTOM_DATA_SIGNUP, CUSTOM_HEADERS)
-
-val user = authResponse.user
-val refreshToken = authResponse.refreshToken
-```
-
-* **directLogin()** - method to login user on mobile device:
-
-```kotlin
-val authResponse = keyriSdk.directLogin(account, CUSTOM_HEADERS)
-
-val user = authResponse.user
-val refreshToken = authResponse.refreshToken
-```
-
-### Manage Accounts
-
-To manage accounts use the following methods:
-
-* **getAccounts()** - retrieve all public accounts from storage.
-* **removeAccount()** - remove public account from storage.
-
-```kotlin
-keyriSdk.getAccounts().firstOrNull { it.username == "User" && it.custom == "SOME CUSTOM ARG" }
-    ?.let { account -> keyriSdk.removeAccount(account) }
+keyriSdk.challengeSession(publicUserId, sessionId, publicCustom, secureCustom)
 ```
 
 ### Deep Link Handling
@@ -255,7 +184,7 @@ override fun onNewIntent(intent: Intent) {
 
 private fun processLink(uri: Uri?) {
     uri?.getQueryParameters("sessionId")?.firstOrNull()?.let { sessionId ->
-        // Do auth with sessionId
+        // Do auth with sessionId (handleSessionId, challengeSession)
     } ?: Log.e("Keyri", "Failed to process link")
 }
 ```
