@@ -3,8 +3,9 @@ package com.keyrico.keyrisdk.ui.confirmation
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.isVisible
+import com.keyrico.keyrisdk.R
 import com.keyrico.keyrisdk.databinding.ActivityConfirmationBinding
+import com.keyrico.keyrisdk.entity.RiskMessageTypes
 import com.keyrico.keyrisdk.ui.auth.AuthWithScannerState
 
 internal class ConfirmationActivity : AppCompatActivity() {
@@ -35,32 +36,33 @@ internal class ConfirmationActivity : AppCompatActivity() {
             ivClose.setOnClickListener { finish() }
 
             intent.getParcelableExtra<AuthWithScannerState.Confirmation>(KEY_AUTH_STATE)?.let {
-                tvAvatar.text = it.username.firstOrNull()?.toString()
+                tvAvatar.text = it.username?.firstOrNull()?.toString()
                 tvUsername.text = it.username
 
-                if (it.characteristics != null) {
-                    makeListVisible(true)
+                val riskStatusType = it.riskAnalytics.getRiskStatusType()
 
-                    rvRiskAnalyticsInfo.adapter = riskAnalyticsInfoAdapted
-
-                    val characteristics = it.characteristics.map { characteristic ->
-                        RiskAnalyticsItem(characteristic.key, characteristic.value)
-                    }
-
-                    riskAnalyticsInfoAdapted.submitList(characteristics)
-                } else if (it.message != null) {
-                    makeListVisible(false)
-
-                    tvMessage.text = it.message
+                val colorRes = when (riskStatusType) {
+                    RiskMessageTypes.FINE -> R.color.green
+                    RiskMessageTypes.WARNING -> R.color.orange
+                    RiskMessageTypes.DANGER -> R.color.red
                 }
-            }
-        }
-    }
 
-    private fun makeListVisible(isListVisible: Boolean) {
-        with(binding) {
-            rvRiskAnalyticsInfo.isVisible = isListVisible
-            tvMessage.isVisible = !isListVisible
+                tvRiskStatus.setTextColor(getColor(colorRes))
+                tvRiskStatus.text = riskStatusType.type
+
+                rvRiskAnalyticsInfo.adapter = riskAnalyticsInfoAdapted
+
+                val geoData = it.riskAnalytics.geoData
+
+                val characteristics = listOf(
+                    RiskAnalyticsItem("Origin", it.widgetOrigin),
+                    RiskAnalyticsItem("Agent", it.widgetUserAgent),
+                    RiskAnalyticsItem("Widget IP", it.iPAddressWidget),
+                    RiskAnalyticsItem("City", "${geoData.city}, ${geoData.country_code}")
+                )
+
+                riskAnalyticsInfoAdapted.submitList(characteristics)
+            }
         }
     }
 

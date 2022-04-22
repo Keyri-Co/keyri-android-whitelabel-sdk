@@ -29,14 +29,16 @@ internal class AuthWithScannerVM : ViewModel() {
             try {
                 this@AuthWithScannerVM.sessionId = sessionId
 
-                keyriSdk.handleSessionId(sessionId)
+                val session = keyriSdk.handleSessionId(sessionId)
 
-                _uiState.value =
-                    AuthWithScannerState.Confirmation(
-                        "Andrew Kuliahin",
-                        "Some important message about login Risk",
-                        null
-                    )
+                _uiState.value = AuthWithScannerState.Confirmation(
+                    username = session.username ?: "Andrew Kuliahin", // TODO Change to actual
+                    widgetUserAgent = session.widgetUserAgent,
+                    widgetOrigin = session.widgetOrigin,
+                    logo = session.logo,
+                    iPAddressWidget = session.iPAddressWidget,
+                    riskAnalytics = session.riskAnalytics
+                )
             } catch (e: Throwable) {
                 processError(e)
             }

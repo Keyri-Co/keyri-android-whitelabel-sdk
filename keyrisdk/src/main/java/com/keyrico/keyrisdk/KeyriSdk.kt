@@ -1,13 +1,17 @@
 package com.keyrico.keyrisdk
 
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import androidx.activity.result.ActivityResultLauncher
+import androidx.appcompat.app.AppCompatActivity
 import com.keyrico.keyrisdk.entity.Session
 import com.keyrico.keyrisdk.exception.AuthorizationException
+import com.keyrico.keyrisdk.exception.WrongOriginDomainException
 import com.keyrico.keyrisdk.services.CryptoService
 import com.keyrico.keyrisdk.services.UserService
 import com.keyrico.keyrisdk.services.api.ApiService
+import com.keyrico.keyrisdk.ui.auth.AuthWithScannerActivity
 import com.keyrico.keyrisdk.utils.makeApiCall
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -40,6 +44,8 @@ class KeyriSdk(
         val appKey = "IT7VrTQ0r4InzsvCNJpRCRpi1qzfgpaj"
         val session = makeApiCall { apiService.getSession(sessionId, appKey) }.body()
             ?: throw AuthorizationException("Unable to authorize")
+
+        if (session.widgetOrigin != serviceDomain) throw WrongOriginDomainException("Wrong Origin domain")
 
         sessionSalt = session.salt
         sessionHash = session.hash
@@ -78,6 +84,28 @@ class KeyriSdk(
         )
 
         launcher.launch(params)
+    }
+
+    fun easyKeyriAuth(
+        appCompatActivity: AppCompatActivity,
+        requestCode: Int,
+        publicUserId: String,
+        secureCustom: String?,
+        publicCustom: String?
+    ) {
+        val params = EasyKeyriAuthParams(
+            rpPublicKey,
+            serviceDomain,
+            publicUserId,
+            publicCustom,
+            secureCustom
+        )
+
+        val intent = Intent(appCompatActivity, AuthWithScannerActivity::class.java).apply {
+            putExtra(AuthWithScannerActivity.KEY_AUTH_PARAMS, params)
+        }
+
+        appCompatActivity.startActivityForResult(intent, requestCode)
     }
 
     private fun provideApiService(): ApiService {

@@ -2,8 +2,9 @@
 <resources>
     <color name="grey_dot">#C4C4C4</color>
     <color name="grey_70">#B3636363</color>
-    <color name="red">#de5246</color>
-    <color name="green">#1aa260</color>
+    <color name="red">#DE5246</color>
+    <color name="orange">#FF8C00</color>
+    <color name="green">#1AA260</color>
     <color name="violet">#7E57C2</color>
     <color name="blue">#317AF4</color>
 </resources>

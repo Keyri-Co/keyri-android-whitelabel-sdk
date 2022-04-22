@@ -25,6 +25,21 @@ data class Session(
     @SerializedName("logo")
     val logo: String,
 
+    @SerializedName("IPDataWidget")
+    val iPDataWidget: IPData,
+
+    @SerializedName("IPDataMobile")
+    val iPDataMobile: IPData,
+
+    @SerializedName("IPAddressMobile")
+    val iPAddressMobile: String,
+
+    @SerializedName("IPAddressWidget")
+    val iPAddressWidget: String,
+
+    @SerializedName("riskAnalytics")
+    val riskAnalytics: RiskAnalytics,
+
     @SerializedName("__salt")
     val salt: String,
 
