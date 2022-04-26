@@ -138,6 +138,6 @@ class KeyriSdk(
     companion object {
         private const val PREFS_NAME = "keyri_prefs"
         private const val CONNECT_TIMEOUT = 15L
-        private const val READ_TIMEOUT = 60L
+        private const val READ_TIMEOUT = 15L
     }
 }

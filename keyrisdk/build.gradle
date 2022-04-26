@@ -55,7 +55,7 @@ dependencies {
     implementation 'androidx.activity:activity-ktx:1.4.0'
 
     // Lifecycle
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.5.0-alpha06'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.5.0-beta01'
 
     // Networking
     implementation "com.squareup.okhttp3:okhttp:4.9.1"
