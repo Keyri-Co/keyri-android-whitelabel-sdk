@@ -25,20 +25,17 @@ on:
 #          script: ./gradlew connectedAndroidTest
 
 jobs:
-  test:
-    name: Run Unit Example Tests
-    runs-on: ubuntu-18.04
-
+  unit-test:
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - name: set up JDK 11
-      with:
-        java-version: '11'
-        distribution: 'adopt'
-      - name: Unit tests
-        run: bash ./gradlew test --stacktrace
-      - name: Unit tests results
-        uses: actions/upload-artifact@v1
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+      - name: Run tests
+        run: ./gradlew test
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v2
         with:
-          name: unit-tests-results
-          path: app/build/reports/tests/testDebugUnitTest/index.html
+          name: unit_test_report
+          path: app/build/reports/tests/testDebugUnitTest/
