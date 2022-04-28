@@ -33,7 +33,7 @@ jobs:
           name: app-debug
           path: app/build/outputs/apk/debug/app-debug.apk
 
-      - name: Upload app-debug-androidTest APK
+      - name: Upload keyrisdk-debug-androidTest APK
         uses: actions/upload-artifact@v2
         with:
           name: keyrisdk-debug-androidTest
@@ -49,10 +49,10 @@ jobs:
         with:
           name: app-debug
 
-      - name: Download app-debug-androidTest APK
+      - name: Download keyrisdk-debug-androidTest APK
         uses: actions/download-artifact@v3
         with:
-          name: app-debug-androidTest
+          name: keyrisdk-debug-androidTest
 
       - name: Firebase auth with gcloud
         uses: google-github-actions/setup-gcloud@v0.6.0
