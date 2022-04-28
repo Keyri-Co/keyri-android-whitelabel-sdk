@@ -3,39 +3,22 @@ name: Instrumentation Tests
 on:
   push:
 
-#jobs:
-#  android_tests:
-#    runs-on: macos-latest
-#    strategy:
-#      matrix:
-#        api-level: [ 31 ]
-#        target: [ google_apis ]
-#    steps:
-#      - name: checkout
-#        uses: actions/checkout@v2
-#      - name: Set up Java
-#        with:
-#          java-version: '11'
-#          distribution: 'adopt'
-#      - uses: actions/checkout@v2
-#      - name: Instrumentation Tests
-#        uses: reactivecircus/android-emulator-runner@v2
-#        with:
-#          api-level: 31
-#          script: ./gradlew connectedAndroidTest
-
 jobs:
-  unit-test:
-    runs-on: ubuntu-latest
+  instrumentation-test:
+    runs-on: macos-latest
     steps:
       - name: Checkout the code
         uses: actions/checkout@v2
 
-      - name: Run tests
-        run: ./gradlew test
+      - name: Run espresso tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 31
+          target: google_apis
+          script: ./gradlew connectedCheck
 
       - name: Upload test report
         uses: actions/upload-artifact@v2
         with:
-          name: unit_test_report
-          path: app/build/reports/tests/testDebugUnitTest/
+          name: instrumentation_test_report
+          path: app/build/reports/androidTests/connected/
