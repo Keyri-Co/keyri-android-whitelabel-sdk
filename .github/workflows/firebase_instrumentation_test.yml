@@ -47,7 +47,7 @@ jobs:
       - name: Download app-debug APK
         uses: actions/download-artifact@v3
         with:
-          name: app-debug
+          name: keyrisdk-debug
 
       - name: Download keyrisdk-debug-androidTest APK
         uses: actions/download-artifact@v3
@@ -64,4 +64,4 @@ jobs:
       - name: Run Instrumentation Tests in Firebase Test Lab
         run: |
           gcloud firebase test android models list
-          gcloud firebase test android run --type instrumentation --app app-debug/app-debug.apk --test keyrisdk-debug-androidTest/keyrisdk-debug-androidTest.apk --device model=Pixel6,version=31,locale=en,orientation=portrait --timeout 180s
+          gcloud firebase test android run --type instrumentation --app app-debug/app-debug.apk --test keyrisdk-debug/keyrisdk-debug-androidTest.apk --device model=Pixel6,version=31,locale=en,orientation=portrait --timeout 180s
