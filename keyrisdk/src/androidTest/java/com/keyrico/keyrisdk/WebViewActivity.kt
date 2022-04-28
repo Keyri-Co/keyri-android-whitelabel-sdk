@@ -58,7 +58,7 @@ class WebViewActivity : AppCompatActivity() {
                     setResult(RESULT_OK, resultIntent)
                     finish()
                 }
-        }, 5_000L)
+        }, 10_000L)
     }
 
     companion object {
