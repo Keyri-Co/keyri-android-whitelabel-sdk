@@ -28,13 +28,13 @@ jobs:
         run: ./gradlew assembleDebugAndroidTest
 
       - name: Upload app-debug APK
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: app-debug
           path: app/build/outputs/apk/debug/app-debug.apk
 
       - name: Upload keyrisdk-debug-androidTest APK
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: keyrisdk-debug-androidTest
           path: keyrisdk/build/intermediates/apk/androidTest/debug/keyrisdk-debug-androidTest.apk
@@ -47,7 +47,7 @@ jobs:
       - name: Download app-debug APK
         uses: actions/download-artifact@v3
         with:
-          name: keyrisdk-debug-androidTest
+          name: app-debug
 
       - name: Download keyrisdk-debug-androidTest APK
         uses: actions/download-artifact@v3
