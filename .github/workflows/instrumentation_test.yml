@@ -21,7 +21,7 @@ jobs:
           api-level: 31
           arch: x86_64
           target: google_apis
-          profile: Pixel
+          profile: Pixel 4
           script: ./gradlew connectedCheck --stacktrace
 
       - name: Upload test report
