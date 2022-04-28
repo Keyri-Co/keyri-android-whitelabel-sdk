@@ -22,9 +22,7 @@ jobs:
           arch: x86_64
           target: google_apis
           script: ./gradlew connectedCheck --stacktrace
-
-      - name: Upload test report
-        uses: actions/upload-artifact@v2
+      if: failure()
         with:
-          name: instrumentation_test_report
-          path: app/build/reports/androidTests/connected/
+          name: logcat
+          path: artifacts/logcat.log

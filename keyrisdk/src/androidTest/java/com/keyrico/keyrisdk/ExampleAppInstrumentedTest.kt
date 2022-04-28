@@ -18,7 +18,6 @@ class ExampleAppInstrumentedTest {
 
     private lateinit var context: Context
     private lateinit var keyriSdk: KeyriSdk
-    private lateinit var sessionId: String
 
     @Before
     fun setup() {
@@ -32,6 +31,8 @@ class ExampleAppInstrumentedTest {
 
     @Test
     fun testDomain() = runBlocking {
+        var sessionId: String? = null
+
         launchActivity<WebViewActivity>().use {
             val result = it.result
 
@@ -42,21 +43,21 @@ class ExampleAppInstrumentedTest {
             }
         }
 
-        if (!this@ExampleAppInstrumentedTest::sessionId.isInitialized) {
-            throw IllegalStateException("Couldn't scan sessionId with QR")
-        }
+        Assert.assertNotNull(sessionId)
 
-        Log.d("Keyri", "SESSION ID: $sessionId")
+        sessionId?.let {
+            Log.d("Keyri", "SESSION ID: $it")
 
-        val session = keyriSdk.handleSessionId(sessionId)
+            val session = keyriSdk.handleSessionId(it)
 
-        Assert.assertEquals(session.widgetOrigin, "misc.keyri.com")
+            Assert.assertEquals(session.widgetOrigin, "misc.keyri.com")
 
-        keyriSdk.challengeSession(
-            "some-public-user-id",
-            sessionId,
-            "Secure custom",
-            "Public custom",
-        )
+            keyriSdk.challengeSession(
+                "some-public-user-id",
+                it,
+                "Secure custom",
+                "Public custom",
+            )
+        } ?: throw IllegalStateException("Couldn't scan sessionId with QR")
     }
 }
