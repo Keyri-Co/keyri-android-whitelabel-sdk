@@ -30,8 +30,8 @@ jobs:
     runs-on: ubuntu-18.04
 
     steps:
-      - name: checkout
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v1
+      - name: set up JDK 11
       with:
         java-version: '11'
         distribution: 'adopt'
