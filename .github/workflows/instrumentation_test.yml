@@ -13,8 +13,6 @@ jobs:
         with:
           distribution: 'adopt'
           java-version: '11'
-          check-latest: true
-          profile: Pixel
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew
@@ -26,3 +24,4 @@ jobs:
           arch: x86_64
           target: google_apis
           script: ./gradlew connectedCheck
+          profile: Pixel
