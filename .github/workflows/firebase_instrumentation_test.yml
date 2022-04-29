@@ -37,7 +37,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: keyrisdk-debug-androidTest
-          path: keyrisdk/build/intermediates/apk/androidTest/debug/keyrisdk-debug-androidTest.apk
+          path: keyrisdk/**/keyrisdk-debug-androidTest.apk
 
   run_ui_tests_on_firebase:
     runs-on: ubuntu-20.04
