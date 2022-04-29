@@ -54,12 +54,10 @@ jobs:
         with:
           name: keyrisdk-debug-androidTest
 
-      - name: Firebase auth with gcloud
-        uses: google-github-actions/setup-gcloud@v0.6.0
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v0
         with:
-          version: '290.0.1'
-          service_account_key: ${{ secrets.FIREBASE_KEY }}
-          project_id: ${{ secrets.PROJECT_ID }}
+          credentials_json: ${{ secrets.FIREBASE_KEY }}
 
       - name: Run Instrumentation Tests in Firebase Test Lab
         run: |
