@@ -25,7 +25,7 @@ jobs:
         run: ./gradlew assembleDebug
 
       - name: Build APK for UI test
-        run: ./gradlew assembleDebugAndroidTest
+        run: ./gradlew keyrisdk:assembleDebugAndroidTest
 
       - name: Upload app-debug APK
         uses: actions/upload-artifact@v3
@@ -55,7 +55,7 @@ jobs:
           name: keyrisdk-debug-androidTest
 
       - name: Firebase auth with gcloud
-        uses: google-github-actions/setup-gcloud@v0.6.0
+        uses: google-github-actions/setup-gcloud@v0.1.1
         with:
           version: '290.0.1'
           service_account_key: ${{ secrets.FIREBASE_KEY }}
