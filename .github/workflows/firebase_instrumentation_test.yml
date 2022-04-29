@@ -59,6 +59,12 @@ jobs:
         with:
           credentials_json: ${{ secrets.FIREBASE_KEY }}
 
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0.6.0
+
+      - name: Use gcloud CLI
+        run: gcloud info
+
       - name: Run Instrumentation Tests in Firebase Test Lab
         run: |
           gcloud firebase test android models list
