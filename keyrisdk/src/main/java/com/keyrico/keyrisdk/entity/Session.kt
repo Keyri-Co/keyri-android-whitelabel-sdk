@@ -1,7 +1,10 @@
 package com.keyrico.keyrisdk.entity
 
+import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 data class Session(
 
     @SerializedName("WidgetEndPoint")
@@ -11,7 +14,7 @@ data class Session(
     val widgetOrigin: String,
 
     @SerializedName("WidgetUserAgent")
-    val widgetUserAgent: String,
+    val widgetUserAgent: String?,
 
     @SerializedName("action")
     val action: String,
@@ -19,27 +22,24 @@ data class Session(
     @SerializedName("sessionId")
     val sessionId: String,
 
-    @SerializedName("sessionType")
-    val sessionType: String,
+    @SerializedName("ttl")
+    val ttl: String,
 
     @SerializedName("logo")
     val logo: String,
 
-    @SerializedName("IPAddressMobile")
-    val iPAddressMobile: String,
+    @SerializedName("IPDataMobile")
+    val iPDataMobile: IPData?,
 
-    @SerializedName("IPAddressWidget")
-    val iPAddressWidget: String,
+    @SerializedName("IPDataWidget")
+    val iPDataWidget: IPData?,
 
     @SerializedName("riskAnalytics")
-    val riskAnalytics: RiskAnalytics,
+    val riskAnalytics: RiskAnalytics?,
 
     @SerializedName("__salt")
     val salt: String,
 
     @SerializedName("__hash")
     val hash: String,
-
-    @SerializedName("username")
-    val username: String?
-)
+) : Parcelable

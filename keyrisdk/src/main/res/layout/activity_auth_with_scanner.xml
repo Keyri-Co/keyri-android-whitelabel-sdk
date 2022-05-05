@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -9,32 +10,63 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/ivAutofocus"
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabClose"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
         android:layout_margin="16dp"
-        android:background="?selectableItemBackgroundBorderless"
-        android:elevation="1dp"
-        android:padding="8dp"
-        app:srcCompat="@drawable/ic_autofocus_on" />
+        android:backgroundTint="@android:color/white"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_close"
+        android:tint="@color/close_background"
+        app:backgroundTint="@color/close_border"
+        app:borderWidth="1dp"
+        app:elevation="1dp"
+        app:fabCustomSize="40dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/ivFlash"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:layout_margin="16dp"
-        android:background="?selectableItemBackgroundBorderless"
-        android:elevation="1dp"
-        android:padding="8dp"
-        app:srcCompat="@drawable/ic_flash_off" />
+    <View
+        android:id="@+id/vPlaceholder"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@drawable/bg_scanner_gradient"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/vInsetPlaceholder"
+        app:layout_constraintHeight_percent="0.28" />
 
-    <include
-        android:id="@+id/flProgress"
-        layout="@layout/keyri_layout_progress" />
+    <View
+        android:id="@+id/vInsetPlaceholder"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/white"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
-</RelativeLayout>
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/vProgress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:elevation="2dp"
+        android:indeterminate="true"
+        android:indeterminateTint="@color/text_color"
+        android:visibility="gone"
+        app:indicatorColor="@color/text_color"
+        app:layout_constraintBottom_toTopOf="@id/tvPoweredByKeyri"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:visibility="visible" />
+
+    <TextView
+        android:id="@+id/tvPoweredByKeyri"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="36dp"
+        android:fontFamily="@font/rubik_light"
+        android:text="@string/powered_by_keyri"
+        android:textColor="@color/text_color"
+        app:layout_constraintBottom_toBottomOf="@id/vPlaceholder"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

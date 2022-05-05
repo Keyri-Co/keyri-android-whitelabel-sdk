@@ -24,6 +24,7 @@ class ExampleAppInstrumentedTest {
         context = InstrumentationRegistry.getInstrumentation().context
         keyriSdk = KeyriSdk(
             context,
+            "IT7VrTQ0r4InzsvCNJpRCRpi1qzfgpaj",
             "BOenio0DXyG31mAgUCwhdslelckmxzM7nNOyWAjkuo7skr1FhP7m2L8PaSRgIEH5ja9p+CwEIIKGqR4Hx5Ezam4=",
             "misc.keyri.com"
         )

@@ -7,15 +7,42 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class IPData(
 
-    @SerializedName("country")
-    val country: String,
+    @SerializedName("continent_name")
+    val continentName: String,
+
+    @SerializedName("calling_code")
+    val callingCode: String,
 
     @SerializedName("city")
     val city: String,
 
-    @SerializedName("timezone")
-    val timezone: String,
+    @SerializedName("ip")
+    val ip: String,
 
-    @SerializedName("countryCode")
-    val countryCode: String
-): Parcelable
+    @SerializedName("latitude")
+    val latitude: Double,
+
+    @SerializedName("emoji_unicode")
+    val emojiUnicode: String,
+
+    @SerializedName("continent_code")
+    val continentCode: String,
+
+    @SerializedName("country_code")
+    val countryCode: String,
+
+    @SerializedName("is_eu")
+    val isEu: Boolean,
+
+    @SerializedName("country_name")
+    val countryName: String,
+
+    @SerializedName("postal")
+    val postal: String,
+
+    @SerializedName("region")
+    val region: String,
+
+    @SerializedName("longitude")
+    val longitude: Double
+) : Parcelable

@@ -8,10 +8,10 @@ import kotlinx.parcelize.Parcelize
 data class GeoData(
 
     @SerializedName("continent_code")
-    val continent_code: String,
+    val continentCode: String,
 
     @SerializedName("country_code")
-    val country_code: String,
+    val countryCode: String,
 
     @SerializedName("city")
     val city: String,
@@ -23,5 +23,5 @@ data class GeoData(
     val longitude: Double,
 
     @SerializedName("region_code")
-    val region_code: String
+    val regionCode: String
 ): Parcelable

@@ -4,29 +4,31 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
+import android.content.res.Resources
 import android.hardware.display.DisplayManager
 import android.net.Uri
 import android.os.Bundle
-import android.util.DisplayMetrics
 import android.util.Log
 import android.util.Size
-import android.view.MotionEvent
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.Camera
-import androidx.camera.core.CameraInfoUnavailableException
 import androidx.camera.core.CameraSelector
-import androidx.camera.core.FocusMeteringAction
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
-import androidx.camera.core.SurfaceOrientedMeteringPointFactory
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.core.view.marginTop
+import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -36,12 +38,10 @@ import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import com.keyrico.keyrisdk.EasyKeyriAuthParams
 import com.keyrico.keyrisdk.KeyriSdk
-import com.keyrico.keyrisdk.R
 import com.keyrico.keyrisdk.databinding.ActivityAuthWithScannerBinding
-import com.keyrico.keyrisdk.ui.confirmation.ShowConfirmation
-import kotlinx.coroutines.launch
+import com.keyrico.keyrisdk.ui.confirmation.ConfirmationBottomDialog
 import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 internal class AuthWithScannerActivity : AppCompatActivity() {
@@ -78,44 +78,59 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
             }
         }
 
-    private val confirmationDialogLauncher = registerForActivityResult(ShowConfirmation()) {
-        if (it) {
-            val params = intent.getParcelableExtra<EasyKeyriAuthParams>(KEY_AUTH_PARAMS)
-            val publicUserId = params?.publicUserId ?: ""
-            val publicCustom = params?.publicCustom ?: ""
-            val secureCustom = params?.secureCustom ?: ""
-
-            viewModel.challengeSession(publicUserId, publicCustom, secureCustom, keyriSdk)
-        } else {
-            setResult(RESULT_CANCELED)
-            finish()
-        }
-    }
-
     private lateinit var binding: ActivityAuthWithScannerBinding
 
     private val viewModel by viewModels<AuthWithScannerVM>()
 
     private val keyriSdk by lazy {
         val params = intent.getParcelableExtra<EasyKeyriAuthParams>(KEY_AUTH_PARAMS)
+        val appKey = params?.appKey ?: ""
         val rpPublicKey = params?.rpPublicKey ?: ""
         val serviceDomain = params?.serviceDomain ?: ""
 
-        KeyriSdk(this, rpPublicKey, serviceDomain)
+        KeyriSdk(this, appKey, rpPublicKey, serviceDomain)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAuthWithScannerBinding.inflate(layoutInflater)
+
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContentView(binding.root)
+        initUI()
         observeViewModel()
-        initializeUi()
+        openScanner()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         cameraExecutor?.shutdown()
         displayManager.unregisterDisplayListener(displayListener)
+    }
+
+    private fun initUI() {
+        val ivClose = binding.fabClose
+        val topCloseMargin = ivClose.marginTop
+
+        ViewCompat.setOnApplyWindowInsetsListener(ivClose) { v, windowInsets ->
+            val topInsets = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars()).top
+            val bottomInsets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
+
+            v.updateLayoutParams<ConstraintLayout.LayoutParams> {
+                topMargin = topCloseMargin + topInsets
+            }
+
+            binding.vInsetPlaceholder.updateLayoutParams<ConstraintLayout.LayoutParams> {
+                height = bottomInsets
+            }
+
+            windowInsets
+        }
+
+        ivClose.setOnClickListener {
+            setResult(RESULT_CANCELED)
+            finish()
+        }
     }
 
     private fun observeViewModel() {
@@ -131,9 +146,11 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
                             false
                         }
                         is AuthWithScannerState.Error -> {
-                            val context = this@AuthWithScannerActivity
-
-                            Toast.makeText(context, uiState.message, Toast.LENGTH_LONG).show()
+                            Toast.makeText(
+                                this@AuthWithScannerActivity,
+                                uiState.message,
+                                Toast.LENGTH_LONG
+                            ).show()
 
                             false
                         }
@@ -141,21 +158,28 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
                         is AuthWithScannerState.Empty -> false
                     }
 
-                    binding.flProgress.progress.isVisible = isLoading
+                    binding.vProgress.isVisible = isLoading
                 }
             }
         }
     }
 
     private fun processConfirmationMessage(uiState: AuthWithScannerState.Confirmation): Boolean {
-        confirmationDialogLauncher.launch(uiState)
+        ConfirmationBottomDialog(uiState.session) { isAccepted ->
+            if (isAccepted) {
+                val params = intent.getParcelableExtra<EasyKeyriAuthParams>(KEY_AUTH_PARAMS)
+                val publicUserId = params?.publicUserId ?: ""
+                val publicCustom = params?.publicCustom ?: ""
+                val secureCustom = params?.secureCustom ?: ""
 
-        return false
-    }
+                viewModel.challengeSession(publicUserId, publicCustom, secureCustom, keyriSdk)
+            } else {
+                setResult(RESULT_CANCELED)
+                finish()
+            }
+        }.show(supportFragmentManager, ConfirmationBottomDialog::class.java.name)
 
-    private fun initializeUi() {
-        openScanner()
-        initButtons()
+        return true
     }
 
     private fun openScanner() {
@@ -184,8 +208,11 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
     }
 
     private fun bindCameraUseCases() {
-        val metrics = DisplayMetrics().also { binding.scannerPreview.display.getRealMetrics(it) }
-        val screenAspectRatio = aspectRatio(metrics.widthPixels, metrics.heightPixels)
+        val displayMetrics = Resources.getSystem().displayMetrics
+        val widthPixels = displayMetrics.widthPixels
+        val heightPixels = displayMetrics.heightPixels
+
+        val screenAspectRatio = aspectRatio(widthPixels, heightPixels)
         val rotation = binding.scannerPreview.display.rotation
         val cameraSelector =
             CameraSelector.Builder().requireLensFacing(CameraSelector.LENS_FACING_BACK).build()
@@ -251,7 +278,6 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
         Log.d("Keyri", "QR processed: $scannedData")
 
         try {
-            // Try to parse link and process it
             processLink(scannedData.toUri())
         } catch (e: java.lang.Exception) {
             Log.d("Keyri", "Not valid link: $scannedData")
@@ -259,83 +285,9 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
     }
 
     private fun processLink(uri: Uri?) {
-        uri?.getQueryParameters("sessionId".lowercase())?.firstOrNull()?.let { sessionId ->
+        uri?.getQueryParameters("sessionId")?.firstOrNull()?.let { sessionId ->
             viewModel.handleSessionId(sessionId, keyriSdk)
         } ?: Log.e("Keyri", "Failed to process link")
-    }
-
-    private fun initButtons() {
-        binding.ivAutofocus.setOnClickListener { initAutofocus() }
-        binding.ivFlash.setOnClickListener { initFlashButton() }
-    }
-
-    private fun initFlashButton() {
-        viewModel.isFlashEnabled.value.let { isFlashEnabled ->
-            val fleshRes = if (isFlashEnabled) R.drawable.ic_flash_off else R.drawable.ic_flash_on
-
-            binding.ivFlash.setImageResource(fleshRes)
-
-            camera?.cameraControl?.enableTorch(isFlashEnabled.not())
-            viewModel.setFlashEnabled(isFlashEnabled.not())
-        }
-    }
-
-    private fun initAutofocus() {
-        val isAutofocusEnabled = viewModel.isAutofocusEnabled.value
-
-        if (isAutofocusEnabled) {
-            binding.scannerPreview.setOnTouchListener { view, event ->
-                return@setOnTouchListener when (event.action) {
-                    MotionEvent.ACTION_DOWN -> true
-                    MotionEvent.ACTION_UP -> {
-                        val factory = SurfaceOrientedMeteringPointFactory(
-                            view.width.toFloat(),
-                            view.height.toFloat()
-                        )
-
-                        val autoFocusPoint = factory.createPoint(event.x, event.y)
-
-                        try {
-                            val focusMeteringAction = FocusMeteringAction.Builder(
-                                autoFocusPoint,
-                                FocusMeteringAction.FLAG_AF
-                            ).disableAutoCancel().build()
-
-                            camera?.cameraControl?.startFocusAndMetering(focusMeteringAction)
-                        } catch (e: CameraInfoUnavailableException) {
-                            Log.d("Keyri", "Cannot access camera, $e")
-                        }
-
-                        view.performClick()
-
-                        true
-                    }
-                    else -> false
-                }
-            }
-        } else {
-            binding.scannerPreview.setOnTouchListener(null)
-
-            val autoFocusPoint =
-                SurfaceOrientedMeteringPointFactory(1F, 1F).createPoint(.5F, .5F)
-
-            try {
-                val autoFocusAction =
-                    FocusMeteringAction.Builder(autoFocusPoint, FocusMeteringAction.FLAG_AF)
-                        .setAutoCancelDuration(2, TimeUnit.SECONDS)
-                        .build()
-
-                camera?.cameraControl?.startFocusAndMetering(autoFocusAction)
-            } catch (e: CameraInfoUnavailableException) {
-                Log.d("Keyri", "Cannot access camera, $e")
-            }
-        }
-
-        val focusRes =
-            if (isAutofocusEnabled) R.drawable.ic_autofocus_off else R.drawable.ic_autofocus_on
-
-        binding.ivAutofocus.setImageResource(focusRes)
-        viewModel.setAutofocusEnabled(isAutofocusEnabled.not())
     }
 
     companion object {

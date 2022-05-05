@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit
 
 class KeyriSdk(
     private val context: Context,
+    private val appKey: String,
     private val rpPublicKey: String,
     private val serviceDomain: String
 ) {
@@ -41,7 +42,6 @@ class KeyriSdk(
     }
 
     suspend fun handleSessionId(sessionId: String): Session {
-        val appKey = "IT7VrTQ0r4InzsvCNJpRCRpi1qzfgpaj"
         val session = makeApiCall { apiService.getSession(sessionId, appKey) }.body()
             ?: throw AuthorizationException("Unable to authorize")
 
@@ -75,15 +75,14 @@ class KeyriSdk(
         secureCustom: String?,
         publicCustom: String?
     ) {
-        val params = EasyKeyriAuthParams(
+        EasyKeyriAuthParams(
+            appKey,
             rpPublicKey,
             serviceDomain,
             publicUserId,
             publicCustom,
             secureCustom
-        )
-
-        launcher.launch(params)
+        ).let(launcher::launch)
     }
 
     fun easyKeyriAuth(
@@ -94,6 +93,7 @@ class KeyriSdk(
         publicCustom: String?
     ) {
         val params = EasyKeyriAuthParams(
+            appKey,
             rpPublicKey,
             serviceDomain,
             publicUserId,
@@ -121,7 +121,7 @@ class KeyriSdk(
         }
 
         return Retrofit.Builder()
-            .baseUrl("https://test.api.keyri.com")
+            .baseUrl(BuildConfig.BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .client(okHttpClientBuilder.build())
             .build()

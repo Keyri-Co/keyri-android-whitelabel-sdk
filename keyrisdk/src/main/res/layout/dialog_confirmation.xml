@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="36dp"
+        android:fontFamily="@font/rubik_regular"
+        android:text="@string/keyri_confirmation_screen_title"
+        android:textColor="@color/text_color"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/tvErrorMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginHorizontal="28dp"
+        android:layout_marginTop="26dp"
+        android:fontFamily="@font/rubik_regular"
+        android:gravity="center"
+        android:text="@string/keyri_confirmation_screen_error"
+        android:textColor="@color/text_color"
+        android:textSize="14sp"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+    <LinearLayout
+        android:id="@+id/llWidgetLocation"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="30dp"
+        android:orientation="horizontal">
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/ivWidgetLocation"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_gravity="center"
+            android:layout_marginStart="30dp"
+            app:srcCompat="@drawable/ic_widget_location"
+            app:tint="@color/text_color" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="20dp"
+            android:gravity="center_vertical"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvWidgetLocation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawablePadding="20dp"
+                android:fontFamily="@font/rubik_regular"
+                android:textColor="@color/text_color"
+                android:textSize="14sp"
+                tools:text="Near Oakland, CA" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tvVPNDetected"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:drawablePadding="6dp"
+                android:fontFamily="@font/rubik_regular"
+                android:text="@string/keyri_confirmation_screen_vpn_detected"
+                android:textColor="@color/vpn_red"
+                android:textSize="14sp"
+                android:visibility="gone"
+                app:drawableEndCompat="@drawable/ic_alert"
+                app:drawableTint="@color/vpn_red"
+                tools:visibility="visible" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llMobileLocation"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="12dp"
+        android:orientation="horizontal">
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/ivMobileLocation"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_gravity="center"
+            android:layout_marginStart="30dp"
+            app:srcCompat="@drawable/ic_mobile"
+            app:tint="@color/text_color" />
+
+        <TextView
+            android:id="@+id/tvMobileLocation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="20dp"
+            android:drawablePadding="20dp"
+            android:fontFamily="@font/rubik_regular"
+            android:textColor="@color/text_color"
+            android:textSize="14sp"
+            tools:text="Near Oakland, CA" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llWidgetAgent"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="12dp"
+        android:orientation="horizontal">
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/ivWidgetAgent"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_gravity="center"
+            android:layout_marginStart="30dp"
+            app:srcCompat="@drawable/ic_widget"
+            app:tint="@color/text_color" />
+
+        <TextView
+            android:id="@+id/tvWidgetAgent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="20dp"
+            android:drawablePadding="20dp"
+            android:fontFamily="@font/rubik_regular"
+            android:textColor="@color/text_color"
+            android:textSize="14sp"
+            tools:text="Chrome on Mac OS" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llButtons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="26dp"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/bNo"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton.Icon"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="12dp"
+            android:layout_weight="1"
+            android:backgroundTint="@color/faded_red"
+            android:fontFamily="@font/rubik_regular"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:text="@string/keyri_confirmation_screen_no"
+            android:textAllCaps="false"
+            android:textColor="@color/red"
+            android:textSize="16sp"
+            android:theme="@style/Theme.MaterialComponents"
+            app:cornerRadius="4dp"
+            app:icon="@drawable/ic_close"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp"
+            app:iconSize="16sp"
+            app:iconTint="@color/red"
+            app:strokeColor="@color/red"
+            app:strokeWidth="1dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/bYes"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton.Icon"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="32dp"
+            android:layout_weight="1"
+            android:backgroundTint="@color/faded_green"
+            android:fontFamily="@font/rubik_regular"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:text="@string/keyri_confirmation_screen_yes"
+            android:textAllCaps="false"
+            android:textColor="@color/green"
+            android:textSize="16sp"
+            android:theme="@style/Theme.MaterialComponents"
+            app:cornerRadius="4dp"
+            app:icon="@drawable/ic_accept"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp"
+            app:iconSize="16sp"
+            app:iconTint="@color/green"
+            app:strokeColor="@color/green"
+            app:strokeWidth="1dp" />
+
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="26dp"
+        android:layout_marginBottom="36dp"
+        android:fontFamily="@font/rubik_light"
+        android:text="@string/powered_by_keyri"
+        android:textColor="#595959" />
+
+</LinearLayout>

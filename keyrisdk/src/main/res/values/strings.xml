@@ -1,6 +1,9 @@
 <resources>
-    <string name="keyri_confirmation_screen_title">Keyri</string>
-    <string name="keyri_confirmation_screen_subtitle">Are you trying to sign in?</string>
-    <string name="keyri_confirmation_screen_positive">Yes, it\'s me</string>
-    <string name="keyri_confirmation_screen_negative">No, don\'t allow</string>
+    <string name="powered_by_keyri">Powered by Keyri</string>
+    <string name="keyri_confirmation_screen_title">Are you trying to log in?</string>
+    <string name="keyri_confirmation_screen_error">Your login attempt was denied.\nIf you would still like to log in, please turn off your VPN then rescan the QR code</string>
+    <string name="keyri_confirmation_screen_vpn_detected">VPN detected</string>
+    <string name="keyri_confirmation_screen_yes">Yes</string>
+    <string name="keyri_confirmation_screen_no">No</string>
+    <string name="keyri_confirmation_screen_near">Near %s</string>
 </resources>

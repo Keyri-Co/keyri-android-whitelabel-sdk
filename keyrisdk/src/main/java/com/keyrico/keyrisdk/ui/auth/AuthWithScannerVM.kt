@@ -13,12 +13,8 @@ import kotlinx.coroutines.launch
 internal class AuthWithScannerVM : ViewModel() {
 
     private val _uiState = MutableStateFlow<AuthWithScannerState>(AuthWithScannerState.Empty)
-    private val _isFlashEnabled = MutableStateFlow(false)
-    private val _isAutofocusEnabled = MutableStateFlow(false)
 
     val uiState: StateFlow<AuthWithScannerState> = _uiState.asStateFlow()
-    val isFlashEnabled: StateFlow<Boolean> = _isFlashEnabled.asStateFlow()
-    val isAutofocusEnabled: StateFlow<Boolean> = _isAutofocusEnabled.asStateFlow()
 
     private var sessionId: String = ""
 
@@ -31,14 +27,7 @@ internal class AuthWithScannerVM : ViewModel() {
 
                 val session = keyriSdk.handleSessionId(sessionId)
 
-                _uiState.value = AuthWithScannerState.Confirmation(
-                    username = session.username ?: "Andrew Kuliahin", // TODO Change to actual
-                    widgetUserAgent = session.widgetUserAgent,
-                    widgetOrigin = session.widgetOrigin,
-                    logo = session.logo,
-                    iPAddressWidget = session.iPAddressWidget,
-                    riskAnalytics = session.riskAnalytics
-                )
+                _uiState.value = AuthWithScannerState.Confirmation(session)
             } catch (e: Throwable) {
                 processError(e)
             }
@@ -62,14 +51,6 @@ internal class AuthWithScannerVM : ViewModel() {
                 processError(e)
             }
         }
-    }
-
-    fun setAutofocusEnabled(isEnabled: Boolean) {
-        _isAutofocusEnabled.value = isEnabled
-    }
-
-    fun setFlashEnabled(isEnabled: Boolean) {
-        _isFlashEnabled.value = isEnabled
     }
 
     private suspend fun processError(e: Throwable) {

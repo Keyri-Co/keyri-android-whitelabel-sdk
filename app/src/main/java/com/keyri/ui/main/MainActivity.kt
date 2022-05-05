@@ -12,7 +12,7 @@ import com.keyrico.keyrisdk.ShowEasyKeyriAuth
 class MainActivity : AppCompatActivity() {
 
     private val keyriSdk by lazy {
-        KeyriSdk(this, BuildConfig.RP_PUBLIC_KEY, BuildConfig.DOMAIN_NAME)
+        KeyriSdk(this, BuildConfig.APP_KEY, BuildConfig.RP_PUBLIC_KEY, BuildConfig.DOMAIN_NAME)
     }
 
     private val easyKeyriAuthLauncher = registerForActivityResult(ShowEasyKeyriAuth()) {

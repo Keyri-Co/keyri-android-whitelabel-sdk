@@ -9,12 +9,7 @@
         <activity
             android:name=".ui.auth.AuthWithScannerActivity"
             android:exported="false"
-            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar" />
-
-        <activity
-            android:name=".ui.confirmation.ConfirmationActivity"
-            android:exported="false"
-            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar" />
+            android:theme="@style/FullScreen" />
 
         <meta-data
             android:name="com.google.mlkit.vision.DEPENDENCIES"
