@@ -24,7 +24,7 @@ class WebViewActivity : AppCompatActivity() {
 
         webView.settings.javaScriptEnabled = true
 
-        webView.loadUrl("https://misc.keyri.com/library-keyri-connect/index.html")
+        webView.loadUrl("https://misc.keyri.com")
 
         webView.postDelayed({
             val picture: Picture = webView.capturePicture()
@@ -46,7 +46,7 @@ class WebViewActivity : AppCompatActivity() {
 
                     Log.d("Keyri", "Scanned data: $scannedData")
 
-                    val sessionId = scannedData?.toUri()?.getQueryParameters("sessionId".lowercase())?.firstOrNull()
+                    val sessionId = scannedData?.toUri()?.getQueryParameters("sessionId")?.firstOrNull()
 
                     Log.d("Keyri", "Session ID: $sessionId")
 
