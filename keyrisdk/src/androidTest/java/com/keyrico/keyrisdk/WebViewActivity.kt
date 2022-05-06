@@ -50,7 +50,6 @@ class WebViewActivity : AppCompatActivity() {
 
                     Log.d("Keyri", "Session ID: $sessionId")
 
-
                     val resultIntent = Intent().apply {
                         putExtra(SESSION_ID, sessionId)
                     }

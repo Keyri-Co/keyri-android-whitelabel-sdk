@@ -40,8 +40,8 @@ import com.keyrico.keyrisdk.EasyKeyriAuthParams
 import com.keyrico.keyrisdk.KeyriSdk
 import com.keyrico.keyrisdk.databinding.ActivityAuthWithScannerBinding
 import com.keyrico.keyrisdk.ui.confirmation.ConfirmationBottomDialog
-import java.util.concurrent.Executors
 import kotlinx.coroutines.launch
+import java.util.concurrent.Executors
 import kotlin.math.abs
 
 internal class AuthWithScannerActivity : AppCompatActivity() {

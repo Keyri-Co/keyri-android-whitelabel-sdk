@@ -72,6 +72,9 @@ dependencies {
     implementation 'androidx.camera:camera-lifecycle:1.1.0-beta03'
     implementation 'androidx.camera:camera-view:1.1.0-beta03'
 
+    // Tink crypto
+    implementation 'com.google.crypto.tink:tink-android:1.6.1'
+
     // Unit testing
     testImplementation 'junit:junit:4.13.2'
 

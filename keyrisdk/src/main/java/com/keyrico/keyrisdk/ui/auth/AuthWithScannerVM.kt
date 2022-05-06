@@ -25,7 +25,7 @@ internal class AuthWithScannerVM : ViewModel() {
             try {
                 this@AuthWithScannerVM.sessionId = sessionId
 
-                val session = keyriSdk.handleSessionId(sessionId)
+                val session = keyriSdk.initiateSession(sessionId)
 
                 _uiState.value = AuthWithScannerState.Confirmation(session)
             } catch (e: Throwable) {
@@ -44,7 +44,7 @@ internal class AuthWithScannerVM : ViewModel() {
             _uiState.value = AuthWithScannerState.Loading
 
             try {
-                keyriSdk.challengeSession(publicUserId, sessionId, publicCustom, secureCustom)
+                keyriSdk.approveSession(publicUserId, sessionId, publicCustom, secureCustom)
 
                 _uiState.value = AuthWithScannerState.Authenticated
             } catch (e: Throwable) {

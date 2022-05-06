@@ -24,4 +24,4 @@ data class GeoData(
 
     @SerializedName("region_code")
     val regionCode: String
-): Parcelable
+) : Parcelable

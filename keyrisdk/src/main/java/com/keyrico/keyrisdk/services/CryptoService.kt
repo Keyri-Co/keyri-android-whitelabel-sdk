@@ -5,12 +5,17 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
 import androidx.core.content.edit
+import com.google.crypto.tink.aead.subtle.AesGcmSiv
+import com.google.crypto.tink.subtle.Hkdf
+import com.google.gson.JsonObject
 import com.keyrico.keyrisdk.utils.toByteArrayFromBase64String
 import com.keyrico.keyrisdk.utils.toStringBase64
+import java.io.ByteArrayOutputStream
 import java.security.KeyFactory
 import java.security.KeyPairGenerator
 import java.security.KeyStore
 import java.security.PrivateKey
+import java.security.Signature
 import java.security.interfaces.ECPublicKey
 import java.security.spec.ECGenParameterSpec
 import java.security.spec.InvalidKeySpecException
@@ -61,6 +66,54 @@ internal class CryptoService(private val preferences: SharedPreferences) {
         val secretKey = getSecretKey(publicUserId) ?: return null
 
         return decryptAes(secretKey, encryptedPublic, publicUserId).toStringBase64()
+    }
+
+    fun createSignature(publicUserId: String): String {
+        val keyPairGenerator = KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_EC)
+
+        val keyGenParameterSpec =
+            KeyGenParameterSpec.Builder("EC_KEYPAIR", KeyProperties.PURPOSE_SIGN)
+                .setAlgorithmParameterSpec(ECGenParameterSpec("prime256v1"))
+                .setDigests(
+                    KeyProperties.DIGEST_SHA256,
+                    KeyProperties.DIGEST_SHA384,
+                    KeyProperties.DIGEST_SHA512
+                ).build()
+
+        keyPairGenerator.initialize(keyGenParameterSpec)
+
+        val keyPair = keyPairGenerator.generateKeyPair()
+        val signature = Signature.getInstance("SHA256withECDSA")
+
+        val message = JsonObject().also {
+            it.addProperty("publicUserId", publicUserId)
+            it.addProperty("timestamp", System.currentTimeMillis())
+        }
+
+        signature.initSign(keyPair.private)
+        signature.update(message.toString().encodeToByteArray())
+
+        return signature.sign().toStringBase64()
+    }
+
+    fun hkdf(
+        ciphertext: String,
+        salt: ByteArray,
+        secretKey: SecretKey,
+        publicKey: ECPublicKey,
+        backendPublicKey: ECPublicKey
+    ): String {
+        val info = ByteArrayOutputStream()
+
+        info.write("ECDH prime256v1 AES-256-GCM-SIV\u0000".encodeToByteArray())
+        info.write(publicKey.encoded)
+        info.write(backendPublicKey.encoded)
+
+        val hkdf = Hkdf.computeHkdf("HMACSHA256", secretKey.encoded, salt, info.toByteArray(), 32)
+        val key = AesGcmSiv(hkdf)
+        val associatedData = byteArrayOf()
+
+        return key.decrypt(ciphertext.encodeToByteArray(), associatedData).toStringBase64()
     }
 
     fun getIV(publicUserId: String): String? {

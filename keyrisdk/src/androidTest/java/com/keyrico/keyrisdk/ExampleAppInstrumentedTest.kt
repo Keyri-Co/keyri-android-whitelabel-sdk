@@ -49,11 +49,11 @@ class ExampleAppInstrumentedTest {
         sessionId?.let {
             Log.d("Keyri", "SESSION ID: $it")
 
-            val session = keyriSdk.handleSessionId(it)
+            val session = keyriSdk.initiateSession(it)
 
             Assert.assertEquals(session.widgetOrigin, "misc.keyri.com")
 
-            keyriSdk.challengeSession(
+            keyriSdk.approveSession(
                 "some-public-user-id",
                 it,
                 "Secure custom",

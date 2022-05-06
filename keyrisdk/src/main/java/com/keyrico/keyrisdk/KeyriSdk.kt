@@ -41,7 +41,11 @@ class KeyriSdk(
         return cryptoService.getAssociationKey(publicUserId)
     }
 
-    suspend fun handleSessionId(sessionId: String): Session {
+    fun createSignature(publicUserId: String): String {
+        return cryptoService.createSignature(publicUserId)
+    }
+
+    suspend fun initiateSession(sessionId: String): Session {
         val session = makeApiCall { apiService.getSession(sessionId, appKey) }.body()
             ?: throw AuthorizationException("Unable to authorize")
 
@@ -53,7 +57,7 @@ class KeyriSdk(
         return session
     }
 
-    suspend fun challengeSession(
+    suspend fun approveSession(
         publicUserId: String,
         sessionId: String,
         secureCustom: String?,
