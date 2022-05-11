@@ -12,12 +12,12 @@ import com.keyrico.keyrisdk.databinding.DialogConfirmationBinding
 import com.keyrico.keyrisdk.entity.RiskMessageTypes
 import com.keyrico.keyrisdk.entity.Session
 
-class ConfirmationBottomDialog(
+open class ConfirmationBottomDialog(
     private val session: Session,
     private val onResult: (isAccepted: Boolean) -> Unit
 ) : BottomSheetDialogFragment() {
 
-    private lateinit var binding: DialogConfirmationBinding
+    protected open lateinit var binding: DialogConfirmationBinding
 
     private val riskAnalyticsEnabled by lazy { session.riskAnalytics != null }
 
@@ -45,7 +45,7 @@ class ConfirmationBottomDialog(
         super.onDismiss(dialog)
     }
 
-    private fun initUI() {
+    open fun initUI() {
         initWidgetLocation()
         initMobileLocation()
         initWidgetAgent()
