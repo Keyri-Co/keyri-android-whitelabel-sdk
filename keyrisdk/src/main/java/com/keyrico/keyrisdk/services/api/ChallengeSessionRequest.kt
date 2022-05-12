@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 
 data class ChallengeSessionRequest(
 
-    @SerializedName("sessionId")
+    @SerializedName("sessionData")
     val serverDataRequest: ServerDataRequest,
 
     @SerializedName("__salt")

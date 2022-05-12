@@ -33,14 +33,10 @@ class ExampleAppInstrumentedTest {
         var sessionId: String? = null
         var key: String? = null
 
-        launchActivity<WebViewActivity>().use {
-            val result = it.result
-
-            if (result.resultCode == Activity.RESULT_OK) {
-                val data = result.resultData
-
-                data.getStringExtra(SESSION_ID)?.let { id -> sessionId = id }
-                data.getStringExtra(KEY)?.let { id -> key = id }
+        launchActivity<WebViewActivity>().use { scenario ->
+            scenario.result.takeIf { it.resultCode == Activity.RESULT_OK }?.resultData?.let { data ->
+                sessionId = data.getStringExtra(SESSION_ID)
+                key = data.getStringExtra(KEY)
             }
         }
 
@@ -49,15 +45,13 @@ class ExampleAppInstrumentedTest {
         sessionId?.let {
             Log.d("Keyri", "SESSION ID: $it")
 
-            val keyArg = key ?: throw IllegalStateException("Couldn't scan key with QR")
-
             val session = keyriSdk.initiateSession(it)
 
             Assert.assertEquals(session.widgetOrigin, "misc.keyri.com")
 
             keyriSdk.approveSession(
                 "some-public-user-id",
-                keyArg,
+                key ?: throw IllegalStateException("Couldn't scan key with QR"),
                 it,
                 "Secure custom",
                 "Public custom",
