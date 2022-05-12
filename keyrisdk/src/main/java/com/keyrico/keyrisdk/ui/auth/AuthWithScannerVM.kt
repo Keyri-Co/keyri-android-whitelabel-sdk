@@ -17,13 +17,15 @@ internal class AuthWithScannerVM : ViewModel() {
     val uiState: StateFlow<AuthWithScannerState> = _uiState.asStateFlow()
 
     private var sessionId: String = ""
+    private var key: String = ""
 
-    fun handleSessionId(sessionId: String, keyriSdk: KeyriSdk) {
+    fun handleSessionId(sessionId: String, key: String, keyriSdk: KeyriSdk) {
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.value = AuthWithScannerState.Loading
 
             try {
                 this@AuthWithScannerVM.sessionId = sessionId
+                this@AuthWithScannerVM.key = key
 
                 val session = keyriSdk.initiateSession(sessionId)
 
@@ -44,7 +46,7 @@ internal class AuthWithScannerVM : ViewModel() {
             _uiState.value = AuthWithScannerState.Loading
 
             try {
-                keyriSdk.approveSession(publicUserId, sessionId, publicCustom, secureCustom)
+                keyriSdk.approveSession(publicUserId, key, sessionId, publicCustom, secureCustom)
 
                 _uiState.value = AuthWithScannerState.Authenticated
             } catch (e: Throwable) {

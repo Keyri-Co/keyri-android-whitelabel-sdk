@@ -1,10 +1,10 @@
 package com.keyrico.keyrisdk
 
 import android.app.Activity
-import android.content.Context
 import android.util.Log
 import androidx.test.core.app.launchActivity
 import androidx.test.platform.app.InstrumentationRegistry
+import com.keyrico.keyrisdk.WebViewActivity.Companion.KEY
 import com.keyrico.keyrisdk.WebViewActivity.Companion.SESSION_ID
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
@@ -16,14 +16,12 @@ import org.junit.runners.JUnit4
 @RunWith(JUnit4::class)
 class ExampleAppInstrumentedTest {
 
-    private lateinit var context: Context
     private lateinit var keyriSdk: KeyriSdk
 
     @Before
     fun setup() {
-        context = InstrumentationRegistry.getInstrumentation().context
         keyriSdk = KeyriSdk(
-            context,
+            InstrumentationRegistry.getInstrumentation().context,
             "IT7VrTQ0r4InzsvCNJpRCRpi1qzfgpaj",
             "BOenio0DXyG31mAgUCwhdslelckmxzM7nNOyWAjkuo7skr1FhP7m2L8PaSRgIEH5ja9p+CwEIIKGqR4Hx5Ezam4=",
             "misc.keyri.com"
@@ -33,14 +31,16 @@ class ExampleAppInstrumentedTest {
     @Test
     fun testDomain() = runBlocking {
         var sessionId: String? = null
+        var key: String? = null
 
         launchActivity<WebViewActivity>().use {
             val result = it.result
 
             if (result.resultCode == Activity.RESULT_OK) {
-                result.resultData.getStringExtra(SESSION_ID)?.let { id ->
-                    sessionId = id
-                }
+                val data = result.resultData
+
+                data.getStringExtra(SESSION_ID)?.let { id -> sessionId = id }
+                data.getStringExtra(KEY)?.let { id -> key = id }
             }
         }
 
@@ -49,12 +49,15 @@ class ExampleAppInstrumentedTest {
         sessionId?.let {
             Log.d("Keyri", "SESSION ID: $it")
 
+            val keyArg = key ?: throw IllegalStateException("Couldn't scan key with QR")
+
             val session = keyriSdk.initiateSession(it)
 
             Assert.assertEquals(session.widgetOrigin, "misc.keyri.com")
 
             keyriSdk.approveSession(
                 "some-public-user-id",
+                keyArg,
                 it,
                 "Secure custom",
                 "Public custom",

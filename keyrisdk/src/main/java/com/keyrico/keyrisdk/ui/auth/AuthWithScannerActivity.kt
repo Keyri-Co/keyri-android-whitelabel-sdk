@@ -285,9 +285,14 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
     }
 
     private fun processLink(uri: Uri?) {
-        uri?.getQueryParameters("sessionId")?.firstOrNull()?.let { sessionId ->
-            viewModel.handleSessionId(sessionId, keyriSdk)
-        } ?: Log.e("Keyri", "Failed to process link")
+        val sessionId = uri?.getQueryParameters("sessionId")?.firstOrNull()
+        val key = uri?.getQueryParameters("key")?.firstOrNull()
+
+        if (sessionId != null && key != null) {
+            viewModel.handleSessionId(sessionId, key, keyriSdk)
+        } else {
+            Log.e("Keyri", "Failed to process link")
+        }
     }
 
     companion object {

@@ -59,13 +59,15 @@ class KeyriSdk(
 
     suspend fun approveSession(
         publicUserId: String,
+        key: String,
         sessionId: String,
         secureCustom: String?,
         publicCustom: String?
     ) {
-        userService.challengeSession(
+        userService.approveSession(
             publicUserId,
             sessionId,
+            key,
             secureCustom,
             publicCustom,
             sessionSalt,

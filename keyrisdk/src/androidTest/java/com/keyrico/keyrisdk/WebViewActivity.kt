@@ -46,12 +46,17 @@ class WebViewActivity : AppCompatActivity() {
 
                     Log.d("Keyri", "Scanned data: $scannedData")
 
-                    val sessionId = scannedData?.toUri()?.getQueryParameters("sessionId")?.firstOrNull()
+                    val scannedUri = scannedData?.toUri()
+
+                    val sessionId = scannedUri?.getQueryParameters("sessionId")?.firstOrNull()
+                    val key = scannedUri?.getQueryParameters("key")?.firstOrNull()
 
                     Log.d("Keyri", "Session ID: $sessionId")
+                    Log.d("Keyri", "Key: $key")
 
                     val resultIntent = Intent().apply {
                         putExtra(SESSION_ID, sessionId)
+                        putExtra(KEY, key)
                     }
 
                     setResult(RESULT_OK, resultIntent)
@@ -62,5 +67,6 @@ class WebViewActivity : AppCompatActivity() {
 
     companion object {
         const val SESSION_ID = "SESSION_ID"
+        const val KEY = "KEY"
     }
 }

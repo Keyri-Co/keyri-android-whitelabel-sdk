@@ -6,8 +6,6 @@ plugins {
 }
 
 android {
-    namespace 'com.keyrico.keyrisdk'
-
     defaultConfig {
         minSdkVersion 23
         targetSdkVersion 32

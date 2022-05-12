@@ -1,27 +1,22 @@
 package com.keyrico.keyrisdk.ui.confirmation
 
-import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.keyrico.keyrisdk.R
 import com.keyrico.keyrisdk.databinding.DialogConfirmationBinding
 import com.keyrico.keyrisdk.entity.RiskMessageTypes
 import com.keyrico.keyrisdk.entity.Session
 
-open class ConfirmationBottomDialog(
-    private val session: Session,
-    private val onResult: (isAccepted: Boolean) -> Unit
-) : BottomSheetDialogFragment() {
+class ConfirmationBottomDialog(
+    override val session: Session,
+    override val onResult: (isAccepted: Boolean) -> Unit
+) : BaseConfirmationBottomDialog(session, onResult) {
 
-    protected open lateinit var binding: DialogConfirmationBinding
-
+    private lateinit var binding: DialogConfirmationBinding
     private val riskAnalyticsEnabled by lazy { session.riskAnalytics != null }
-
-    private var accepted = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -33,19 +28,7 @@ open class ConfirmationBottomDialog(
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        initUI()
-    }
-
-    override fun getTheme(): Int = R.style.AppBottomSheetDialogTheme
-
-    override fun onDismiss(dialog: DialogInterface) {
-        onResult(accepted)
-        super.onDismiss(dialog)
-    }
-
-    open fun initUI() {
+    override fun initUI() {
         initWidgetLocation()
         initMobileLocation()
         initWidgetAgent()
