@@ -21,16 +21,16 @@ data class ChallengeSession(
     val publicObject: PublicObject?,
 
     @SerializedName("IPDataWidget")
-    val iPDataWidget: IPData,
+    val iPDataWidget: IPData?,
 
     @SerializedName("IPDataMobile")
-    val iPDataMobile: IPData,
+    val iPDataMobile: IPData?,
 
     @SerializedName("WidgetOrigin")
     val widgetOrigin: String,
 
     @SerializedName("WidgetUserAgent")
-    val widgetUserAgent: String,
+    val widgetUserAgent: String?,
 
     @SerializedName("sessionId")
     val sessionId: String,

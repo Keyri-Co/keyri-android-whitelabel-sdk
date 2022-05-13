@@ -8,7 +8,7 @@ import kotlinx.parcelize.Parcelize
 data class RiskAnalytics(
 
     @SerializedName("geoData")
-    val geoData: GeoData,
+    val geoData: GeoData?,
 
     @SerializedName("riskStatus")
     val riskStatus: String
