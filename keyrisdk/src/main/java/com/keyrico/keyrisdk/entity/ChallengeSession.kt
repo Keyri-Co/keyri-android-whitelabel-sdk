@@ -1,6 +1,7 @@
 package com.keyrico.keyrisdk.entity
 
 import com.google.gson.annotations.SerializedName
+import com.keyrico.keyrisdk.services.api.PublicObject
 
 data class ChallengeSession(
 
@@ -17,7 +18,7 @@ data class ChallengeSession(
     val ttl: Double,
 
     @SerializedName("publicObject")
-    val publicObject: String,
+    val publicObject: PublicObject?,
 
     @SerializedName("IPDataWidget")
     val iPDataWidget: IPData,

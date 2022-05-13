@@ -1,6 +1,8 @@
 package com.keyrico.keyrisdk
 
 import android.app.Activity
+import android.content.Context
+import android.content.Intent
 import android.util.Log
 import androidx.test.core.app.launchActivity
 import androidx.test.platform.app.InstrumentationRegistry
@@ -17,11 +19,14 @@ import org.junit.runners.JUnit4
 class ExampleAppInstrumentedTest {
 
     private lateinit var keyriSdk: KeyriSdk
+    private lateinit var context: Context
 
     @Before
     fun setup() {
+        context = InstrumentationRegistry.getInstrumentation().context
+
         keyriSdk = KeyriSdk(
-            InstrumentationRegistry.getInstrumentation().context,
+            context,
             "IT7VrTQ0r4InzsvCNJpRCRpi1qzfgpaj",
             "BOenio0DXyG31mAgUCwhdslelckmxzM7nNOyWAjkuo7skr1FhP7m2L8PaSRgIEH5ja9p+CwEIIKGqR4Hx5Ezam4=",
             "misc.keyri.com"
@@ -49,8 +54,17 @@ class ExampleAppInstrumentedTest {
 
             Assert.assertEquals(session.widgetOrigin, "misc.keyri.com")
 
+            val intent = Intent(context, DialogActivity::class.java).apply {
+                putExtra(DialogActivity.SESSION, session)
+            }
+
+            launchActivity<DialogActivity>(intent).use { scenario ->
+                Assert.assertEquals(scenario.result.resultCode, Activity.RESULT_OK)
+            }
+
             keyriSdk.approveSession(
                 "some-public-user-id",
+                "some-username",
                 key ?: throw IllegalStateException("Couldn't scan key with QR"),
                 it,
                 "Secure custom",

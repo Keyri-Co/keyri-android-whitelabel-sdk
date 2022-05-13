@@ -59,6 +59,7 @@ class KeyriSdk(
 
     suspend fun approveSession(
         publicUserId: String,
+        username: String?,
         key: String,
         sessionId: String,
         secureCustom: String?,
@@ -66,6 +67,7 @@ class KeyriSdk(
     ) {
         userService.approveSession(
             publicUserId,
+            username,
             sessionId,
             key,
             secureCustom,
@@ -134,7 +136,7 @@ class KeyriSdk(
             .create(ApiService::class.java)
     }
 
-    private fun provideUserService() = UserService(apiService, cryptoService, rpPublicKey)
+    private fun provideUserService() = UserService(apiService, cryptoService)
 
     private fun provideCryptoService() = CryptoService(getSharedPreferences())
 

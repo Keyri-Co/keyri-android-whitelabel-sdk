@@ -46,13 +46,24 @@ internal class AuthWithScannerVM : ViewModel() {
             _uiState.value = AuthWithScannerState.Loading
 
             try {
-                keyriSdk.approveSession(publicUserId, key, sessionId, publicCustom, secureCustom)
+                keyriSdk.approveSession(
+                    publicUserId,
+                    "Mock-Username",
+                    key,
+                    sessionId,
+                    publicCustom,
+                    secureCustom
+                )
 
                 _uiState.value = AuthWithScannerState.Authenticated
             } catch (e: Throwable) {
                 processError(e)
             }
         }
+    }
+
+    fun clearState() {
+        _uiState.value = AuthWithScannerState.Empty
     }
 
     private suspend fun processError(e: Throwable) {

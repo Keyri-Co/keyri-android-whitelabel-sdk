@@ -174,6 +174,8 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
 
                 viewModel.challengeSession(publicUserId, publicCustom, secureCustom, keyriSdk)
             } else {
+                viewModel.clearState()
+
                 setResult(RESULT_CANCELED)
                 finish()
             }

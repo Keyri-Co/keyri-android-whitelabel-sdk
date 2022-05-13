@@ -2,7 +2,7 @@ package com.keyrico.keyrisdk.services.api
 
 import com.google.gson.annotations.SerializedName
 
-data class ServerDataRequest(
+data class ServerData(
 
     @SerializedName("publicKey")
     val publicKey: String,
