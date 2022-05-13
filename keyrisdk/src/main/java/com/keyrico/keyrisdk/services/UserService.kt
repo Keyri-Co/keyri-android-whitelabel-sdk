@@ -27,7 +27,7 @@ internal class UserService(
             it.addProperty("secureCustom", secureCustom)
         }.toString()
 
-        val cipher = cryptoService.encryptHkdf(publicUserId, backendPublicKey, toEncrypt)
+        val cipher = cryptoService.encryptHkdf(backendPublicKey, toEncrypt)
 
         val publicKey = cipher.publicKey
         val ciphertext = cipher.ciphertext

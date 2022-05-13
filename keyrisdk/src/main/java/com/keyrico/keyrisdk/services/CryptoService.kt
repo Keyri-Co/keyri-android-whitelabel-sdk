@@ -76,11 +76,7 @@ internal class CryptoService(private val preferences: SharedPreferences) {
 
     // HKDF Start
     // ---------
-    fun encryptHkdf(
-        publicUserId: String,
-        backendPublicKey: String,
-        data: String
-    ): EncryptionOutput {
+    fun encryptHkdf(backendPublicKey: String, data: String): EncryptionOutput {
         val publicBytes = backendPublicKey.toByteArrayFromBase64String()
 
         val publicKey = publicBytes.takeIf { it.size <= 65 }?.let {
@@ -170,6 +166,9 @@ internal class CryptoService(private val preferences: SharedPreferences) {
 
         return verify.verify(signed.toByteArray())
     }
+    // ---------
+    // ECDSA End
+
 
     fun createSignature(publicUserId: String): String {
         val keyPairGenerator = KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_EC)
