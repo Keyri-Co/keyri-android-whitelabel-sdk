@@ -3,6 +3,7 @@ package com.keyrico.keyrisdk.ui.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.keyrico.keyrisdk.KeyriSdk
+import com.keyrico.keyrisdk.entity.Session
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,18 +17,16 @@ internal class AuthWithScannerVM : ViewModel() {
 
     val uiState: StateFlow<AuthWithScannerState> = _uiState.asStateFlow()
 
-    private var sessionId: String = ""
-    private var key: String = ""
+    private var session: Session? = null
 
-    fun handleSessionId(sessionId: String, key: String, keyriSdk: KeyriSdk) {
+    fun handleSessionId(sessionId: String, keyriSdk: KeyriSdk) {
+        _uiState.value = AuthWithScannerState.Loading
+
         viewModelScope.launch(Dispatchers.IO) {
-            _uiState.value = AuthWithScannerState.Loading
-
             try {
-                this@AuthWithScannerVM.sessionId = sessionId
-                this@AuthWithScannerVM.key = key
-
                 val session = keyriSdk.initiateSession(sessionId)
+
+                this@AuthWithScannerVM.session = session
 
                 _uiState.value = AuthWithScannerState.Confirmation(session)
             } catch (e: Throwable) {
@@ -38,18 +37,24 @@ internal class AuthWithScannerVM : ViewModel() {
 
     fun challengeSession(
         publicUserId: String,
+        username: String?,
         publicCustom: String?,
         secureCustom: String?,
         keyriSdk: KeyriSdk
     ) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _uiState.value = AuthWithScannerState.Loading
+        _uiState.value = AuthWithScannerState.Loading
 
+        viewModelScope.launch(Dispatchers.IO) {
             try {
+                val browserPublicKey = session?.browserPublicKey
+                    ?: throw IllegalStateException("BrowserPublicKey is null")
+                val sessionId =
+                    session?.sessionId ?: throw IllegalStateException("SessionId is null")
+
                 keyriSdk.approveSession(
                     publicUserId,
-                    "Mock-Username",
-                    key,
+                    username,
+                    browserPublicKey,
                     sessionId,
                     publicCustom,
                     secureCustom

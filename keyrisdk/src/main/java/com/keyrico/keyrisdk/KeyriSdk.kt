@@ -1,17 +1,17 @@
 package com.keyrico.keyrisdk
 
 import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
 import androidx.activity.result.ActivityResultLauncher
-import androidx.appcompat.app.AppCompatActivity
+import com.google.gson.JsonObject
 import com.keyrico.keyrisdk.entity.Session
 import com.keyrico.keyrisdk.exception.AuthorizationException
 import com.keyrico.keyrisdk.exception.WrongOriginDomainException
 import com.keyrico.keyrisdk.services.CryptoService
-import com.keyrico.keyrisdk.services.UserService
 import com.keyrico.keyrisdk.services.api.ApiService
-import com.keyrico.keyrisdk.ui.auth.AuthWithScannerActivity
+import com.keyrico.keyrisdk.services.api.ChallengeSessionRequest
+import com.keyrico.keyrisdk.services.api.PublicObject
+import com.keyrico.keyrisdk.services.api.ServerData
 import com.keyrico.keyrisdk.utils.makeApiCall
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -22,16 +22,17 @@ import java.util.concurrent.TimeUnit
 class KeyriSdk(
     private val context: Context,
     private val appKey: String,
-    private val rpPublicKey: String,
     private val serviceDomain: String
 ) {
-
     private val apiService by lazy { provideApiService() }
-    private val userService by lazy { provideUserService() }
     private val cryptoService by lazy { provideCryptoService() }
 
     private var sessionSalt = ""
     private var sessionHash = ""
+
+    init {
+        cryptoService.createSignatureKeypair()
+    }
 
     fun generateAssociationKey(publicUserId: String) {
         cryptoService.generateAssociationKey(publicUserId)
@@ -41,8 +42,8 @@ class KeyriSdk(
         return cryptoService.getAssociationKey(publicUserId)
     }
 
-    fun createSignature(publicUserId: String): String {
-        return cryptoService.createSignature(publicUserId)
+    fun createSignature(publicUserId: String, message: String): String {
+        return cryptoService.signMessage(publicUserId, message)
     }
 
     suspend fun initiateSession(sessionId: String): Session {
@@ -60,60 +61,42 @@ class KeyriSdk(
     suspend fun approveSession(
         publicUserId: String,
         username: String?,
-        key: String,
+        browserPublicKey: String,
         sessionId: String,
         secureCustom: String?,
         publicCustom: String?
     ) {
-        userService.approveSession(
-            publicUserId,
-            username,
-            sessionId,
-            key,
-            secureCustom,
-            publicCustom,
-            sessionSalt,
-            sessionHash
-        )
+        val toEncrypt = JsonObject().also {
+            it.addProperty("publicUserId", publicUserId)
+            it.addProperty("timestamp", System.currentTimeMillis())
+            it.addProperty("secureCustom", secureCustom)
+        }.toString()
+
+        val cipher = cryptoService.encryptHkdf(browserPublicKey, toEncrypt)
+        val signaturePublicKey = cryptoService.getSignaturePublicKey()
+
+        val publicObject = PublicObject(username, signaturePublicKey, publicCustom)
+        val serverData = ServerData(cipher.publicKey, cipher.cipherText, cipher.salt, cipher.iv)
+        val request = ChallengeSessionRequest(serverData, publicObject, sessionSalt, sessionHash)
+
+        apiService.challengeSession(sessionId, request)
     }
 
     fun easyKeyriAuth(
         launcher: ActivityResultLauncher<EasyKeyriAuthParams>,
         publicUserId: String,
+        username: String?,
         secureCustom: String?,
         publicCustom: String?
     ) {
         EasyKeyriAuthParams(
             appKey,
-            rpPublicKey,
             serviceDomain,
             publicUserId,
+            username,
             publicCustom,
             secureCustom
         ).let(launcher::launch)
-    }
-
-    fun easyKeyriAuth(
-        appCompatActivity: AppCompatActivity,
-        requestCode: Int,
-        publicUserId: String,
-        secureCustom: String?,
-        publicCustom: String?
-    ) {
-        val params = EasyKeyriAuthParams(
-            appKey,
-            rpPublicKey,
-            serviceDomain,
-            publicUserId,
-            publicCustom,
-            secureCustom
-        )
-
-        val intent = Intent(appCompatActivity, AuthWithScannerActivity::class.java).apply {
-            putExtra(AuthWithScannerActivity.KEY_AUTH_PARAMS, params)
-        }
-
-        appCompatActivity.startActivityForResult(intent, requestCode)
     }
 
     private fun provideApiService(): ApiService {
@@ -135,8 +118,6 @@ class KeyriSdk(
             .build()
             .create(ApiService::class.java)
     }
-
-    private fun provideUserService() = UserService(apiService, cryptoService)
 
     private fun provideCryptoService() = CryptoService(getSharedPreferences())
 

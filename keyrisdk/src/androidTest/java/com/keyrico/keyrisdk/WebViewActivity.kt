@@ -7,12 +7,15 @@ import android.graphics.Picture
 import android.os.Bundle
 import android.util.Log
 import android.webkit.WebView
+import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import com.keyrico.keyrisdk.mocked.sessionRegular
+import com.keyrico.keyrisdk.ui.confirmation.ConfirmationBottomDialog
 
 class WebViewActivity : AppCompatActivity() {
 
@@ -46,27 +49,32 @@ class WebViewActivity : AppCompatActivity() {
 
                     Log.d("Keyri", "Scanned data: $scannedData")
 
-                    val scannedUri = scannedData?.toUri()
-
-                    val sessionId = scannedUri?.getQueryParameters("sessionId")?.firstOrNull()
-                    val key = scannedUri?.getQueryParameters("key")?.firstOrNull()
+                    val sessionId =
+                        scannedData?.toUri()?.getQueryParameters("sessionId")?.firstOrNull()
 
                     Log.d("Keyri", "Session ID: $sessionId")
-                    Log.d("Keyri", "Key: $key")
 
                     val resultIntent = Intent().apply {
                         putExtra(SESSION_ID, sessionId)
-                        putExtra(KEY, key)
                     }
 
-                    setResult(RESULT_OK, resultIntent)
-                    finish()
+                    val dialog = ConfirmationBottomDialog(sessionRegular) { isAccepted ->
+                        val result = if (isAccepted) RESULT_OK else RESULT_CANCELED
+
+                        setResult(result, resultIntent)
+                        finish()
+                    }
+
+                    dialog.show(supportFragmentManager, ConfirmationBottomDialog::class.java.name)
+
+                    webView.postDelayed({
+                        dialog.view?.findViewById<Button>(R.id.bYes)?.callOnClick()
+                    }, 3_000L)
                 }
         }, 10_000L)
     }
 
     companion object {
         const val SESSION_ID = "SESSION_ID"
-        const val KEY = "KEY"
     }
 }

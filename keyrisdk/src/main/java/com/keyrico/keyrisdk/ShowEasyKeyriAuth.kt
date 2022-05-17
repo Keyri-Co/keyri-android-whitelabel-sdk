@@ -25,9 +25,9 @@ class ShowEasyKeyriAuth : ActivityResultContract<EasyKeyriAuthParams, Boolean>()
 @Parcelize
 data class EasyKeyriAuthParams(
     val appKey: String,
-    val rpPublicKey: String,
     val serviceDomain: String,
     val publicUserId: String,
+    val username: String?,
     val publicCustom: String?,
     val secureCustom: String?
 ) : Parcelable

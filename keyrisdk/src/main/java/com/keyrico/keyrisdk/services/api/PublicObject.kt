@@ -8,7 +8,7 @@ data class PublicObject(
     val username: String?,
 
     @SerializedName("publicKey")
-    val publicKey: String,
+    val publicKey: String?,
 
     @SerializedName("customObject")
     val customObject: String?

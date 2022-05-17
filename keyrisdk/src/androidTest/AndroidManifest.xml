@@ -6,13 +6,8 @@
     <application>
 
         <activity
-            android:name=".WebViewActivity"
+            android:name="com.keyrico.keyrisdk.WebViewActivity"
             android:allowClearUserData="true"
-            android:exported="false"
-            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar" />
-
-        <activity
-            android:name=".DialogActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.DayNight.NoActionBar" />
 

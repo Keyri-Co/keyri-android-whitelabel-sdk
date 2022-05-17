@@ -7,7 +7,6 @@ import android.util.Base64
 import androidx.core.content.edit
 import com.google.crypto.tink.subtle.Hkdf
 import com.google.crypto.tink.subtle.Random
-import com.google.gson.JsonObject
 import com.keyrico.keyrisdk.utils.toByteArrayFromBase64String
 import com.keyrico.keyrisdk.utils.toStringBase64
 import java.math.BigInteger
@@ -15,7 +14,6 @@ import java.security.AlgorithmParameters
 import java.security.KeyFactory
 import java.security.KeyPairGenerator
 import java.security.KeyStore
-import java.security.PrivateKey
 import java.security.Signature
 import java.security.interfaces.ECPrivateKey
 import java.security.interfaces.ECPublicKey
@@ -47,8 +45,8 @@ internal class CryptoService(private val preferences: SharedPreferences) {
             AES_KEY_NAME + publicUserId,
             KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
         )
-            .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7)
-            .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
+            .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+            .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
             .setRandomizedEncryptionRequired(false)
             .build()
 
@@ -73,7 +71,6 @@ internal class CryptoService(private val preferences: SharedPreferences) {
         return decryptAes(secretKey, encryptedPublic, publicUserId).toStringBase64()
     }
 
-
     // HKDF Start
     // ---------
     fun encryptHkdf(backendPublicKey: String, data: String): EncryptionOutput {
@@ -90,9 +87,8 @@ internal class CryptoService(private val preferences: SharedPreferences) {
 
         kpg.initialize(ECGenParameterSpec(EC_CURVE))
 
-        val keyAgreement = KeyAgreement.getInstance("ECDH")
-
         val keyPair = kpg.generateKeyPair()
+        val keyAgreement = KeyAgreement.getInstance("ECDH")
 
         keyAgreement.init(keyPair.private)
         keyAgreement.doPhase(publicKey, true)
@@ -108,9 +104,8 @@ internal class CryptoService(private val preferences: SharedPreferences) {
         publicKeyBytes: ByteArray,
         secretKey: SecretKey
     ): EncryptionOutput {
-        val salt = Random.randBytes(IV_SIZE)
-        val keyBytes = secretKey.encoded
-        val finalKeyBytes = Hkdf.computeHkdf(MAC_ALGORITHM, keyBytes, salt, byteArrayOf(), KEY_SIZE)
+        val salt = Random.randBytes(SALT_SIZE)
+        val finalKeyBytes = Hkdf.computeHkdf(MAC_ALGORITHM, secretKey.encoded, salt, byteArrayOf(), KEY_SIZE)
         val finalKey = SecretKeySpec(finalKeyBytes, KeyProperties.KEY_ALGORITHM_AES)
 
         return encrypt(data.encodeToByteArray(), finalKey, publicKeyBytes, salt)
@@ -127,11 +122,11 @@ internal class CryptoService(private val preferences: SharedPreferences) {
         cipher.init(Cipher.ENCRYPT_MODE, key)
 
         val iv = cipher.iv.copyOf()
-        val result = cipher.doFinal(message)
+        val cipherText = cipher.doFinal(message)
 
         return EncryptionOutput(
             publicKeyBytes.toStringBase64(),
-            result.toStringBase64(),
+            cipherText.toStringBase64(),
             salt.toStringBase64(),
             iv.toStringBase64()
         )
@@ -139,42 +134,29 @@ internal class CryptoService(private val preferences: SharedPreferences) {
 
     class EncryptionOutput(
         val publicKey: String,
-        val ciphertext: String,
+        val cipherText: String,
         val salt: String,
         val iv: String
     )
     // ---------
     // HKDF End
 
-
     // ECDSA Start
     // ---------
-    fun signMessage(message: String, privateKey: ECPrivateKey): String {
-        val signature = Signature.getInstance(SIGNATURE_ALGORITHM)
+    fun getSignaturePublicKey(): String? {
+        val publicKey = getKeyStore().getCertificate(EC_KEYPAIR)?.publicKey
 
-        signature.initSign(privateKey)
-        signature.update(message.toByteArray())
-
-        return signature.sign().toStringBase64()
+        return publicKey?.encoded?.toStringBase64()
     }
 
-    fun verifyMessage(message: String, signed: String, publicKey: ECPublicKey): Boolean {
-        val verify = Signature.getInstance(SIGNATURE_ALGORITHM)
+    fun createSignatureKeypair() {
+        if (getKeyStore().containsAlias(EC_KEYPAIR)) return
 
-        verify.initVerify(publicKey)
-        verify.update(message.toByteArray())
-
-        return verify.verify(signed.toByteArray())
-    }
-    // ---------
-    // ECDSA End
-
-
-    fun createSignature(publicUserId: String): String {
-        val keyPairGenerator = KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_EC)
+        val keyPairGenerator =
+            KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_EC, ANDROID_KEYSTORE)
 
         val keyGenParameterSpec =
-            KeyGenParameterSpec.Builder("EC_KEYPAIR", KeyProperties.PURPOSE_SIGN)
+            KeyGenParameterSpec.Builder(EC_KEYPAIR, KeyProperties.PURPOSE_SIGN)
                 .setAlgorithmParameterSpec(ECGenParameterSpec(EC_CURVE))
                 .setDigests(
                     KeyProperties.DIGEST_SHA256,
@@ -183,70 +165,34 @@ internal class CryptoService(private val preferences: SharedPreferences) {
                 ).build()
 
         keyPairGenerator.initialize(keyGenParameterSpec)
+        keyPairGenerator.generateKeyPair()
+    }
 
-        val keyPair = keyPairGenerator.generateKeyPair()
+    fun signMessage(publicUserId: String, message: String): String {
+        val privateKey =
+            (
+                getKeyStore().getEntry(
+                    EC_KEYPAIR + publicUserId,
+                    null
+                ) as KeyStore.PrivateKeyEntry
+                ).privateKey as ECPrivateKey
+
+        return signMessage(message.toByteArray(), privateKey).toStringBase64()
+    }
+
+    private fun signMessage(message: ByteArray, privateKey: ECPrivateKey): ByteArray {
         val signature = Signature.getInstance(SIGNATURE_ALGORITHM)
 
-        val message = JsonObject().also {
-            it.addProperty("publicUserId", publicUserId)
-            it.addProperty("timestamp", System.currentTimeMillis())
-        }
+        signature.initSign(privateKey)
+        signature.update(message)
 
-        signature.initSign(keyPair.private)
-        signature.update(message.toString().encodeToByteArray())
-
-        return signature.sign().toStringBase64()
+        return signature.sign()
     }
     // ---------
     // ECDSA End
 
-
     fun getIV(publicUserId: String): String? {
         return preferences.getString(IV_KEY_NAME + publicUserId, null)
-    }
-
-    fun encryptAes(data: String, publicUserId: String, rpPublicKey: String): String {
-        val aesKey = createSessionSecretKey(publicUserId, rpPublicKey)
-
-        val dataBytes = data.encodeToByteArray()
-        val encrypted = encryptAes(aesKey, dataBytes, publicUserId)
-
-        return encrypted.toStringBase64()
-    }
-
-    private fun createSessionSecretKey(publicUserId: String, rpPublicKey: String): SecretKey {
-        val keyAgreement = KeyAgreement.getInstance("ECDH")
-
-        val publicBytes = Base64.decode(rpPublicKey, Base64.NO_WRAP)
-
-        val publicKey = publicBytes.takeIf { it.size <= 65 }?.let {
-            generateP256PublicKeyFromUncompressedW(it)
-        } ?: let {
-            val keyFactory = KeyFactory.getInstance(KeyProperties.KEY_ALGORITHM_EC)
-            keyFactory.generatePublic(X509EncodedKeySpec(publicBytes)) as ECPublicKey
-        }
-
-        val encryptedPrivate = getEncryptedPrivate(publicUserId)?.toByteArrayFromBase64String()
-            ?: throw IllegalStateException("Private key is null")
-
-        val secretKey =
-            getSecretKey(publicUserId) ?: throw IllegalStateException("Secret key is null")
-
-        val privateString = decryptAes(secretKey, encryptedPrivate, publicUserId).toStringBase64()
-        val privateBytes = Base64.decode(privateString, Base64.NO_WRAP)
-
-        val privateKey = object : PrivateKey {
-            override fun getAlgorithm() = KeyProperties.KEY_ALGORITHM_EC
-
-            override fun getFormat() = "PKCS#8"
-
-            override fun getEncoded(): ByteArray = privateBytes
-        }
-
-        keyAgreement.init(privateKey)
-        keyAgreement.doPhase(publicKey, true)
-
-        return keyAgreement.generateSecret(KeyProperties.KEY_ALGORITHM_AES)
     }
 
     private fun encryptAes(secretKey: SecretKey, data: ByteArray, publicUserId: String): ByteArray {
@@ -288,27 +234,23 @@ internal class CryptoService(private val preferences: SharedPreferences) {
         return getEncryptedString(KEY_PUBLIC + publicUserId)
     }
 
-    private fun getEncryptedPrivate(publicUserId: String): String? {
-        return getEncryptedString(KEY_PRIVATE + publicUserId)
-    }
-
     private fun getEncryptedString(key: String): String? {
         return preferences.getString(key, null)
     }
 
     private fun saveEncryptedPublic(publicUserId: String, data: ByteArray) {
-        saveEncryptedString(KEY_PUBLIC + publicUserId, data.toStringBase64())
+        saveString(KEY_PUBLIC + publicUserId, data.toStringBase64())
     }
 
     private fun saveEncryptedPrivate(publicUserId: String, data: ByteArray) {
-        saveEncryptedString(KEY_PRIVATE + publicUserId, data.toStringBase64())
+        saveString(KEY_PRIVATE + publicUserId, data.toStringBase64())
     }
 
     private fun saveIV(iv: ByteArray, publicUserId: String) {
-        saveEncryptedString(IV_KEY_NAME + publicUserId, iv.toStringBase64())
+        saveString(IV_KEY_NAME + publicUserId, iv.toStringBase64())
     }
 
-    private fun saveEncryptedString(key: String, value: String) {
+    private fun saveString(key: String, value: String) {
         preferences.edit(true) { putString(key, value) }
     }
 
@@ -356,17 +298,18 @@ internal class CryptoService(private val preferences: SharedPreferences) {
 
     companion object {
         private const val HEAD_256 = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE"
-        private const val AES_TRANSFORMATION = "AES/CBC/PKCS7Padding"
+        private const val AES_TRANSFORMATION = "AES/GCM/NoPadding"
         private const val ANDROID_KEYSTORE = "AndroidKeyStore"
         private const val SIGNATURE_ALGORITHM = "SHA256withECDSA"
         private const val MAC_ALGORITHM = "HMACSHA256"
         private const val AES_KEY_NAME = "AES_KEY_NAME"
+        private const val EC_KEYPAIR = "EC_KEYPAIR"
         private const val IV_KEY_NAME = "IV_KEY_NAME"
         private const val KEY_PUBLIC = "public"
         private const val KEY_PRIVATE = "private"
         private const val EC_CURVE = "prime256v1"
 
-        private const val IV_SIZE = 12
+        private const val SALT_SIZE = 12
         private const val KEY_SIZE = 32
     }
 }

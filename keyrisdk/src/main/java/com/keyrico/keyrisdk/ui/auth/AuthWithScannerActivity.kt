@@ -65,6 +65,8 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
     private var cameraProvider: ProcessCameraProvider? = null
     private var preview: Preview? = null
 
+    private var dialogShowing = false
+
     private val options by lazy {
         BarcodeScannerOptions.Builder()
             .setBarcodeFormats(Barcode.FORMAT_QR_CODE, Barcode.FORMAT_AZTEC)
@@ -85,10 +87,9 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
     private val keyriSdk by lazy {
         val params = intent.getParcelableExtra<EasyKeyriAuthParams>(KEY_AUTH_PARAMS)
         val appKey = params?.appKey ?: ""
-        val rpPublicKey = params?.rpPublicKey ?: ""
         val serviceDomain = params?.serviceDomain ?: ""
 
-        KeyriSdk(this, appKey, rpPublicKey, serviceDomain)
+        KeyriSdk(this, appKey, serviceDomain)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -112,11 +113,11 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
         val ivClose = binding.fabClose
         val topCloseMargin = ivClose.marginTop
 
-        ViewCompat.setOnApplyWindowInsetsListener(ivClose) { v, windowInsets ->
+        ViewCompat.setOnApplyWindowInsetsListener(ivClose) { view, windowInsets ->
             val topInsets = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars()).top
             val bottomInsets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
 
-            v.updateLayoutParams<ConstraintLayout.LayoutParams> {
+            view.updateLayoutParams<ConstraintLayout.LayoutParams> {
                 topMargin = topCloseMargin + topInsets
             }
 
@@ -168,18 +169,29 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
         ConfirmationBottomDialog(uiState.session) { isAccepted ->
             if (isAccepted) {
                 val params = intent.getParcelableExtra<EasyKeyriAuthParams>(KEY_AUTH_PARAMS)
+                val username = params?.username
                 val publicUserId = params?.publicUserId ?: ""
                 val publicCustom = params?.publicCustom ?: ""
                 val secureCustom = params?.secureCustom ?: ""
 
-                viewModel.challengeSession(publicUserId, publicCustom, secureCustom, keyriSdk)
+                viewModel.challengeSession(
+                    publicUserId,
+                    username,
+                    publicCustom,
+                    secureCustom,
+                    keyriSdk
+                )
             } else {
                 viewModel.clearState()
 
                 setResult(RESULT_CANCELED)
                 finish()
             }
+
+            dialogShowing = false
         }.show(supportFragmentManager, ConfirmationBottomDialog::class.java.name)
+
+        dialogShowing = true
 
         return true
     }
@@ -244,20 +256,22 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
 
     @SuppressLint("UnsafeOptInUsageError")
     private fun initQrAnalyzer(): ImageAnalysis.Analyzer = ImageAnalysis.Analyzer { imageProxy ->
-        imageProxy.image?.takeIf { viewModel.uiState.value is AuthWithScannerState.Empty }?.let {
-            val image =
-                InputImage.fromMediaImage(it, imageProxy.imageInfo.rotationDegrees)
+        imageProxy.image
+            ?.takeIf { !dialogShowing && viewModel.uiState.value is AuthWithScannerState.Empty }
+            ?.let {
+                val image =
+                    InputImage.fromMediaImage(it, imageProxy.imageInfo.rotationDegrees)
 
-            BarcodeScanning.getClient(options).process(image)
-                .addOnSuccessListener { barcodes ->
-                    barcodes.firstOrNull()
-                        ?.displayValue
-                        ?.let(::processScannedData)
-                }
-                .addOnCompleteListener {
-                    imageProxy.close()
-                }
-        } ?: imageProxy.close()
+                BarcodeScanning.getClient(options).process(image)
+                    .addOnSuccessListener { barcodes ->
+                        barcodes.firstOrNull()
+                            ?.displayValue
+                            ?.let(::processScannedData)
+                    }
+                    .addOnCompleteListener {
+                        imageProxy.close()
+                    }
+            } ?: imageProxy.close()
     }
 
     private fun aspectRatio(width: Int, height: Int): Int {
@@ -287,14 +301,9 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
     }
 
     private fun processLink(uri: Uri?) {
-        val sessionId = uri?.getQueryParameters("sessionId")?.firstOrNull()
-        val key = uri?.getQueryParameters("key")?.firstOrNull()
-
-        if (sessionId != null && key != null) {
-            viewModel.handleSessionId(sessionId, key, keyriSdk)
-        } else {
-            Log.e("Keyri", "Failed to process link")
-        }
+        uri?.getQueryParameters("sessionId")?.firstOrNull()?.let { sessionId ->
+            viewModel.handleSessionId(sessionId, keyriSdk)
+        } ?: Log.e("Keyri", "Failed to process link")
     }
 
     companion object {

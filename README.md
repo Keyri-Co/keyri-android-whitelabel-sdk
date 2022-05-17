@@ -74,7 +74,7 @@ android {
     defaultConfig {
         // ...
         buildConfigField "String", "SERVICE_DOMAIN", "\"misc.keyri.com\""
-        buildConfigField "String", "RP_PUBLIC_KEY", "\"BOenio0DXyG31mAgUCwhdslelckmxzM7nNOyWAjkuo7skr1FhP7m2L8PaSRgIEH5ja9p+CwEIIKGqR4Hx5Ezam4=\""
+        buildConfigField "String", "APP_KEY", "\"IT7VrTQ0r4InzsvCNJpRCRpi1qzfgpaj\""
     }
     // ...
 }
@@ -85,7 +85,7 @@ And then use them to initialize the SDK:
 ```kotlin
 val keyriSdk = KeyriSdk(
     requireContext(),
-    rpPublicKey = BuildConfig.RP_PUBLIC_KEY,
+    appKey = BuildConfig.APP_KEY,
     serviceDomain = BuildConfig.SERVICE_DOMAIN
 ) 
 ```
@@ -94,14 +94,20 @@ Or with koin DI:
 
 ```kotlin
 val keyriModule = module {
-    single { KeyriSdk(get(), BuildConfig.RP_PUBLIC_KEY, BuildConfig.SERVICE_DOMAIN) }
+    single {
+        KeyriSdk(
+            get(),
+            BuildConfig.APP_KEY,
+            BuildConfig.SERVICE_DOMAIN
+        )
+    }
 }
 ```
 
 ## Usage
 
-Note that the SDK object must not be destroyed between calling **handleSessionId()** and retrieving
-the result of **challengeSession()**.
+Note that the SDK object must not be destroyed between calling **initiateSession()** and retrieving
+the result of **approveSession()**.
 
 ### Option 1: Use **easyKeyriAuth()** method to delegate authentication to SDK (ActivityResult API)
 
@@ -133,16 +139,23 @@ in [AuthWithScannerActivity](app/src/main/java/com/keyri/ui/main/MainActivity.kt
 Alternatively, if you want to provide a custom authentication/authorization UI/UX, use the following
 methods:
 
-* **handleSessionId()** - Call it after retrieving the sessionId from QR-code or deep link. It will
+* **initiateSession()** - Call it after retrieving the sessionId from QR-code or deep link. It will
   provide Session object or Risk Analytics information (needed to show confirmation screen).
-* **challengeSession()** - Call this function to finish user authentication.
+* **approveSession()** - Call this function to finish user authentication.
 
 ```kotlin
-val session = keyriSdk.handleSessionId(sessionId)
+val session = keyriSdk.initiateSession(sessionId)
 
 // Show confirmation screen and if positive do next:
 
-keyriSdk.challengeSession(publicUserId, sessionId, publicCustom, secureCustom)
+keyriSdk.approveSession(
+    publicUserId,
+    username,
+    key,
+    sessionId,
+    publicCustom,
+    secureCustom
+)
 ```
 
 ### Deep Link Handling
@@ -158,7 +171,7 @@ define in your AndroidManifest.xml following intent-filter block:
     <category android:name="android.intent.category.DEFAULT" />
     <category android:name="android.intent.category.BROWSABLE" />
 
-    <data android:host="www.keyri.co" android:pathPrefix="/application" android:scheme="https" />
+    <data android:host="www.keyri.co" android:scheme="https" />
 
 </intent-filter>
 ```
@@ -184,7 +197,7 @@ override fun onNewIntent(intent: Intent) {
 
 private fun processLink(uri: Uri?) {
     uri?.getQueryParameters("sessionId")?.firstOrNull()?.let { sessionId ->
-        // Do auth with sessionId (handleSessionId, challengeSession)
+        viewModel.handleSessionId(sessionId, keyriSdk)
     } ?: Log.e("Keyri", "Failed to process link")
 }
 ```

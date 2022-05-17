@@ -4,6 +4,8 @@
     <color name="red">#DE5246</color>
     <color name="vpn_red">#f79797</color>
     <color name="faded_red">#FEECED</color>
+    <color name="orange">#F5704C</color>
+    <color name="light_orange">#ff9b74</color>
     <color name="green">#1AA260</color>
     <color name="faded_green">#E1F4ED</color>
     <color name="text_color">#595959</color>

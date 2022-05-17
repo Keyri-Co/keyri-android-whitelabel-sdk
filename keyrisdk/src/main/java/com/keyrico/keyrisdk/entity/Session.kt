@@ -37,9 +37,12 @@ data class Session(
     @SerializedName("riskAnalytics")
     val riskAnalytics: RiskAnalytics?,
 
+    @SerializedName("browserPublicKey")
+    val browserPublicKey: String,
+
     @SerializedName("__salt")
     val salt: String,
 
     @SerializedName("__hash")
-    val hash: String,
+    val hash: String
 ) : Parcelable
