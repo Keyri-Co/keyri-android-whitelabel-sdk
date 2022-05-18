@@ -19,7 +19,7 @@ internal class AuthWithScannerVM : ViewModel() {
 
     private var session: Session? = null
 
-    fun handleSessionId(sessionId: String, keyriSdk: KeyriSdk) {
+    fun initiateSession(sessionId: String, keyriSdk: KeyriSdk) {
         _uiState.value = AuthWithScannerState.Loading
 
         viewModelScope.launch(Dispatchers.IO) {
@@ -35,7 +35,7 @@ internal class AuthWithScannerVM : ViewModel() {
         }
     }
 
-    fun challengeSession(
+    fun approveSession(
         publicUserId: String,
         username: String?,
         publicCustom: String?,

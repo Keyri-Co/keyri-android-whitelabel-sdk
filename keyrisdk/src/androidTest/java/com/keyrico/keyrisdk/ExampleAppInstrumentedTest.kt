@@ -1,63 +1,111 @@
 package com.keyrico.keyrisdk
 
 import android.app.Activity
-import android.content.Context
-import android.util.Log
+import android.content.Intent
 import androidx.test.core.app.launchActivity
 import androidx.test.platform.app.InstrumentationRegistry
-import com.keyrico.keyrisdk.WebViewActivity.Companion.SESSION_ID
+import com.keyrico.keyrisdk.WebViewActivity.Companion.TEST_RESULTS
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
-import org.junit.Before
+import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
+import org.junit.runners.MethodSorters
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(JUnit4::class)
 class ExampleAppInstrumentedTest {
 
-    private lateinit var keyriSdk: KeyriSdk
-    private lateinit var context: Context
+    @Test
+    fun `1_setup`() = runBlocking {
+        val intent = Intent(
+            InstrumentationRegistry.getInstrumentation().context,
+            WebViewActivity::class.java
+        ).apply {
+            putExtra(WEB_VIEW_URL, "https://misc.keyri.com")
+            putExtra(APP_KEY, "IT7VrTQ0r4InzsvCNJpRCRpi1qzfgpaj")
+            putExtra(SERVICE_DOMAIN, "misc.keyri.com")
+        }
 
-    @Before
-    fun setup() {
-        context = InstrumentationRegistry.getInstrumentation().context
+        launchActivity<WebViewActivity>(intent).use { scenario ->
+            scenario.result.resultData.setExtrasClassLoader(TestResults::class.java.classLoader)
 
-        keyriSdk = KeyriSdk(context, APP_KEY, SERVICE_DOMAIN)
+            testResults = scenario.result
+                .takeIf { it.resultCode == Activity.RESULT_OK }
+                ?.resultData
+                ?.takeIf { it.hasExtra(TEST_RESULTS) }
+                ?.getParcelableExtra(TEST_RESULTS)
+        }
+
+        Assert.assertNotNull(testResults)
     }
 
     @Test
-    fun testDomain() = runBlocking {
-        var sessionId: String? = null
+    fun `2_testSessionIdNotNull`() {
+        Assert.assertNotNull(testResults?.sessionId)
+    }
 
-        launchActivity<WebViewActivity>().use { scenario ->
-            scenario.result.takeIf { it.resultCode == Activity.RESULT_OK }?.resultData?.let { data ->
-                sessionId = data.getStringExtra(SESSION_ID)
-            }
-        }
+    @Test
+    fun `3_testDomain`() {
+        Assert.assertEquals(testResults?.domainName, "misc.keyri.com")
+    }
 
-        Assert.assertNotNull(sessionId)
+    @Test
+    fun `4_testRegularSession`() {
+        val sessionDialog = testResults?.sessionRegularDialog
 
-        sessionId?.let {
-            Log.d("Keyri", "Session ID: $it")
+        Assert.assertEquals(sessionDialog?.get("mobileIpDataVisible"), true)
+        Assert.assertEquals(sessionDialog?.get("widgetIpDataVisible"), true)
+        Assert.assertEquals(sessionDialog?.get("userAgentVisible"), true)
+        Assert.assertEquals(sessionDialog?.get("buttonsVisible"), true)
+    }
 
-            val session = keyriSdk.initiateSession(it)
+    @Test
+    fun `5_testDeniedSession`() {
+        val sessionDialog = testResults?.sessionDeniedDialog
 
-            Assert.assertEquals(session.widgetOrigin, SERVICE_DOMAIN)
+        Assert.assertEquals(sessionDialog?.get("mobileIpDataVisible"), true)
+        Assert.assertEquals(sessionDialog?.get("widgetIpDataVisible"), true)
+        Assert.assertEquals(sessionDialog?.get("userAgentVisible"), true)
+        Assert.assertEquals(sessionDialog?.get("buttonsVisible"), false)
+    }
 
-            keyriSdk.approveSession(
-                "some-public-user-id",
-                "some-username",
-                session.browserPublicKey,
-                it,
-                "Secure custom",
-                "Public custom",
-            )
-        } ?: throw IllegalStateException("Couldn't scan sessionId with QR")
+    @Test
+    fun `6_testWarningSession`() {
+        val sessionDialog = testResults?.sessionWarningDialog
+
+        Assert.assertEquals(sessionDialog?.get("mobileIpDataVisible"), true)
+        Assert.assertEquals(sessionDialog?.get("widgetIpDataVisible"), true)
+        Assert.assertEquals(sessionDialog?.get("userAgentVisible"), true)
+        Assert.assertEquals(sessionDialog?.get("buttonsVisible"), true)
+    }
+
+    @Test
+    fun `7_testNoIpDataSession`() {
+        val sessionDialog = testResults?.sessionNoIpDataDialog
+
+        Assert.assertEquals(sessionDialog?.get("mobileIpDataVisible"), false)
+        Assert.assertEquals(sessionDialog?.get("widgetIpDataVisible"), false)
+        Assert.assertEquals(sessionDialog?.get("userAgentVisible"), true)
+        Assert.assertEquals(sessionDialog?.get("buttonsVisible"), true)
+    }
+
+    @Test
+    fun `8_testWithoutRiskPermissionSession`() {
+        val sessionDialog = testResults?.sessionWithoutRiskPermissionDialog
+
+        Assert.assertEquals(sessionDialog?.get("mobileIpDataVisible"), false)
+        Assert.assertEquals(sessionDialog?.get("widgetIpDataVisible"), false)
+        Assert.assertEquals(sessionDialog?.get("userAgentVisible"), false)
+        Assert.assertEquals(sessionDialog?.get("buttonsVisible"), true)
     }
 
     companion object {
-        private const val APP_KEY = "IT7VrTQ0r4InzsvCNJpRCRpi1qzfgpaj"
-        private const val SERVICE_DOMAIN = "misc.keyri.com"
+        private var testResults: TestResults? = null
+
+        const val APP_KEY = "APP_KEY"
+        const val WEB_VIEW_URL = "WEB_VIEW_URL"
+        const val SERVICE_DOMAIN = "SERVICE_DOMAIN"
     }
 }

@@ -35,7 +35,7 @@ val ipData = IPData(
 val sessionRegular = Session(
     EMPTY,
     EMPTY,
-    "5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.67 Safari/537.36",
+    "Chrome/101.0.4951.67",
     EMPTY,
     EMPTY,
     EMPTY,
@@ -52,7 +52,7 @@ val sessionDenied =
     sessionRegular.copy(riskAnalytics = RiskAnalytics(geoData = null, riskStatus = "danger"))
 
 val sessionWarning =
-    sessionRegular.copy(riskAnalytics = RiskAnalytics(geoData = geoData, riskStatus = "warning"))
+    sessionRegular.copy(riskAnalytics = RiskAnalytics(geoData = geoData, riskStatus = "warn"))
 
 val sessionNoIpData = sessionRegular.copy(iPDataWidget = null, iPDataMobile = null)
 

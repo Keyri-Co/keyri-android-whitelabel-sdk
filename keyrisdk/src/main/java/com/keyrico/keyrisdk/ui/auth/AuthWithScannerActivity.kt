@@ -174,7 +174,7 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
                 val publicCustom = params?.publicCustom ?: ""
                 val secureCustom = params?.secureCustom ?: ""
 
-                viewModel.challengeSession(
+                viewModel.approveSession(
                     publicUserId,
                     username,
                     publicCustom,
@@ -302,7 +302,7 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
 
     private fun processLink(uri: Uri?) {
         uri?.getQueryParameters("sessionId")?.firstOrNull()?.let { sessionId ->
-            viewModel.handleSessionId(sessionId, keyriSdk)
+            viewModel.initiateSession(sessionId, keyriSdk)
         } ?: Log.e("Keyri", "Failed to process link")
     }
 
