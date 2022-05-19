@@ -56,8 +56,8 @@ internal class AuthWithScannerVM : ViewModel() {
                     username,
                     browserPublicKey,
                     sessionId,
-                    publicCustom,
-                    secureCustom
+                    secureCustom,
+                    publicCustom
                 )
 
                 _uiState.value = AuthWithScannerState.Authenticated
