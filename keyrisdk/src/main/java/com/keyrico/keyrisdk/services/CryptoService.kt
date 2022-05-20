@@ -39,9 +39,13 @@ internal class CryptoService {
 
     fun getAssociationKey(publicUserId: String?): String {
         val alias = publicUserId?.let { ECDSA_KEYPAIR + it } ?: ECDSA_KEYPAIR
-        val certificate = getKeyStore().getCertificate(alias)
+        val keyStore = getKeyStore()
 
-        return certificate.publicKey.encoded.toStringBase64()
+        if (!keyStore.containsAlias(alias)) {
+            createECDSAKeypair(alias)
+        }
+
+        return keyStore.getCertificate(alias).publicKey.encoded.toStringBase64()
     }
 
     fun encryptHkdf(backendPublicKey: String, data: String): EncryptionOutput {
@@ -72,7 +76,13 @@ internal class CryptoService {
 
     fun signMessage(publicUserId: String?, message: String): String {
         val alias = publicUserId?.let { ECDSA_KEYPAIR + it } ?: ECDSA_KEYPAIR
-        val privateKeyEntry = getKeyStore().getEntry(alias, null) as KeyStore.PrivateKeyEntry
+        val keyStore = getKeyStore()
+
+        if (!keyStore.containsAlias(alias)) {
+            createECDSAKeypair(alias)
+        }
+
+        val privateKeyEntry = keyStore.getEntry(alias, null) as KeyStore.PrivateKeyEntry
         val privateKey = privateKeyEntry.privateKey
 
         val signature = Signature.getInstance(SIGNATURE_ALGORITHM)
@@ -84,8 +94,10 @@ internal class CryptoService {
     }
 
     private fun createECDSAKeypair(alias: String): String {
-        if (getKeyStore().containsAlias(alias)) {
-            val certificate = getKeyStore().getCertificate(alias)
+        val keyStore = getKeyStore()
+
+        if (keyStore.containsAlias(alias)) {
+            val certificate = keyStore.getCertificate(alias)
 
             return certificate.publicKey.encoded.toStringBase64()
         }
