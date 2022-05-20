@@ -6,7 +6,6 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class TestResults(
     val sessionId: String? = null,
-    val domainName: String? = null,
     val sessionRegularDialog: Map<String, Boolean> = emptyMap(),
     val sessionDeniedDialog: Map<String, Boolean> = emptyMap(),
     val sessionWarningDialog: Map<String, Boolean> = emptyMap(),
