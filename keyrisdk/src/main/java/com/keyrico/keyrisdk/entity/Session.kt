@@ -72,6 +72,6 @@ data class Session(
             browserData = browserData
         )
 
-        makeApiCall { provideApiService().approveSession(sessionId, request) }.body()
+        makeApiCall { provideApiService().approveSession(sessionId, request) }
     }
 }

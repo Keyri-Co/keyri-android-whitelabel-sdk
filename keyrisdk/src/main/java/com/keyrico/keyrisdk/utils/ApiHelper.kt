@@ -3,6 +3,8 @@ package com.keyrico.keyrisdk.utils
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.keyrico.keyrisdk.BuildConfig
+import com.keyrico.keyrisdk.entity.SessionConfirmationResponse
+import com.keyrico.keyrisdk.exception.AuthorizationException
 import com.keyrico.keyrisdk.exception.InternalServerException
 import com.keyrico.keyrisdk.exception.NetworkException
 import com.keyrico.keyrisdk.services.api.ApiService
@@ -20,24 +22,28 @@ import retrofit2.converter.gson.GsonConverterFactory
 private const val CONNECT_TIMEOUT = 15L
 private const val READ_TIMEOUT = 15L
 
-internal suspend fun <T : Any> makeApiCall(call: suspend () -> Response<T>): Response<T> {
+internal suspend fun <T : Any> makeApiCall(call: suspend () -> Response<T>): Result<T> {
     try {
         val response = call.invoke()
 
         if (!response.isSuccessful) {
             val errorBody = response.errorBody()
-            val type = object : TypeToken<String?>() {}.type
+            val type = object : TypeToken<SessionConfirmationResponse>() {}.type
 
-            val errorResponse: String? = Gson().fromJson(errorBody?.charStream(), type)
+            val errorResponse: SessionConfirmationResponse? =
+                Gson().fromJson(errorBody?.charStream(), type)
 
             errorBody?.close()
 
-            throw InternalServerException(errorResponse ?: "Unable to authorize")
+            val error = InternalServerException(errorResponse?.status ?: "Unable to authorize")
+
+            return Result.failure(error)
         }
 
-        return response
+        return response.body()?.let { Result.success(it) }
+            ?: throw AuthorizationException("Unable to authorize")
     } catch (e: Exception) {
-        throw when (e) {
+        val error = when (e) {
             is IOException -> {
                 when (e) {
                     is UnknownHostException,
@@ -48,6 +54,8 @@ internal suspend fun <T : Any> makeApiCall(call: suspend () -> Response<T>): Res
             }
             else -> e
         }
+
+        return Result.failure(error)
     }
 }
 

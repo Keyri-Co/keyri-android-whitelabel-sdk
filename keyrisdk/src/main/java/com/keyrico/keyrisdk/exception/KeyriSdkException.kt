@@ -7,5 +7,3 @@ data class NetworkException(override val message: String) : KeyriSdkException(me
 data class AuthorizationException(override val message: String) : KeyriSdkException(message)
 
 data class InternalServerException(override val message: String) : KeyriSdkException(message)
-
-data class WrongOriginDomainException(override val message: String) : KeyriSdkException(message)

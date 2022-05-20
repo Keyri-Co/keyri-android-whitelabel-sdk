@@ -3,7 +3,6 @@ package com.keyrico.keyrisdk
 import androidx.fragment.app.FragmentManager
 import com.google.gson.JsonObject
 import com.keyrico.keyrisdk.entity.Session
-import com.keyrico.keyrisdk.exception.AuthorizationException
 import com.keyrico.keyrisdk.services.CryptoService
 import com.keyrico.keyrisdk.ui.confirmation.ConfirmationBottomDialog
 import com.keyrico.keyrisdk.utils.makeApiCall
@@ -34,8 +33,7 @@ class KeyriSdk {
         cryptoService.getAssociationKey(publicUserId)
 
     suspend fun initiateQrSession(sessionId: String, appKey: String): Session {
-        return makeApiCall { provideApiService().getSession(sessionId, appKey) }.body()
-            ?: throw AuthorizationException("Unable to authorize")
+        return makeApiCall { provideApiService().getSession(sessionId, appKey) }.getOrThrow()
     }
 
     suspend fun initializeDefaultScreen(fm: FragmentManager, session: Session): Boolean {
