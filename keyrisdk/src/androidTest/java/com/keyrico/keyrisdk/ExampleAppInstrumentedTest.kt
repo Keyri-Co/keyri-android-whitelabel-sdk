@@ -5,6 +5,7 @@ import android.content.Intent
 import androidx.test.core.app.launchActivity
 import androidx.test.platform.app.InstrumentationRegistry
 import com.keyrico.keyrisdk.WebViewActivity.Companion.TEST_RESULTS
+import com.keyrico.keyrisdk.services.CryptoService
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.FixMethodOrder
@@ -25,7 +26,6 @@ class ExampleAppInstrumentedTest {
         ).apply {
             putExtra(WEB_VIEW_URL, "https://misc.keyri.com")
             putExtra(APP_KEY, "IT7VrTQ0r4InzsvCNJpRCRpi1qzfgpaj")
-            putExtra(SERVICE_DOMAIN, "misc.keyri.com")
         }
 
         launchActivity<WebViewActivity>(intent).use { scenario ->
@@ -47,12 +47,7 @@ class ExampleAppInstrumentedTest {
     }
 
     @Test
-    fun `3_testDomain`() {
-        Assert.assertEquals(testResults?.domainName, "misc.keyri.com")
-    }
-
-    @Test
-    fun `4_testRegularSession`() {
+    fun `3_testRegularSession`() {
         val sessionDialog = testResults?.sessionRegularDialog
 
         Assert.assertEquals(sessionDialog?.get("mobileIpDataVisible"), true)
@@ -62,7 +57,7 @@ class ExampleAppInstrumentedTest {
     }
 
     @Test
-    fun `5_testDeniedSession`() {
+    fun `4_testDeniedSession`() {
         val sessionDialog = testResults?.sessionDeniedDialog
 
         Assert.assertEquals(sessionDialog?.get("mobileIpDataVisible"), true)
@@ -72,7 +67,7 @@ class ExampleAppInstrumentedTest {
     }
 
     @Test
-    fun `6_testWarningSession`() {
+    fun `5_testWarningSession`() {
         val sessionDialog = testResults?.sessionWarningDialog
 
         Assert.assertEquals(sessionDialog?.get("mobileIpDataVisible"), true)
@@ -82,7 +77,7 @@ class ExampleAppInstrumentedTest {
     }
 
     @Test
-    fun `7_testNoIpDataSession`() {
+    fun `6_testNoIpDataSession`() {
         val sessionDialog = testResults?.sessionNoIpDataDialog
 
         Assert.assertEquals(sessionDialog?.get("mobileIpDataVisible"), false)
@@ -92,7 +87,7 @@ class ExampleAppInstrumentedTest {
     }
 
     @Test
-    fun `8_testWithoutRiskPermissionSession`() {
+    fun `7_testWithoutRiskPermissionSession`() {
         val sessionDialog = testResults?.sessionWithoutRiskPermissionDialog
 
         Assert.assertEquals(sessionDialog?.get("mobileIpDataVisible"), false)
@@ -101,11 +96,32 @@ class ExampleAppInstrumentedTest {
         Assert.assertEquals(sessionDialog?.get("buttonsVisible"), true)
     }
 
+    @Test
+    fun `8_testCryptoServiceDifferentKeys`() {
+        val cryptoService = CryptoService()
+
+        val publicKey =
+            "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEEHT7SM0JL8PPhAOQ+cFJn5hWPPSFKGxbVfp3htpjMUvQ9SM4fhtFUVryoKMz7z5/+MFxW96Sb9FKtq9z7mvJ1w=="
+        val rawPublicKey =
+            "BBB0+0jNCS/Dz4QDkPnBSZ+YVjz0hShsW1X6d4baYzFL0PUjOH4bRVFa8qCjM+8+f/jBcVvekm/RSravc+5rydc="
+        val rawPublicKeyLite =
+            "EHT7SM0JL8PPhAOQ+cFJn5hWPPSFKGxbVfp3htpjMUvQ9SM4fhtFUVryoKMz7z5/+MFxW96Sb9FKtq9z7mvJ1w=="
+
+        val data = "Hello World!"
+
+        val publicKeyCipher = cryptoService.encryptHkdf(publicKey,  data)
+        val rawPublicKeyCipher = cryptoService.encryptHkdf(rawPublicKey,  data)
+        val rawPublicKeyLiteCipher = cryptoService.encryptHkdf(rawPublicKeyLite,  data)
+
+        Assert.assertNotNull(publicKeyCipher)
+        Assert.assertNotNull(rawPublicKeyCipher)
+        Assert.assertNotNull(rawPublicKeyLiteCipher)
+    }
+
     companion object {
         private var testResults: TestResults? = null
 
         const val APP_KEY = "APP_KEY"
         const val WEB_VIEW_URL = "WEB_VIEW_URL"
-        const val SERVICE_DOMAIN = "SERVICE_DOMAIN"
     }
 }

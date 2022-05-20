@@ -1,27 +1,25 @@
 package com.keyri.ui.main
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.keyri.BuildConfig
 import com.keyri.databinding.ActivityAuthBinding
 import com.keyri.ui.auth_complete.AuthCompleteActivity
-import com.keyrico.keyrisdk.KeyriSdk
-import com.keyrico.keyrisdk.ShowEasyKeyriAuth
+import com.keyrico.keyrisdk.ui.auth.AuthWithScannerActivity
 
 class MainActivity : AppCompatActivity() {
 
-    private val keyriSdk by lazy {
-        KeyriSdk(this, BuildConfig.APP_KEY, BuildConfig.DOMAIN_NAME)
-    }
+    private val easyKeyriAuthLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            val intent = Intent(this, AuthCompleteActivity::class.java).apply {
+                putExtra(AuthCompleteActivity.KEY_IS_SUCCESS, it.resultCode == Activity.RESULT_OK)
+            }
 
-    private val easyKeyriAuthLauncher = registerForActivityResult(ShowEasyKeyriAuth()) {
-        val intent = Intent(this, AuthCompleteActivity::class.java).apply {
-            putExtra(AuthCompleteActivity.KEY_IS_SUCCESS, it)
+            startActivity(intent)
         }
-
-        startActivity(intent)
-    }
 
     private lateinit var binding: ActivityAuthBinding
 
@@ -31,13 +29,11 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.bAuthQr.setOnClickListener {
-            keyriSdk.easyKeyriAuth(
-                easyKeyriAuthLauncher,
-                "mocked-public-user-id",
-                "mocked-username",
-                "secure custom",
-                "public custom"
-            )
+            val intent = Intent(this, AuthWithScannerActivity::class.java).apply {
+                putExtra(AuthWithScannerActivity.APP_KEY, BuildConfig.APP_KEY)
+            }
+
+            easyKeyriAuthLauncher.launch(intent)
         }
     }
 }

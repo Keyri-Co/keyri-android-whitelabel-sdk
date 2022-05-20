@@ -1,5 +1,6 @@
 package com.keyrico.keyrisdk.ui.auth
 
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.keyrico.keyrisdk.KeyriSdk
@@ -19,12 +20,16 @@ internal class AuthWithScannerVM : ViewModel() {
 
     private var session: Session? = null
 
-    fun initiateSession(sessionId: String, keyriSdk: KeyriSdk) {
+    fun initiateSession(
+        sessionId: String,
+        appKey: String,
+        keyriSdk: KeyriSdk
+    ) {
         _uiState.value = AuthWithScannerState.Loading
 
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val session = keyriSdk.initiateSession(sessionId)
+                val session = keyriSdk.initiateQrSession(sessionId, appKey)
 
                 this@AuthWithScannerVM.session = session
 
@@ -36,39 +41,21 @@ internal class AuthWithScannerVM : ViewModel() {
     }
 
     fun approveSession(
-        publicUserId: String,
-        username: String?,
-        publicCustom: String?,
-        secureCustom: String?,
+        supportFragmentManager: FragmentManager,
+        session: Session,
         keyriSdk: KeyriSdk
     ) {
         _uiState.value = AuthWithScannerState.Loading
 
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val browserPublicKey = session?.browserPublicKey
-                    ?: throw IllegalStateException("BrowserPublicKey is null")
-                val sessionId =
-                    session?.sessionId ?: throw IllegalStateException("SessionId is null")
-
-                keyriSdk.approveSession(
-                    publicUserId,
-                    username,
-                    browserPublicKey,
-                    sessionId,
-                    secureCustom,
-                    publicCustom
-                )
+                keyriSdk.initializeDefaultScreen(supportFragmentManager, session)
 
                 _uiState.value = AuthWithScannerState.Authenticated
             } catch (e: Throwable) {
                 processError(e)
             }
         }
-    }
-
-    fun clearState() {
-        _uiState.value = AuthWithScannerState.Empty
     }
 
     private suspend fun processError(e: Throwable) {

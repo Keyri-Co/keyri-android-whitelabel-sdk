@@ -15,25 +15,11 @@ class WebViewViewModel : ViewModel() {
 
     val authenticated: StateFlow<Session?> = _authenticated.asStateFlow()
 
-    fun newSession(
-        sessionId: String,
-        publicUserId: String,
-        username: String?,
-        publicCustom: String?,
-        secureCustom: String?,
-        keyriSdk: KeyriSdk
-    ) {
+    fun newSession(sessionId: String, publicUserId: String, appKey: String, keyriSdk: KeyriSdk) {
         viewModelScope.launch(Dispatchers.IO) {
-            val session = keyriSdk.initiateSession(sessionId)
+            val session = keyriSdk.initiateQrSession(sessionId, appKey)
 
-            keyriSdk.approveSession(
-                publicUserId,
-                username,
-                session.browserPublicKey,
-                sessionId,
-                publicCustom,
-                secureCustom
-            )
+            session.confirm(publicUserId, "Some payload")
 
             _authenticated.value = session
         }

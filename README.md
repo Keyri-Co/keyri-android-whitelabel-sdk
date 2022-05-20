@@ -53,80 +53,36 @@ allprojects {
 
 * Add SDK dependency to your build.gradle file and sync project:
 
-```groovy
+```kotlin
 dependencies {
     // ...
-    implementation "com.github.Keyri-Co:keyri-android-whitelabel-sdk:1.0.10"
-}
-```
-
-### Provisioning Keyri config parameters
-
-Supply these parameters to your app:
-
-* Service Domain
-* RP Public Key
-
-For example:
-
-```groovy
-android {
-    defaultConfig {
-        // ...
-        buildConfigField "String", "SERVICE_DOMAIN", "\"misc.keyri.com\""
-        buildConfigField "String", "APP_KEY", "\"IT7VrTQ0r4InzsvCNJpRCRpi1qzfgpaj\""
-    }
-    // ...
-}
-```
-
-And then use them to initialize the SDK:
-
-```kotlin
-val keyriSdk = KeyriSdk(
-    requireContext(),
-    appKey = BuildConfig.APP_KEY,
-    serviceDomain = BuildConfig.SERVICE_DOMAIN
-) 
-```
-
-Or with koin DI:
-
-```kotlin
-val keyriModule = module {
-    single {
-        KeyriSdk(
-            get(),
-            BuildConfig.APP_KEY,
-            BuildConfig.SERVICE_DOMAIN
-        )
-    }
+    implementation("com.github.Keyri-Co:keyri-android-whitelabel-sdk:1.0.11")
 }
 ```
 
 ## Usage
 
-Note that the SDK object must not be destroyed between calling **initiateSession()** and retrieving
-the result of **approveSession()**.
+### Option 1: Use **AuthWithScannerActivity** built-in functionality to delegate authentication to SDK
 
-### Option 1: Use **easyKeyriAuth()** method to delegate authentication to SDK (ActivityResult API)
+You can use ActivityResult API or onActivityResult. All you need to pass is App Key with AuthWithScannerActivity.APP_KEY extra identifier
 
 ```kotlin
-private val easyKeyriAuthLauncher = registerForActivityResult(ShowEasyKeyriAuth()) { isSuccess ->
-    // Handle authentication result
-    // ...
-}
+private val easyKeyriAuthLauncher =
+    registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
+        val isSuccess = activityResult.resultCode == Activity.RESULT_OK
+        // Handle authentication result
+        // ...
+    }
 
 override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     // ...
     binding.bEasyKeyriAuth.setOnClickListener {
-        keyriSdk.easyKeyriAuth(
-            easyKeyriAuthLauncher,
-            "public-user-id",
-            "secure custom",
-            "public custom"
-        )
+        val intent = Intent(this, AuthWithScannerActivity::class.java).apply {
+            putExtra(AuthWithScannerActivity.APP_KEY, BuildConfig.APP_KEY)
+        }
+
+        easyKeyriAuthLauncher.launch(intent)
     }
 }
 ```
@@ -134,28 +90,47 @@ override fun onCreate(savedInstanceState: Bundle?) {
 You could check full code
 in [AuthWithScannerActivity](app/src/main/java/com/keyri/ui/main/MainActivity.kt).
 
-### Option 2: Build a custom authentication/authorization UI/UX
+### Option 2: Build a custom authentication UI/UX
 
-Alternatively, if you want to provide a custom authentication/authorization UI/UX, use the following
-methods:
+Alternatively, if you want to provide a custom authentication UI/UX, use the following methods:
 
-* **initiateSession()** - Call it after retrieving the sessionId from QR-code or deep link. It will
-  provide Session object or Risk Analytics information (needed to show confirmation screen).
-* **approveSession()** - Call this function to finish user authentication.
+* **suspend fun initiateQrSession(sessionId: String, appKey: String): Session** - Call it after
+  obtaining the sessionId from QR-code or deep link. Returns Session object with Risk Attributes (
+  needed to show confirmation screen).
+* **suspend fun initializeDefaultScreen(fm: FragmentManager, session: Session): Boolean** - To show
+  Confirmation Screen with default UI. Returns Boolean result of confirmation. Also you can
+  implement your custom Confirmation Screen, just inherit
+  from [BaseConfirmationBottomDialog.kt](keyrisdk/src/main/java/com/keyrico/keyrisdk/ui/confirmation/BaseConfirmationBottomDialog.kt)
+  a class.
+* **suspend fun Session.confirm(publicUserId: String?, payload: String)** - Call this function if
+  user confirmed the dialog.
+* **suspend fun Session.deny(publicUserId: String?, payload: String)** - Call if user denied the
+  dialog.
+* **fun generateAssociationKey(publicUserId: String): String** - Create a persistent ECDSA keypair
+  for the given public user ID (example: email address) and return public key.
+* **fun getUserSignature(publicUserId: String?, customSignedData: String?): String** - Return an
+  ECDSA signature of the timestamp and optional customSignedData with the publicUserId's privateKey,
+  customSignedData can be anything.
+* **fun listAssociationKey(): List<String>** - Return a list of names (publicUserIds) of "
+  association keys" (public keys).
+* **getAssociationKey(publicUserId: String): String** - Returns Base64 public key for the specified
+  publicUserId.
+
+Payload can be anything (session token or a stringified JSON containing multiple items. Can include
+things like publicUserId, timestamp, customSignedData and ECDSA signature).
 
 ```kotlin
-val session = keyriSdk.initiateSession(sessionId)
+val session = keyriSdk.initiateQrSession(sessionId, BuildConfig.APP_KEY)
 
 // Show confirmation screen and if positive do next:
 
-keyriSdk.approveSession(
-    publicUserId,
-    username,
-    key,
-    sessionId,
-    publicCustom,
-    secureCustom
-)
+val confirmationResult = initializeDefaultScreenn(supportFragmentManager, session)
+
+if (confirmationResult) {
+    session.confirm(publicUserId, payload)
+} else {
+    session.deny(publicUserId, payload)
+}
 ```
 
 ### Deep Link Handling
@@ -176,11 +151,13 @@ define in your AndroidManifest.xml following intent-filter block:
 </intent-filter>
 ```
 
-This will handle all links with such scheme: [https://www.keyri.co/application?sessionId=324e23]. In
-the activity where the processing of links is declared, you need to add handlers in the
+This will handle all links with such scheme: [https://www.keyri.co?sessionId=3842hsf-324e23]. In the
+activity where the processing of links is declared, you need to add handlers in the
 **onNewIntent()** and **onCreate()** methods:
 
 ```kotlin
+private val keyriSdk = KeyriSdk()
+
 override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_auth)
@@ -197,14 +174,15 @@ override fun onNewIntent(intent: Intent) {
 
 private fun processLink(uri: Uri?) {
     uri?.getQueryParameters("sessionId")?.firstOrNull()?.let { sessionId ->
-        viewModel.handleSessionId(sessionId, keyriSdk)
+        viewModel.initiateQrSession(sessionId, appKey, keyriSdk)
     } ?: Log.e("Keyri", "Failed to process link")
 }
 ```
 
 The last thing you need to do in order for your deep links to be processed is to create the
 associations for each of the declared hosts for handling in JSON file as described
-here: [https://developer.android.com/training/app-links/verify-site-associations].
+here: [Verify Android App Links](https://developer.android.com/training/app-links/verify-site-associations)
+.
 
 ## License
 

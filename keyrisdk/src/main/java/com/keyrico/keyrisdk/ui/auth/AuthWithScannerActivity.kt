@@ -36,15 +36,13 @@ import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
-import com.keyrico.keyrisdk.EasyKeyriAuthParams
 import com.keyrico.keyrisdk.KeyriSdk
 import com.keyrico.keyrisdk.databinding.ActivityAuthWithScannerBinding
-import com.keyrico.keyrisdk.ui.confirmation.ConfirmationBottomDialog
 import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
 import kotlin.math.abs
 
-internal class AuthWithScannerActivity : AppCompatActivity() {
+class AuthWithScannerActivity : AppCompatActivity() {
 
     private val displayManager by lazy { getSystemService(Context.DISPLAY_SERVICE) as DisplayManager }
     private val cameraExecutor by lazy { Executors.newSingleThreadExecutor() }
@@ -65,8 +63,6 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
     private var cameraProvider: ProcessCameraProvider? = null
     private var preview: Preview? = null
 
-    private var dialogShowing = false
-
     private val options by lazy {
         BarcodeScannerOptions.Builder()
             .setBarcodeFormats(Barcode.FORMAT_QR_CODE, Barcode.FORMAT_AZTEC)
@@ -84,13 +80,7 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
 
     private val viewModel by viewModels<AuthWithScannerVM>()
 
-    private val keyriSdk by lazy {
-        val params = intent.getParcelableExtra<EasyKeyriAuthParams>(KEY_AUTH_PARAMS)
-        val appKey = params?.appKey ?: ""
-        val serviceDomain = params?.serviceDomain ?: ""
-
-        KeyriSdk(this, appKey, serviceDomain)
-    }
+    private val keyriSdk by lazy(::KeyriSdk)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -166,32 +156,7 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
     }
 
     private fun processConfirmationMessage(uiState: AuthWithScannerState.Confirmation): Boolean {
-        ConfirmationBottomDialog(uiState.session) { isAccepted ->
-            if (isAccepted) {
-                val params = intent.getParcelableExtra<EasyKeyriAuthParams>(KEY_AUTH_PARAMS)
-                val username = params?.username
-                val publicUserId = params?.publicUserId ?: ""
-                val publicCustom = params?.publicCustom ?: ""
-                val secureCustom = params?.secureCustom ?: ""
-
-                viewModel.approveSession(
-                    publicUserId,
-                    username,
-                    publicCustom,
-                    secureCustom,
-                    keyriSdk
-                )
-            } else {
-                viewModel.clearState()
-
-                setResult(RESULT_CANCELED)
-                finish()
-            }
-
-            dialogShowing = false
-        }.show(supportFragmentManager, ConfirmationBottomDialog::class.java.name)
-
-        dialogShowing = true
+        viewModel.approveSession(supportFragmentManager, uiState.session, keyriSdk)
 
         return true
     }
@@ -257,7 +222,7 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
     @SuppressLint("UnsafeOptInUsageError")
     private fun initQrAnalyzer(): ImageAnalysis.Analyzer = ImageAnalysis.Analyzer { imageProxy ->
         imageProxy.image
-            ?.takeIf { !dialogShowing && viewModel.uiState.value is AuthWithScannerState.Empty }
+            ?.takeIf { viewModel.uiState.value is AuthWithScannerState.Empty }
             ?.let {
                 val image =
                     InputImage.fromMediaImage(it, imageProxy.imageInfo.rotationDegrees)
@@ -301,13 +266,19 @@ internal class AuthWithScannerActivity : AppCompatActivity() {
     }
 
     private fun processLink(uri: Uri?) {
+        val appKey = intent.getStringExtra(APP_KEY)
+
         uri?.getQueryParameters("sessionId")?.firstOrNull()?.let { sessionId ->
-            viewModel.initiateSession(sessionId, keyriSdk)
+            viewModel.initiateSession(
+                sessionId,
+                requireNotNull(appKey),
+                keyriSdk
+            )
         } ?: Log.e("Keyri", "Failed to process link")
     }
 
     companion object {
-        const val KEY_AUTH_PARAMS = "KEY_AUTH_PARAMS"
+        const val APP_KEY = "APP_KEY"
 
         private const val RATIO_4_3_VALUE = 4.0 / 3.0
         private const val RATIO_16_9_VALUE = 16.0 / 9.0

@@ -1,5 +1,6 @@
 package com.keyrico.keyrisdk.mocked
 
+import com.google.gson.JsonArray
 import com.keyrico.keyrisdk.entity.GeoData
 import com.keyrico.keyrisdk.entity.IPData
 import com.keyrico.keyrisdk.entity.RiskAnalytics
@@ -34,25 +35,33 @@ val ipData = IPData(
 
 val sessionRegular = Session(
     EMPTY,
-    EMPTY,
     "Chrome/101.0.4951.67",
-    EMPTY,
-    EMPTY,
-    EMPTY,
     EMPTY,
     iPDataMobile = ipData,
     iPDataWidget = ipData,
-    riskAnalytics = RiskAnalytics(geoData, "fine"),
+    riskAnalytics = RiskAnalytics(geoData, JsonArray(), "fine"),
     EMPTY,
     EMPTY,
     EMPTY
 )
 
 val sessionDenied =
-    sessionRegular.copy(riskAnalytics = RiskAnalytics(geoData = null, riskStatus = "danger"))
+    sessionRegular.copy(
+        riskAnalytics = RiskAnalytics(
+            geoData = null,
+            JsonArray(),
+            riskStatus = "danger"
+        )
+    )
 
 val sessionWarning =
-    sessionRegular.copy(riskAnalytics = RiskAnalytics(geoData = geoData, riskStatus = "warn"))
+    sessionRegular.copy(
+        riskAnalytics = RiskAnalytics(
+            geoData = geoData,
+            JsonArray(),
+            riskStatus = "warn"
+        )
+    )
 
 val sessionNoIpData = sessionRegular.copy(iPDataWidget = null, iPDataMobile = null)
 

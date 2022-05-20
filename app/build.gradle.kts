@@ -13,7 +13,6 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        buildConfigField("String", "DOMAIN_NAME", "\"misc.keyri.com\"")
         buildConfigField("String", "APP_KEY", "\"IT7VrTQ0r4InzsvCNJpRCRpi1qzfgpaj\"")
     }
 

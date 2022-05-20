@@ -22,7 +22,6 @@ import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import com.keyrico.keyrisdk.ExampleAppInstrumentedTest.Companion.APP_KEY
-import com.keyrico.keyrisdk.ExampleAppInstrumentedTest.Companion.SERVICE_DOMAIN
 import com.keyrico.keyrisdk.ExampleAppInstrumentedTest.Companion.WEB_VIEW_URL
 import com.keyrico.keyrisdk.entity.Session
 import com.keyrico.keyrisdk.mocked.sessionDenied
@@ -37,12 +36,7 @@ class WebViewActivity : AppCompatActivity() {
 
     private val viewModel by viewModels<WebViewViewModel>()
 
-    private val keyriSdk by lazy {
-        val appKey = intent.getStringExtra(APP_KEY)
-        val serviceDomain = intent.getStringExtra(SERVICE_DOMAIN)
-
-        KeyriSdk(this, requireNotNull(appKey), requireNotNull(serviceDomain))
-    }
+    private val keyriSdk by lazy(::KeyriSdk)
 
     private val webView by lazy { WebView(this) }
 
@@ -64,7 +58,7 @@ class WebViewActivity : AppCompatActivity() {
         webView.loadUrl(webViewUrl)
 
         webView.afterDelay(10_000L) {
-            val picture: Picture = webView.capturePicture()
+            val picture: Picture = @Suppress("Deprecation") webView.capturePicture()
             val bitmap = Bitmap.createBitmap(picture.width, picture.height, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bitmap)
 
@@ -89,12 +83,12 @@ class WebViewActivity : AppCompatActivity() {
                     Log.d("Keyri", "Session ID: $sessionId")
 
                     if (!isLinkProcessed) {
+                        val appKey = intent.getStringExtra(APP_KEY)
+
                         viewModel.newSession(
                             requireNotNull(sessionId),
-                            "some-public-user-id",
-                            "some-username",
-                            "Secure custom",
-                            "Public custom",
+                            "public-user-id",
+                            requireNotNull(appKey),
                             keyriSdk
                         )
 
@@ -108,14 +102,10 @@ class WebViewActivity : AppCompatActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.CREATED) {
                 viewModel.authenticated.collect {
-                    if (it != null) {
-                        result = result.copy(domainName = it.widgetOrigin)
+                    if (it != null && !isDialogShowed) {
+                        checkRegularDialog()
 
-                        if (!isDialogShowed) {
-                            checkRegularDialog()
-
-                            isDialogShowed = true
-                        }
+                        isDialogShowed = true
                     }
                 }
             }

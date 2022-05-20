@@ -1,14 +1,19 @@
 package com.keyrico.keyrisdk.entity
 
 import android.os.Parcelable
+import com.google.gson.JsonArray
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
+import kotlinx.parcelize.RawValue
 
 @Parcelize
 data class RiskAnalytics(
 
     @SerializedName("geoData")
     val geoData: GeoData?,
+
+    @SerializedName("riskAttributes")
+    val riskAttributes: @RawValue JsonArray?,
 
     @SerializedName("riskStatus")
     val riskStatus: String
@@ -23,8 +28,8 @@ data class RiskAnalytics(
     }
 }
 
-enum class RiskMessageTypes(val type: String) {
-    FINE("Fine"),
-    WARNING("Warning!"),
-    DANGER("Danger!");
+enum class RiskMessageTypes {
+    FINE,
+    WARNING,
+    DANGER;
 }

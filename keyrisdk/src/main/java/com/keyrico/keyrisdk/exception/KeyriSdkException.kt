@@ -8,8 +8,4 @@ data class AuthorizationException(override val message: String) : KeyriSdkExcept
 
 data class InternalServerException(override val message: String) : KeyriSdkException(message)
 
-data class ServerErrorException(override val message: String) : KeyriSdkException(message)
-
-data class RiskErrorsException(override val message: String) : KeyriSdkException(message)
-
 data class WrongOriginDomainException(override val message: String) : KeyriSdkException(message)

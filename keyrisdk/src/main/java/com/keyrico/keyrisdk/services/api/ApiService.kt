@@ -1,7 +1,8 @@
 package com.keyrico.keyrisdk.services.api
 
-import com.keyrico.keyrisdk.entity.ChallengeSession
+import com.keyrico.keyrisdk.entity.SessionConfirmationResponse
 import com.keyrico.keyrisdk.entity.Session
+import com.keyrico.keyrisdk.services.api.data.SessionConfirmationRequest
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -9,7 +10,7 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
 
-interface ApiService {
+internal interface ApiService {
 
     @GET("api/session/{sessionId}")
     suspend fun getSession(
@@ -18,8 +19,8 @@ interface ApiService {
     ): Response<Session>
 
     @POST("api/session/{sessionId}")
-    suspend fun challengeSession(
+    suspend fun approveSession(
         @Path("sessionId") sessionId: String,
-        @Body request: ChallengeSessionRequest
-    ): Response<ChallengeSession>
+        @Body request: SessionConfirmationRequest
+    ): Response<SessionConfirmationResponse>
 }

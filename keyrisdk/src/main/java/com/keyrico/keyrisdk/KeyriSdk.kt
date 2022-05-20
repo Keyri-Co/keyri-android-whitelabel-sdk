@@ -1,132 +1,47 @@
 package com.keyrico.keyrisdk
 
-import android.content.Context
-import android.content.SharedPreferences
-import androidx.activity.result.ActivityResultLauncher
+import androidx.fragment.app.FragmentManager
 import com.google.gson.JsonObject
 import com.keyrico.keyrisdk.entity.Session
 import com.keyrico.keyrisdk.exception.AuthorizationException
-import com.keyrico.keyrisdk.exception.WrongOriginDomainException
 import com.keyrico.keyrisdk.services.CryptoService
-import com.keyrico.keyrisdk.services.api.ApiService
-import com.keyrico.keyrisdk.services.api.ChallengeSessionRequest
-import com.keyrico.keyrisdk.services.api.PublicObject
-import com.keyrico.keyrisdk.services.api.ServerData
+import com.keyrico.keyrisdk.ui.confirmation.ConfirmationBottomDialog
 import com.keyrico.keyrisdk.utils.makeApiCall
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import java.util.concurrent.TimeUnit
+import com.keyrico.keyrisdk.utils.provideApiService
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.first
 
-class KeyriSdk(
-    private val context: Context,
-    private val appKey: String,
-    private val serviceDomain: String
-) {
-    private val apiService by lazy { provideApiService() }
-    private val cryptoService by lazy { provideCryptoService() }
+@Suppress("unused")
+class KeyriSdk {
 
-    private var sessionSalt = ""
-    private var sessionHash = ""
+    private val cryptoService by lazy(::CryptoService)
 
-    init {
-        cryptoService.createSignatureKeypair()
-    }
-
-    fun generateAssociationKey(publicUserId: String) {
+    fun generateAssociationKey(publicUserId: String): String =
         cryptoService.generateAssociationKey(publicUserId)
-    }
 
-    fun getAssociationKey(publicUserId: String): String? {
-        return cryptoService.getAssociationKey(publicUserId)
-    }
-
-    fun createSignature(publicUserId: String, message: String): String {
-        return cryptoService.signMessage(publicUserId, message)
-    }
-
-    suspend fun initiateSession(sessionId: String): Session {
-        val session = makeApiCall { apiService.getSession(sessionId, appKey) }.body()
-            ?: throw AuthorizationException("Unable to authorize")
-
-        if (session.widgetOrigin != serviceDomain) throw WrongOriginDomainException("Wrong Origin domain")
-
-        sessionSalt = session.salt
-        sessionHash = session.hash
-
-        return session
-    }
-
-    suspend fun approveSession(
-        publicUserId: String,
-        username: String?,
-        browserPublicKey: String,
-        sessionId: String,
-        secureCustom: String?,
-        publicCustom: String?
-    ) {
-        val toEncrypt = JsonObject().also {
-            it.addProperty("publicUserId", publicUserId)
-            it.addProperty("timestamp", System.currentTimeMillis())
-            it.addProperty("secureCustom", secureCustom)
+    fun getUserSignature(publicUserId: String?, customSignedData: String?): String {
+        val messageForSign = JsonObject().also { jsonObject ->
+            customSignedData?.let { jsonObject.addProperty("customSignedData", it) }
+            jsonObject.addProperty("timestamp", System.currentTimeMillis())
         }.toString()
 
-        val cipher = cryptoService.encryptHkdf(browserPublicKey, toEncrypt)
-        val signaturePublicKey = cryptoService.getSignaturePublicKey()
-
-        val publicObject = PublicObject(username, signaturePublicKey, publicCustom)
-        val serverData = ServerData(cipher.publicKey, cipher.cipherText, cipher.salt, cipher.iv)
-        val request = ChallengeSessionRequest(serverData, publicObject, sessionSalt, sessionHash)
-
-        apiService.challengeSession(sessionId, request)
+        return cryptoService.signMessage(publicUserId, messageForSign)
     }
 
-    fun easyKeyriAuth(
-        launcher: ActivityResultLauncher<EasyKeyriAuthParams>,
-        publicUserId: String,
-        username: String?,
-        secureCustom: String?,
-        publicCustom: String?
-    ) {
-        EasyKeyriAuthParams(
-            appKey,
-            serviceDomain,
-            publicUserId,
-            username,
-            publicCustom,
-            secureCustom
-        ).let(launcher::launch)
+    fun listAssociationKey(): List<String> = cryptoService.listAssociationKey()
+
+    fun getAssociationKey(publicUserId: String): String =
+        cryptoService.getAssociationKey(publicUserId)
+
+    suspend fun initiateQrSession(sessionId: String, appKey: String): Session {
+        return makeApiCall { provideApiService().getSession(sessionId, appKey) }.body()
+            ?: throw AuthorizationException("Unable to authorize")
     }
 
-    private fun provideApiService(): ApiService {
-        val okHttpClientBuilder = OkHttpClient.Builder()
-
-        okHttpClientBuilder.connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
-            .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
-
-        if (BuildConfig.DEBUG) {
-            HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BODY
-            }.let(okHttpClientBuilder::addInterceptor)
-        }
-
-        return Retrofit.Builder()
-            .baseUrl(BuildConfig.BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .client(okHttpClientBuilder.build())
-            .build()
-            .create(ApiService::class.java)
-    }
-
-    private fun provideCryptoService() = CryptoService(getSharedPreferences())
-
-    private fun getSharedPreferences(): SharedPreferences =
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-
-    companion object {
-        private const val PREFS_NAME = "keyri_prefs"
-        private const val CONNECT_TIMEOUT = 15L
-        private const val READ_TIMEOUT = 15L
+    suspend fun initializeDefaultScreen(fm: FragmentManager, session: Session): Boolean {
+        return callbackFlow {
+            ConfirmationBottomDialog(session) { trySend(it) }
+                .show(fm, ConfirmationBottomDialog::class.java.name)
+        }.first()
     }
 }
