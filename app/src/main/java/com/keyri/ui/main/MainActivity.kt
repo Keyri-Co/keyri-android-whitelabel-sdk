@@ -31,6 +31,11 @@ class MainActivity : AppCompatActivity() {
         binding.bAuthQr.setOnClickListener {
             val intent = Intent(this, AuthWithScannerActivity::class.java).apply {
                 putExtra(AuthWithScannerActivity.APP_KEY, BuildConfig.APP_KEY)
+                putExtra(AuthWithScannerActivity.PUBLIC_USER_ID, "public-User-ID")
+                putExtra(
+                    AuthWithScannerActivity.PAYLOAD,
+                    "{ \"token\" : \"jWwajc88y32kndsf-9a234sdfdhfyr5y\""
+                )
             }
 
             easyKeyriAuthLauncher.launch(intent)

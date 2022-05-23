@@ -1,7 +1,7 @@
 package com.keyrico.keyrisdk.ui.auth
 
 import android.os.Parcelable
-import com.keyrico.keyrisdk.entity.Session
+import com.keyrico.keyrisdk.entity.session.Session
 import kotlinx.parcelize.Parcelize
 
 internal sealed class AuthWithScannerState {
@@ -13,7 +13,7 @@ internal sealed class AuthWithScannerState {
     @Parcelize
     data class Confirmation(val session: Session) : AuthWithScannerState(), Parcelable
 
-    object Authenticated : AuthWithScannerState()
+    data class Authenticated(val isSuccess: Boolean) : AuthWithScannerState()
 
     class Error(val message: String) : AuthWithScannerState()
 }

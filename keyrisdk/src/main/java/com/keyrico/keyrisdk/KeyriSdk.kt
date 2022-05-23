@@ -2,11 +2,12 @@ package com.keyrico.keyrisdk
 
 import androidx.fragment.app.FragmentManager
 import com.google.gson.JsonObject
-import com.keyrico.keyrisdk.entity.Session
+import com.keyrico.keyrisdk.entity.session.Session
 import com.keyrico.keyrisdk.services.CryptoService
 import com.keyrico.keyrisdk.ui.confirmation.ConfirmationBottomDialog
 import com.keyrico.keyrisdk.utils.makeApiCall
 import com.keyrico.keyrisdk.utils.provideApiService
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.first
 
@@ -38,8 +39,12 @@ class KeyriSdk {
 
     suspend fun initializeDefaultScreen(fm: FragmentManager, session: Session): Boolean {
         return callbackFlow {
-            ConfirmationBottomDialog(session) { trySend(it) }
+            var callback: ((Boolean) -> Unit)? = { trySend(it) }
+
+            ConfirmationBottomDialog(session, callback)
                 .show(fm, ConfirmationBottomDialog::class.java.name)
+
+            awaitClose { callback = null }
         }.first()
     }
 }

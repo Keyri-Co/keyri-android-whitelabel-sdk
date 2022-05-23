@@ -131,7 +131,7 @@ class AuthWithScannerActivity : AppCompatActivity() {
                     val isLoading = when (uiState) {
                         is AuthWithScannerState.Confirmation -> processConfirmationMessage(uiState)
                         is AuthWithScannerState.Authenticated -> {
-                            setResult(RESULT_OK)
+                            setResult(if (uiState.isSuccess) RESULT_OK else RESULT_CANCELED)
                             finish()
 
                             false
@@ -156,7 +156,16 @@ class AuthWithScannerActivity : AppCompatActivity() {
     }
 
     private fun processConfirmationMessage(uiState: AuthWithScannerState.Confirmation): Boolean {
-        viewModel.approveSession(supportFragmentManager, uiState.session, keyriSdk)
+        val publicUserId = intent.getStringExtra(PUBLIC_USER_ID)
+        val payload = intent.getStringExtra(PAYLOAD) ?: ""
+
+        viewModel.showConfirmationScreen(
+            supportFragmentManager,
+            uiState.session,
+            publicUserId,
+            payload,
+            keyriSdk
+        )
 
         return true
     }
@@ -279,6 +288,8 @@ class AuthWithScannerActivity : AppCompatActivity() {
 
     companion object {
         const val APP_KEY = "APP_KEY"
+        const val PUBLIC_USER_ID = "PUBLIC_USER_ID"
+        const val PAYLOAD = "PAYLOAD"
 
         private const val RATIO_4_3_VALUE = 4.0 / 3.0
         private const val RATIO_16_9_VALUE = 16.0 / 9.0

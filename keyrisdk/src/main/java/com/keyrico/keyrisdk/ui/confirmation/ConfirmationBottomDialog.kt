@@ -11,19 +11,19 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import com.keyrico.keyrisdk.R
 import com.keyrico.keyrisdk.databinding.DialogConfirmationBinding
-import com.keyrico.keyrisdk.entity.RiskMessageTypes
-import com.keyrico.keyrisdk.entity.Session
+import com.keyrico.keyrisdk.entity.session.RiskAnalytics
+import com.keyrico.keyrisdk.entity.session.Session
 
 class ConfirmationBottomDialog(
     override val session: Session,
-    override val onResult: (isAccepted: Boolean) -> Unit
+    override val onResult: ((isAccepted: Boolean) -> Unit)?
 ) : BaseConfirmationBottomDialog(session, onResult) {
 
     private lateinit var binding: DialogConfirmationBinding
 
-    private val riskAnalyticsEnabled by lazy { session.riskAnalytics != null }
-    private val authenticationDenied by lazy { session.riskAnalytics?.getRiskStatusType() == RiskMessageTypes.DANGER }
-    private val authenticationWarning by lazy { session.riskAnalytics?.getRiskStatusType() == RiskMessageTypes.WARNING }
+    private val riskAnalytics by lazy { session.riskAnalytics }
+    private val authenticationDenied by lazy { riskAnalytics?.getRiskStatusType() == RiskAnalytics.RiskMessageTypes.DANGER }
+    private val authenticationWarning by lazy { riskAnalytics?.getRiskStatusType() == RiskAnalytics.RiskMessageTypes.WARNING }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -50,16 +50,20 @@ class ConfirmationBottomDialog(
 
     private fun initWidgetLocation(colorRes: Pair<Int, Int>?) {
         with(binding) {
-            val iPDataMobile = session.iPDataWidget
-            val city = iPDataMobile?.city
-            val countryName = iPDataMobile?.countryName ?: iPDataMobile?.countryCode
+            val iPDataBrowser = riskAnalytics?.geoData?.browser
+            val city = iPDataBrowser?.city
+            val countryCode = iPDataBrowser?.countryCode
 
-            llWidgetLocation.isVisible = riskAnalyticsEnabled && city != null && countryName != null
+            llWidgetLocation.isVisible =
+                riskAnalytics != null && (city != null || countryCode != null)
             tvWidgetLocation.isVisible = true
-            tvVPNDetected.isVisible = false
+            tvVPNDetected.isVisible = riskAnalytics?.riskAttributes?.isAnonymous ?: false
 
             tvWidgetLocation.text =
-                getString(R.string.keyri_confirmation_screen_near, "$city, $countryName")
+                getString(
+                    R.string.keyri_confirmation_screen_near,
+                    listOf(city, countryCode).joinToString()
+                )
 
             colorRes?.let {
                 tvWidgetLocation.setTextColor(it.first)
@@ -72,15 +76,19 @@ class ConfirmationBottomDialog(
 
     private fun initMobileLocation(colorRes: Pair<Int, Int>?) {
         with(binding) {
-            val iPDataMobile = session.iPDataMobile
+            val iPDataMobile = riskAnalytics?.geoData?.mobile
             val city = iPDataMobile?.city
-            val countryName = iPDataMobile?.countryName ?: iPDataMobile?.countryCode
+            val countryCode = iPDataMobile?.countryCode
 
-            llMobileLocation.isVisible = riskAnalyticsEnabled && city != null && countryName != null
+            llMobileLocation.isVisible =
+                riskAnalytics != null && (city != null || countryCode != null)
             tvMobileLocation.isVisible = true
 
             tvMobileLocation.text =
-                getString(R.string.keyri_confirmation_screen_near, "$city, $countryName")
+                getString(
+                    R.string.keyri_confirmation_screen_near,
+                    listOf(city, countryCode).joinToString()
+                )
 
             colorRes?.let {
                 tvMobileLocation.setTextColor(it.first)
@@ -91,8 +99,11 @@ class ConfirmationBottomDialog(
 
     private fun initWidgetAgent() {
         with(binding) {
-            llWidgetAgent.isVisible = riskAnalyticsEnabled && session.widgetUserAgent != null
-            tvWidgetAgent.text = session.widgetUserAgent
+            val widgetUserAgent = session.widgetUserAgent
+
+            llWidgetAgent.isVisible = riskAnalytics != null && widgetUserAgent != null
+            tvWidgetAgent.text =
+                listOf(widgetUserAgent?.os, widgetUserAgent?.browser).joinToString()
         }
     }
 

@@ -62,9 +62,7 @@ dependencies {
 
 ## Usage
 
-### Option 1: Use **AuthWithScannerActivity** built-in functionality to delegate authentication to SDK
-
-You can use ActivityResult API or onActivityResult. All you need to pass is App Key with AuthWithScannerActivity.APP_KEY extra identifier
+### Option 1: Use **AuthWithScannerActivity** built-in functionality to delegate authentication to SDK You can use ActivityResult API or onActivityResult. All you need to pass is App Key with AuthWithScannerActivity.APP_KEY extra identifier
 
 ```kotlin
 private val easyKeyriAuthLauncher =
@@ -80,6 +78,11 @@ override fun onCreate(savedInstanceState: Bundle?) {
     binding.bEasyKeyriAuth.setOnClickListener {
         val intent = Intent(this, AuthWithScannerActivity::class.java).apply {
             putExtra(AuthWithScannerActivity.APP_KEY, BuildConfig.APP_KEY)
+            putExtra(AuthWithScannerActivity.PUBLIC_USER_ID, "public-User-ID")
+            putExtra(
+                AuthWithScannerActivity.PAYLOAD,
+                "{ \"token\" : \"jWwajc88y32kndsf-9a234sdfdhfyr5y\""
+            )
         }
 
         easyKeyriAuthLauncher.launch(intent)
@@ -127,7 +130,7 @@ val session = keyriSdk.initiateQrSession(sessionId, BuildConfig.APP_KEY)
 val confirmationResult = initializeDefaultScreenn(supportFragmentManager, session)
 
 if (confirmationResult) {
-    session.confirm(publicUserId, payload)
+    val isSuccess = session.confirm(publicUserId, payload)
 } else {
     session.deny(publicUserId, payload)
 }

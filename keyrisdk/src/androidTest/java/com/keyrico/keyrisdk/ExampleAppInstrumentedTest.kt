@@ -58,12 +58,7 @@ class ExampleAppInstrumentedTest {
 
     @Test
     fun `4_testDeniedSession`() {
-        val sessionDialog = testResults?.sessionDeniedDialog
-
-        Assert.assertEquals(sessionDialog?.get("mobileIpDataVisible"), true)
-        Assert.assertEquals(sessionDialog?.get("widgetIpDataVisible"), true)
-        Assert.assertEquals(sessionDialog?.get("userAgentVisible"), true)
-        Assert.assertEquals(sessionDialog?.get("buttonsVisible"), false)
+        Assert.assertEquals(testResults?.sessionDeniedDialog?.get("buttonsVisible"), false)
     }
 
     @Test
@@ -109,9 +104,9 @@ class ExampleAppInstrumentedTest {
 
         val data = "Hello World!"
 
-        val publicKeyCipher = cryptoService.encryptHkdf(publicKey,  data)
-        val rawPublicKeyCipher = cryptoService.encryptHkdf(rawPublicKey,  data)
-        val rawPublicKeyLiteCipher = cryptoService.encryptHkdf(rawPublicKeyLite,  data)
+        val publicKeyCipher = cryptoService.encryptHkdf(publicKey, data)
+        val rawPublicKeyCipher = cryptoService.encryptHkdf(rawPublicKey, data)
+        val rawPublicKeyLiteCipher = cryptoService.encryptHkdf(rawPublicKeyLite, data)
 
         Assert.assertNotNull(publicKeyCipher)
         Assert.assertNotNull(rawPublicKeyCipher)

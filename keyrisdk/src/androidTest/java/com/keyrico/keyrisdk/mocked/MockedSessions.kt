@@ -1,45 +1,52 @@
 package com.keyrico.keyrisdk.mocked
 
-import com.google.gson.JsonArray
-import com.keyrico.keyrisdk.entity.GeoData
-import com.keyrico.keyrisdk.entity.IPData
-import com.keyrico.keyrisdk.entity.RiskAnalytics
-import com.keyrico.keyrisdk.entity.Session
+import com.keyrico.keyrisdk.entity.session.GeoData
+import com.keyrico.keyrisdk.entity.session.IPData
+import com.keyrico.keyrisdk.entity.session.RiskAnalytics
+import com.keyrico.keyrisdk.entity.session.RiskAttributes
+import com.keyrico.keyrisdk.entity.session.Session
+import com.keyrico.keyrisdk.entity.session.UserParameters
+import com.keyrico.keyrisdk.entity.session.WidgetUserAgent
 
 private const val EMPTY = ""
 
-val geoData = GeoData(
-    "NA",
-    "US",
-    "Oakland",
-    37.838860527596296,
-    -122.26317872548013,
-    "CA"
+val ipData = IPData(
+    continentCode = "NA",
+    countryCode = "US",
+    city = "Oakland",
+    latitude = -122.26317872548013,
+    longitude = 37.838860527596296,
+    regionCode = EMPTY
 )
 
-val ipData = IPData(
-    "North America",
-    "+1",
-    "Oakland",
-    "255.255.255.255",
-    37.838860527596296,
-    EMPTY,
-    "NA",
-    "US",
-    false,
-    "United States",
-    "94501",
-    "California",
-    -122.26317872548013
+val geoData = GeoData(mobile = ipData, browser = ipData)
+
+val riskAttributes = RiskAttributes(
+    isKnownAbuser = false,
+    isIcloudRelay = false,
+    isKnownAttacker = false,
+    isAnonymous = false,
+    isThreat = false,
+    isBogon = false,
+    blocklists = false,
+    isDatacenter = false,
+    isTor = false,
+    isProxy = false
 )
 
 val sessionRegular = Session(
-    EMPTY,
-    "Chrome/101.0.4951.67",
-    EMPTY,
-    iPDataMobile = ipData,
-    iPDataWidget = ipData,
-    riskAnalytics = RiskAnalytics(geoData, JsonArray(), "fine"),
+    widgetOrigin = EMPTY,
+    sessionId = EMPTY,
+    widgetUserAgent = WidgetUserAgent(isDesktop = true, os = "Windows", browser = "Chrome"),
+    userParameters = UserParameters(EMPTY, EMPTY, EMPTY),
+    iPAddressMobile = EMPTY,
+    iPAddressWidget = EMPTY,
+    riskAnalytics = RiskAnalytics(
+        riskAttributes = riskAttributes,
+        riskStatus = "good",
+        riskFlagString = EMPTY,
+        geoData = geoData
+    ),
     EMPTY,
     EMPTY,
     EMPTY
@@ -48,22 +55,31 @@ val sessionRegular = Session(
 val sessionDenied =
     sessionRegular.copy(
         riskAnalytics = RiskAnalytics(
-            geoData = null,
-            JsonArray(),
-            riskStatus = "danger"
+            riskAttributes = riskAttributes,
+            riskStatus = "danger",
+            riskFlagString = EMPTY,
+            geoData = null
         )
     )
 
 val sessionWarning =
     sessionRegular.copy(
         riskAnalytics = RiskAnalytics(
-            geoData = geoData,
-            JsonArray(),
-            riskStatus = "warn"
+            riskAttributes = riskAttributes.copy(isAnonymous = true),
+            riskStatus = "warn",
+            riskFlagString = EMPTY,
+            geoData = geoData
         )
     )
 
-val sessionNoIpData = sessionRegular.copy(iPDataWidget = null, iPDataMobile = null)
+val sessionNoIpData =
+    sessionRegular.copy(
+        riskAnalytics = RiskAnalytics(
+            riskAttributes,
+            "good",
+            EMPTY,
+            geoData = null
+        )
+    )
 
-val sessionWithoutRiskPermission =
-    sessionRegular.copy(iPDataWidget = null, iPDataMobile = null, riskAnalytics = null)
+val sessionWithoutRiskPermission = sessionRegular.copy(riskAnalytics = null)

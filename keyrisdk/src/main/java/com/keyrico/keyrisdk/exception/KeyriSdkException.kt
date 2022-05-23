@@ -1,6 +1,6 @@
 package com.keyrico.keyrisdk.exception
 
-sealed class KeyriSdkException(override val message: String) : Throwable(message = message)
+sealed class KeyriSdkException(override val message: String) : Throwable(message)
 
 data class NetworkException(override val message: String) : KeyriSdkException(message)
 
