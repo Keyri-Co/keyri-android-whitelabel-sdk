@@ -1,27 +1,26 @@
-package com.keyrico.keyrisdk.entity
+package com.keyrico.keyrisdk.entity.session
 
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class GeoData(
-
+data class IPData(
     @SerializedName("continent_code")
-    val continentCode: String?,
+    val continentCode: String,
 
     @SerializedName("country_code")
-    val countryCode: String?,
+    val countryCode: String,
 
     @SerializedName("city")
-    val city: String?,
+    val city: String,
 
     @SerializedName("latitude")
-    val latitude: Double?,
+    val latitude: Double,
 
     @SerializedName("longitude")
-    val longitude: Double?,
+    val longitude: Double,
 
     @SerializedName("region_code")
-    val regionCode: String?
+    val regionCode: String
 ) : Parcelable

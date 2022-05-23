@@ -23,7 +23,7 @@ import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import com.keyrico.keyrisdk.ExampleAppInstrumentedTest.Companion.APP_KEY
 import com.keyrico.keyrisdk.ExampleAppInstrumentedTest.Companion.WEB_VIEW_URL
-import com.keyrico.keyrisdk.entity.Session
+import com.keyrico.keyrisdk.entity.session.Session
 import com.keyrico.keyrisdk.mocked.sessionDenied
 import com.keyrico.keyrisdk.mocked.sessionNoIpData
 import com.keyrico.keyrisdk.mocked.sessionRegular

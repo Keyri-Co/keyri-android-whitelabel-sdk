@@ -1,4 +1,4 @@
-package com.keyrico.keyrisdk.entity
+package com.keyrico.keyrisdk.entity.session
 
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
@@ -13,21 +13,23 @@ import kotlinx.parcelize.Parcelize
 @Suppress("unused")
 @Parcelize
 data class Session(
+    @SerializedName("WidgetOrigin")
+    val widgetOrigin: String,
 
     @SerializedName("sessionId")
     val sessionId: String,
 
     @SerializedName("WidgetUserAgent")
-    val widgetUserAgent: String?,
+    val widgetUserAgent: WidgetUserAgent?,
 
-    @SerializedName("action")
-    val action: String,
+    @SerializedName("userParameters")
+    val userParameters: UserParameters?,
 
-    @SerializedName("IPDataMobile")
-    val iPDataMobile: IPData?,
+    @SerializedName("IPAddressMobile")
+    val iPAddressMobile: String,
 
-    @SerializedName("IPDataWidget")
-    val iPDataWidget: IPData?,
+    @SerializedName("IPAddressWidget")
+    val iPAddressWidget: String,
 
     @SerializedName("riskAnalytics")
     val riskAnalytics: RiskAnalytics?,
@@ -48,7 +50,7 @@ data class Session(
     suspend fun deny(publicUserId: String?, payload: String) =
         finishSession(publicUserId, payload)
 
-    private suspend fun finishSession(publicUserId: String?, payload: String) {
+    private suspend fun finishSession(publicUserId: String?, payload: String): Boolean {
         val cryptoService = CryptoService()
 
         val cipher = cryptoService.encryptHkdf(browserPublicKey, payload)
@@ -72,6 +74,6 @@ data class Session(
             browserData = browserData
         )
 
-        makeApiCall { provideApiService().approveSession(sessionId, request) }
+        return makeApiCall { provideApiService().approveSession(sessionId, request) }.isSuccess
     }
 }

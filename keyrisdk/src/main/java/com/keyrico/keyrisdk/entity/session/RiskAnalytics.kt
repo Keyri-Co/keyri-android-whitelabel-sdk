@@ -1,35 +1,35 @@
-package com.keyrico.keyrisdk.entity
+package com.keyrico.keyrisdk.entity.session
 
 import android.os.Parcelable
-import com.google.gson.JsonArray
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
-import kotlinx.parcelize.RawValue
 
 @Parcelize
 data class RiskAnalytics(
-
-    @SerializedName("geoData")
-    val geoData: GeoData?,
-
     @SerializedName("riskAttributes")
-    val riskAttributes: @RawValue JsonArray?,
+    val riskAttributes: RiskAttributes,
 
     @SerializedName("riskStatus")
-    val riskStatus: String
+    val riskStatus: String,
+
+    @SerializedName("riskFlagString")
+    val riskFlagString: String?,
+
+    @SerializedName("geoData")
+    val geoData: GeoData?
 ) : Parcelable {
 
     fun getRiskStatusType(): RiskMessageTypes {
         return when (riskStatus) {
-            "fine" -> RiskMessageTypes.FINE
+            "good" -> RiskMessageTypes.GOOD
             "warn" -> RiskMessageTypes.WARNING
             else -> RiskMessageTypes.DANGER
         }
     }
-}
 
-enum class RiskMessageTypes {
-    FINE,
-    WARNING,
-    DANGER;
+    enum class RiskMessageTypes {
+        GOOD,
+        WARNING,
+        DANGER;
+    }
 }
