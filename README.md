@@ -62,7 +62,10 @@ dependencies {
 
 ## Usage
 
-### Option 1: Use **AuthWithScannerActivity** built-in functionality to delegate authentication to SDK You can use ActivityResult API or onActivityResult. All you need to pass is App Key with AuthWithScannerActivity.APP_KEY extra identifier
+### Option 1: Use **AuthWithScannerActivity** built-in functionality to delegate authentication to SDK
+
+You can use ActivityResult API or onActivityResult. All you need to pass is App Key with
+AuthWithScannerActivity.APP_KEY extra identifier
 
 ```kotlin
 private val easyKeyriAuthLauncher =
