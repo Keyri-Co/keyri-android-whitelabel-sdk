@@ -13,5 +13,5 @@ data class UserParameters(
     val method: String,
 
     @SerializedName("Environment")
-    val Environment: String
+    val environment: String
 ) : Parcelable
