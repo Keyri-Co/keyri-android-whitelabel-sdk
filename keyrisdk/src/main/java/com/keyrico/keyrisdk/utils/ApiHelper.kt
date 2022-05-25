@@ -7,8 +7,8 @@ import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
 import com.google.gson.reflect.TypeToken
 import com.keyrico.keyrisdk.BuildConfig
-import com.keyrico.keyrisdk.entity.session.RiskAttributes
 import com.keyrico.keyrisdk.entity.SessionConfirmationResponse
+import com.keyrico.keyrisdk.entity.session.RiskAttributes
 import com.keyrico.keyrisdk.exception.AuthorizationException
 import com.keyrico.keyrisdk.exception.InternalServerException
 import com.keyrico.keyrisdk.exception.NetworkException

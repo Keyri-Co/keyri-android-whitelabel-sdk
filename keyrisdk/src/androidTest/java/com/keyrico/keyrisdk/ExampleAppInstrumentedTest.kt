@@ -2,10 +2,12 @@ package com.keyrico.keyrisdk
 
 import android.app.Activity
 import android.content.Intent
+import android.security.keystore.KeyProperties
 import androidx.test.core.app.launchActivity
 import androidx.test.platform.app.InstrumentationRegistry
 import com.keyrico.keyrisdk.WebViewActivity.Companion.TEST_RESULTS
 import com.keyrico.keyrisdk.services.CryptoService
+import com.keyrico.keyrisdk.utils.toByteArrayFromBase64String
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.FixMethodOrder
@@ -13,6 +15,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import org.junit.runners.MethodSorters
+import java.security.KeyFactory
+import java.security.Signature
+import java.security.interfaces.ECPublicKey
+import java.security.spec.X509EncodedKeySpec
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(JUnit4::class)
@@ -50,45 +56,45 @@ class ExampleAppInstrumentedTest {
     fun `3_testRegularSession`() {
         val sessionDialog = testResults?.sessionRegularDialog
 
-        Assert.assertEquals(sessionDialog?.get("mobileIpDataVisible"), true)
-        Assert.assertEquals(sessionDialog?.get("widgetIpDataVisible"), true)
-        Assert.assertEquals(sessionDialog?.get("userAgentVisible"), true)
-        Assert.assertEquals(sessionDialog?.get("buttonsVisible"), true)
+        Assert.assertEquals(true, sessionDialog?.get("mobileIpDataVisible"))
+        Assert.assertEquals(true, sessionDialog?.get("widgetIpDataVisible"))
+        Assert.assertEquals(true, sessionDialog?.get("userAgentVisible"))
+        Assert.assertEquals(true, sessionDialog?.get("buttonsVisible"))
     }
 
     @Test
     fun `4_testDeniedSession`() {
-        Assert.assertEquals(testResults?.sessionDeniedDialog?.get("buttonsVisible"), false)
+        Assert.assertEquals(false, testResults?.sessionDeniedDialog?.get("buttonsVisible"))
     }
 
     @Test
     fun `5_testWarningSession`() {
         val sessionDialog = testResults?.sessionWarningDialog
 
-        Assert.assertEquals(sessionDialog?.get("mobileIpDataVisible"), true)
-        Assert.assertEquals(sessionDialog?.get("widgetIpDataVisible"), true)
-        Assert.assertEquals(sessionDialog?.get("userAgentVisible"), true)
-        Assert.assertEquals(sessionDialog?.get("buttonsVisible"), true)
+        Assert.assertEquals(true, sessionDialog?.get("mobileIpDataVisible"))
+        Assert.assertEquals(true, sessionDialog?.get("widgetIpDataVisible"))
+        Assert.assertEquals(true, sessionDialog?.get("userAgentVisible"))
+        Assert.assertEquals(true, sessionDialog?.get("buttonsVisible"))
     }
 
     @Test
     fun `6_testNoIpDataSession`() {
         val sessionDialog = testResults?.sessionNoIpDataDialog
 
-        Assert.assertEquals(sessionDialog?.get("mobileIpDataVisible"), false)
-        Assert.assertEquals(sessionDialog?.get("widgetIpDataVisible"), false)
-        Assert.assertEquals(sessionDialog?.get("userAgentVisible"), true)
-        Assert.assertEquals(sessionDialog?.get("buttonsVisible"), true)
+        Assert.assertEquals(false, sessionDialog?.get("mobileIpDataVisible"))
+        Assert.assertEquals(false, sessionDialog?.get("widgetIpDataVisible"))
+        Assert.assertEquals(true, sessionDialog?.get("userAgentVisible"))
+        Assert.assertEquals(true, sessionDialog?.get("buttonsVisible"))
     }
 
     @Test
     fun `7_testWithoutRiskPermissionSession`() {
         val sessionDialog = testResults?.sessionWithoutRiskPermissionDialog
 
-        Assert.assertEquals(sessionDialog?.get("mobileIpDataVisible"), false)
-        Assert.assertEquals(sessionDialog?.get("widgetIpDataVisible"), false)
-        Assert.assertEquals(sessionDialog?.get("userAgentVisible"), false)
-        Assert.assertEquals(sessionDialog?.get("buttonsVisible"), true)
+        Assert.assertEquals(false, sessionDialog?.get("mobileIpDataVisible"))
+        Assert.assertEquals(false, sessionDialog?.get("widgetIpDataVisible"))
+        Assert.assertEquals(false, sessionDialog?.get("userAgentVisible"))
+        Assert.assertEquals(true, sessionDialog?.get("buttonsVisible"))
     }
 
     @Test
@@ -111,6 +117,63 @@ class ExampleAppInstrumentedTest {
         Assert.assertNotNull(publicKeyCipher)
         Assert.assertNotNull(rawPublicKeyCipher)
         Assert.assertNotNull(rawPublicKeyLiteCipher)
+    }
+
+    @Test
+    fun `9_testCryptoServiceAssociationKeys`() {
+        val cryptoService = CryptoService()
+
+        val anonymousAssociationKey = cryptoService.getAssociationKey(null)
+        val associationKeyForUnknownUser = cryptoService.getAssociationKey("Unknown user ID")
+        val associationKeyForUnknownUserTwice = cryptoService.getAssociationKey("Unknown user ID")
+
+        cryptoService.generateAssociationKey("User ID")
+
+        val newKeys = cryptoService.listAssociationKey()
+
+        Assert.assertNotNull(anonymousAssociationKey)
+        Assert.assertNotNull(associationKeyForUnknownUser)
+        Assert.assertEquals(associationKeyForUnknownUser, associationKeyForUnknownUserTwice)
+        Assert.assertNotEquals(0, newKeys.size)
+    }
+
+    @Test
+    fun `91_testCryptoServiceUserSignature`() {
+        val cryptoService = CryptoService()
+
+        val keyFactory = KeyFactory.getInstance(KeyProperties.KEY_ALGORITHM_EC)
+        val signature = Signature.getInstance("SHA256withECDSA")
+
+        val anonymousMessageToSign = "Anonymous message to sign"
+        val anonymousSignedMessage = cryptoService.signMessage(null, anonymousMessageToSign)
+        val anonymousAssociationKey = cryptoService.getAssociationKey(null)
+
+        val encodedAnonymousKey = anonymousAssociationKey.toByteArrayFromBase64String()
+        val anonymousPublic =
+            keyFactory.generatePublic(X509EncodedKeySpec(encodedAnonymousKey)) as ECPublicKey
+
+        signature.initVerify(anonymousPublic)
+        signature.update(anonymousMessageToSign.encodeToByteArray())
+
+        val anonymousVerified =
+            signature.verify(anonymousSignedMessage.toByteArrayFromBase64String())
+
+        val userMessageToSign = "Message to sign"
+        val userID = "Public-UID"
+        val userSignedMessage = cryptoService.signMessage(userID, userMessageToSign)
+        val userAssociationKey = cryptoService.getAssociationKey(userID)
+
+        val encodedUserKey = userAssociationKey.toByteArrayFromBase64String()
+        val userPublic =
+            keyFactory.generatePublic(X509EncodedKeySpec(encodedUserKey)) as ECPublicKey
+
+        signature.initVerify(userPublic)
+        signature.update(userMessageToSign.encodeToByteArray())
+
+        val userVerified = signature.verify(userSignedMessage.toByteArrayFromBase64String())
+
+        Assert.assertTrue(anonymousVerified)
+        Assert.assertTrue(userVerified)
     }
 
     companion object {

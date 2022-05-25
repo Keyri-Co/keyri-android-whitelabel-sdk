@@ -30,7 +30,7 @@ class KeyriSdk {
 
     fun listAssociationKey(): List<String> = cryptoService.listAssociationKey()
 
-    fun getAssociationKey(publicUserId: String): String =
+    fun getAssociationKey(publicUserId: String?): String =
         cryptoService.getAssociationKey(publicUserId)
 
     suspend fun initiateQrSession(sessionId: String, appKey: String): Session {

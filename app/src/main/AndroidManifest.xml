@@ -31,9 +31,9 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <data android:scheme="https" />
-
-                <data android:host="api.keyri.co" />
+                <data
+                    android:host="api.keyri.co"
+                    android:scheme="https" />
             </intent-filter>
         </activity>
 
