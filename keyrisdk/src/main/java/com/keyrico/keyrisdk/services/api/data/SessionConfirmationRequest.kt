@@ -10,8 +10,8 @@ internal data class SessionConfirmationRequest(
     @SerializedName("__hash")
     val hash: String,
 
-    @SerializedName("error")
-    val error: Boolean,
+    @SerializedName("errors")
+    val errors: Boolean,
 
     @SerializedName("errorMsg")
     val errorMsg: String,

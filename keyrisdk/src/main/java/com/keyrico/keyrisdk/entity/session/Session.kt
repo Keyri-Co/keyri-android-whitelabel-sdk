@@ -69,7 +69,7 @@ data class Session(
         val request = SessionConfirmationRequest(
             salt = salt,
             hash = hash,
-            error = false,
+            errors = false,
             errorMsg = "",
             apiData = apiData,
             browserData = browserData
