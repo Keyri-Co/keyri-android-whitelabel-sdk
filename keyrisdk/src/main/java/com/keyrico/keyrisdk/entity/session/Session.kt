@@ -2,6 +2,7 @@ package com.keyrico.keyrisdk.entity.session
 
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
+import com.keyrico.keyrisdk.exception.AuthorizationException
 import com.keyrico.keyrisdk.services.CryptoService
 import com.keyrico.keyrisdk.services.api.data.ApiData
 import com.keyrico.keyrisdk.services.api.data.BrowserData
@@ -44,13 +45,13 @@ data class Session(
     internal val hash: String
 ) : Parcelable {
 
-    suspend fun confirm(publicUserId: String?, payload: String) =
+    suspend fun confirm(publicUserId: String?, payload: String): Result<Boolean> =
         finishSession(publicUserId, payload)
 
-    suspend fun deny(publicUserId: String?, payload: String) =
+    suspend fun deny(publicUserId: String?, payload: String): Result<Boolean> =
         finishSession(publicUserId, payload)
 
-    private suspend fun finishSession(publicUserId: String?, payload: String): Boolean {
+    private suspend fun finishSession(publicUserId: String?, payload: String): Result<Boolean> {
         val cryptoService = CryptoService()
 
         val cipher = cryptoService.encryptHkdf(browserPublicKey, payload)
@@ -74,6 +75,14 @@ data class Session(
             browserData = browserData
         )
 
-        return makeApiCall { provideApiService().approveSession(sessionId, request) }.isSuccess
+        val result = makeApiCall { provideApiService().approveSession(sessionId, request) }
+
+        return if (result.isSuccess) {
+            Result.success(result.isSuccess)
+        } else {
+            val error = result.exceptionOrNull() ?: AuthorizationException("Unable to authorize")
+
+            Result.failure(error)
+        }
     }
 }

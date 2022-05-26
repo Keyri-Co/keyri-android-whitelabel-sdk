@@ -33,8 +33,8 @@ class KeyriSdk {
     fun getAssociationKey(publicUserId: String?): String =
         cryptoService.getAssociationKey(publicUserId)
 
-    suspend fun initiateQrSession(sessionId: String, appKey: String): Session {
-        return makeApiCall { provideApiService().getSession(sessionId, appKey) }.getOrThrow()
+    suspend fun initiateQrSession(sessionId: String, appKey: String): Result<Session> {
+        return makeApiCall { provideApiService().getSession(sessionId, appKey) }
     }
 
     suspend fun initializeDefaultScreen(fm: FragmentManager, session: Session): Boolean {

@@ -62,11 +62,11 @@ dependencies {
 
 ## Usage
 
-### Option 1: Use **AuthWithScannerActivity** built-in functionality to delegate authentication to SDK
+### Option 1: Use built-in functionality to delegate authentication to SDK
 
-You can use ActivityResult API or onActivityResult. All you need to pass is App Key, Public User ID
-and Payload with AuthWithScannerActivity.APP_KEY, AuthWithScannerActivity.PUBLIC_USER_ID and
-AuthWithScannerActivity.PAYLOAD extra identifiers:
+You can use AuthWithScannerActivity with ActivityResult API or onActivityResult. All you need to
+pass is App Key, Public User ID and Payload with AuthWithScannerActivity.APP_KEY,
+AuthWithScannerActivity.PUBLIC_USER_ID and AuthWithScannerActivity.PAYLOAD extra identifiers:
 
 ```kotlin
 private val easyKeyriAuthLauncher =
@@ -101,18 +101,18 @@ in [AuthWithScannerActivity](app/src/main/java/com/keyri/ui/main/MainActivity.kt
 
 Alternatively, if you want to provide a custom authentication UI/UX, use the following methods:
 
-* **suspend fun initiateQrSession(sessionId: String, appKey: String): Session** - Call it after
-  obtaining the sessionId from QR-code or deep link. Returns Session object with Risk Attributes (
-  needed to show confirmation screen) or Exception.
+* **suspend fun initiateQrSession(sessionId: String, appKey: String): Result<Session>** - Call it
+  after obtaining the sessionId from QR-code or deep link. Returns Session object with Risk
+  Attributes (needed to show confirmation screen) or Exception.
 * **suspend fun initializeDefaultScreen(fm: FragmentManager, session: Session): Boolean** - To show
   Confirmation Screen with default UI. Returns Boolean result of confirmation. Also you can
   implement your custom Confirmation Screen, just inherit
   from [BaseConfirmationBottomDialog.kt](keyrisdk/src/main/java/com/keyrico/keyrisdk/ui/confirmation/BaseConfirmationBottomDialog.kt)
   a class.
-* **suspend fun Session.confirm(publicUserId: String?, payload: String): Boolean** - Call this
-  function if user confirmed the dialog.
-* **suspend fun Session.deny(publicUserId: String?, payload: String): Boolean** - Call if user
-  denied the dialog.
+* **suspend fun Session.confirm(publicUserId: String?, payload: String): Result<Boolean>** - Call
+  this function if user confirmed the dialog.
+* **suspend fun Session.deny(publicUserId: String?, payload: String): Result<Boolean>** - Call if
+  user denied the dialog.
 * **fun generateAssociationKey(publicUserId: String): String** - Create a persistent ECDSA keypair
   for the given public user ID (example: email address) and return public key.
 * **fun getUserSignature(publicUserId: String?, customSignedData: String?): String** - Return an
@@ -127,16 +127,24 @@ Payload can be anything (session token or a stringified JSON containing multiple
 things like publicUserId, timestamp, customSignedData and ECDSA signature).
 
 ```kotlin
-val session = keyriSdk.initiateQrSession(sessionId, BuildConfig.APP_KEY)
+try {
+    val session = keyriSdk.initiateQrSession(sessionId, BuildConfig.APP_KEY).getOrThrow()
 
 // Show confirmation screen and if positive do next:
 
-val confirmationResult = initializeDefaultScreenn(supportFragmentManager, session)
+    val confirmationResult = initializeDefaultScreenn(supportFragmentManager, session)
 
-if (confirmationResult) {
-    val isSuccess = session.confirm(publicUserId, payload)
-} else {
-    session.deny(publicUserId, payload)
+    if (confirmationResult) {
+        val isSuccess = session.confirm(publicUserId, payload).getOrThrow()
+
+        // Process result
+    } else {
+        session.deny(publicUserId, payload).getOrThrow()
+
+        // Process result
+    }
+} catch (e: Throwable) {
+    // Process error
 }
 ```
 
@@ -181,6 +189,7 @@ override fun onNewIntent(intent: Intent) {
 
 private fun processLink(uri: Uri?) {
     uri?.getQueryParameters("sessionId")?.firstOrNull()?.let { sessionId ->
+        // Process sessionId
         viewModel.initiateQrSession(sessionId, appKey, keyriSdk)
     } ?: Log.e("Keyri", "Failed to process link")
 }

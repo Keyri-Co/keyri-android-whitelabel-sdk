@@ -23,7 +23,7 @@ internal class AuthWithScannerVM : ViewModel() {
 
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val session = keyriSdk.initiateQrSession(sessionId, appKey)
+                val session = keyriSdk.initiateQrSession(sessionId, appKey).getOrThrow()
 
                 _uiState.value = AuthWithScannerState.Confirmation(session)
             } catch (e: Throwable) {
@@ -45,13 +45,13 @@ internal class AuthWithScannerVM : ViewModel() {
             try {
                 val isApproved = keyriSdk.initializeDefaultScreen(supportFragmentManager, session)
 
-                val isSuccess = if (isApproved) {
+                val result = if (isApproved) {
                     session.confirm(publicUserId, payload)
                 } else {
                     session.deny(publicUserId, payload)
-                }
+                }.getOrThrow()
 
-                _uiState.value = AuthWithScannerState.Authenticated(isSuccess)
+                _uiState.value = AuthWithScannerState.Authenticated(result)
             } catch (e: Throwable) {
                 processError(e)
             }

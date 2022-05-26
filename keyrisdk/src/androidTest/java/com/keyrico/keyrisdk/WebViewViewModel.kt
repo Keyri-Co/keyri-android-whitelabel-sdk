@@ -17,7 +17,7 @@ class WebViewViewModel : ViewModel() {
 
     fun newSession(sessionId: String, publicUserId: String, appKey: String, keyriSdk: KeyriSdk) {
         viewModelScope.launch(Dispatchers.IO) {
-            val session = keyriSdk.initiateQrSession(sessionId, appKey)
+            val session = keyriSdk.initiateQrSession(sessionId, appKey).getOrThrow()
 
             session.confirm(publicUserId, "Some payload")
 
