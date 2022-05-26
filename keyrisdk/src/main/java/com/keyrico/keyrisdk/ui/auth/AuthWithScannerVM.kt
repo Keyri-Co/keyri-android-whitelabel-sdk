@@ -23,9 +23,9 @@ internal class AuthWithScannerVM : ViewModel() {
 
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val session = keyriSdk.initiateQrSession(sessionId, appKey).getOrThrow()
-
-                _uiState.value = AuthWithScannerState.Confirmation(session)
+                keyriSdk.initiateQrSession(sessionId, appKey).onSuccess { session ->
+                    _uiState.value = AuthWithScannerState.Confirmation(session)
+                }.onFailure { processError(it) }
             } catch (e: Throwable) {
                 processError(e)
             }
@@ -49,9 +49,13 @@ internal class AuthWithScannerVM : ViewModel() {
                     session.confirm(publicUserId, payload)
                 } else {
                     session.deny(publicUserId, payload)
-                }.getOrThrow()
+                }
 
-                _uiState.value = AuthWithScannerState.Authenticated(result)
+                result.onSuccess {
+                    _uiState.value = AuthWithScannerState.Authenticated(it)
+                }.onFailure {
+                    processError(it)
+                }
             } catch (e: Throwable) {
                 processError(e)
             }

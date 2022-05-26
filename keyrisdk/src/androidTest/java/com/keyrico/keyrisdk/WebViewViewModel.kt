@@ -17,11 +17,11 @@ class WebViewViewModel : ViewModel() {
 
     fun newSession(sessionId: String, publicUserId: String, appKey: String, keyriSdk: KeyriSdk) {
         viewModelScope.launch(Dispatchers.IO) {
-            val session = keyriSdk.initiateQrSession(sessionId, appKey).getOrThrow()
+            keyriSdk.initiateQrSession(sessionId, appKey).onSuccess { session ->
+                session.confirm(publicUserId, "Some payload")
 
-            session.confirm(publicUserId, "Some payload")
-
-            _authenticated.value = session
+                _authenticated.value = session
+            }.onFailure { throw it }
         }
     }
 }

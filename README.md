@@ -128,20 +128,25 @@ things like publicUserId, timestamp, customSignedData and ECDSA signature).
 
 ```kotlin
 try {
-    val session = keyriSdk.initiateQrSession(sessionId, BuildConfig.APP_KEY).getOrThrow()
+    keyriSdk.initiateQrSession(sessionId, BuildConfig.APP_KEY).onSuccess { session ->
+        // Show confirmation screen and if positive do next:
+        val confirmationResult = initializeDefaultScreenn(supportFragmentManager, session)
 
-// Show confirmation screen and if positive do next:
-
-    val confirmationResult = initializeDefaultScreenn(supportFragmentManager, session)
-
-    if (confirmationResult) {
-        val isSuccess = session.confirm(publicUserId, payload).getOrThrow()
-
-        // Process result
-    } else {
-        session.deny(publicUserId, payload).getOrThrow()
-
-        // Process result
+        if (confirmationResult) {
+            session.confirm(publicUserId, payload).onSuccess { isSuccess ->
+                // Process confirmation result          
+            }.onFailure {
+                // Process error
+            }
+        } else {
+            session.deny(publicUserId, payload).onSuccess { isSuccess ->
+                // Process deny result               
+            }.onFailure {
+                // Process error
+            }
+        }
+    }.onFailure {
+        // Process error
     }
 } catch (e: Throwable) {
     // Process error

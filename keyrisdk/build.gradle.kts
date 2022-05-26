@@ -14,7 +14,7 @@ android {
         consumerProguardFiles("consumer-rules.pro")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "BASE_URL", "\"https://test.api.keyri.com\"")
+        buildConfigField("String", "BASE_URL", "\"https://dev.api.keyri.com\"")
     }
 
     buildTypes {
@@ -68,10 +68,10 @@ dependencies {
 
     // Camera and analytics
     implementation("com.google.mlkit:barcode-scanning:17.0.2")
-    implementation("androidx.camera:camera-core:1.1.0-rc01")
-    implementation("androidx.camera:camera-camera2:1.1.0-rc01")
-    implementation("androidx.camera:camera-lifecycle:1.1.0-rc01")
-    implementation("androidx.camera:camera-view:1.1.0-rc01")
+    implementation("androidx.camera:camera-core:1.2.0-alpha01")
+    implementation("androidx.camera:camera-camera2:1.2.0-alpha01")
+    implementation("androidx.camera:camera-lifecycle:1.2.0-alpha01")
+    implementation("androidx.camera:camera-view:1.2.0-alpha01")
 
     // Tink crypto
     implementation("com.google.crypto.tink:tink-android:1.6.1")
