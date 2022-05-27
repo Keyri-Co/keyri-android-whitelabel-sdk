@@ -127,7 +127,7 @@ Payload can be anything (session token or a stringified JSON containing multiple
 things like publicUserId, timestamp, customSignedData and ECDSA signature).
 
 ```kotlin
-    keyriSdk.initiateQrSession(sessionId, BuildConfig.APP_KEY).onSuccess { session ->
+keyriSdk.initiateQrSession(sessionId, BuildConfig.APP_KEY).onSuccess { session ->
     // Show confirmation screen and if positive do next:
     val confirmationResult = initializeDefaultScreenn(supportFragmentManager, session)
 
