@@ -52,36 +52,41 @@ data class Session(
         finishSession(publicUserId, payload)
 
     private suspend fun finishSession(publicUserId: String?, payload: String): Result<Boolean> {
-        val cryptoService = CryptoService()
+        return try {
+            val cryptoService = CryptoService()
 
-        val cipher = cryptoService.encryptHkdf(browserPublicKey, payload)
-        val associationKey = cryptoService.getAssociationKey(publicUserId)
+            val cipher = cryptoService.encryptHkdf(browserPublicKey, payload)
+            val associationKey = cryptoService.getAssociationKey(publicUserId)
 
-        val apiData = ApiData(publicUserId, associationKey)
+            val apiData = ApiData(publicUserId, associationKey)
 
-        val browserData = BrowserData(
-            publicKey = cipher.publicKey,
-            cipherText = cipher.cipherText,
-            salt = cipher.salt,
-            iv = cipher.iv
-        )
+            val browserData = BrowserData(
+                publicKey = cipher.publicKey,
+                cipherText = cipher.cipherText,
+                salt = cipher.salt,
+                iv = cipher.iv
+            )
 
-        val request = SessionConfirmationRequest(
-            salt = salt,
-            hash = hash,
-            errors = false,
-            errorMsg = "",
-            apiData = apiData,
-            browserData = browserData
-        )
+            val request = SessionConfirmationRequest(
+                salt = salt,
+                hash = hash,
+                errors = false,
+                errorMsg = "",
+                apiData = apiData,
+                browserData = browserData
+            )
 
-        val result = makeApiCall { provideApiService().approveSession(sessionId, request) }
+            val result = makeApiCall { provideApiService().approveSession(sessionId, request) }
 
-        return if (result.isSuccess) {
-            Result.success(result.isSuccess)
-        } else {
-            val error = result.exceptionOrNull() ?: AuthorizationException("Unable to authorize")
+            if (result.isSuccess) {
+                Result.success(result.isSuccess)
+            } else {
+                val error =
+                    result.exceptionOrNull() ?: AuthorizationException("Unable to authorize")
 
+                Result.failure(error)
+            }
+        } catch (error: Exception) {
             Result.failure(error)
         }
     }

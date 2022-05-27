@@ -127,28 +127,24 @@ Payload can be anything (session token or a stringified JSON containing multiple
 things like publicUserId, timestamp, customSignedData and ECDSA signature).
 
 ```kotlin
-try {
     keyriSdk.initiateQrSession(sessionId, BuildConfig.APP_KEY).onSuccess { session ->
-        // Show confirmation screen and if positive do next:
-        val confirmationResult = initializeDefaultScreenn(supportFragmentManager, session)
+    // Show confirmation screen and if positive do next:
+    val confirmationResult = initializeDefaultScreenn(supportFragmentManager, session)
 
-        if (confirmationResult) {
-            session.confirm(publicUserId, payload).onSuccess { isSuccess ->
-                // Process confirmation result          
-            }.onFailure {
-                // Process error
-            }
-        } else {
-            session.deny(publicUserId, payload).onSuccess { isSuccess ->
-                // Process deny result               
-            }.onFailure {
-                // Process error
-            }
+    if (confirmationResult) {
+        session.confirm(publicUserId, payload).onSuccess { isSuccess ->
+            // Process confirmation result          
+        }.onFailure {
+            // Process error
         }
-    }.onFailure {
-        // Process error
+    } else {
+        session.deny(publicUserId, payload).onSuccess { isSuccess ->
+            // Process deny result               
+        }.onFailure {
+            // Process error
+        }
     }
-} catch (e: Throwable) {
+}.onFailure {
     // Process error
 }
 ```

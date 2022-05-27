@@ -22,13 +22,9 @@ internal class AuthWithScannerVM : ViewModel() {
         _uiState.value = AuthWithScannerState.Loading
 
         viewModelScope.launch(Dispatchers.IO) {
-            try {
-                keyriSdk.initiateQrSession(sessionId, appKey).onSuccess { session ->
-                    _uiState.value = AuthWithScannerState.Confirmation(session)
-                }.onFailure { processError(it) }
-            } catch (e: Throwable) {
-                processError(e)
-            }
+            keyriSdk.initiateQrSession(sessionId, appKey).onSuccess { session ->
+                _uiState.value = AuthWithScannerState.Confirmation(session)
+            }.onFailure { processError(it) }
         }
     }
 
@@ -42,22 +38,16 @@ internal class AuthWithScannerVM : ViewModel() {
         _uiState.value = AuthWithScannerState.Loading
 
         viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val isApproved = keyriSdk.initializeDefaultScreen(supportFragmentManager, session)
+            val isApproved = keyriSdk.initializeDefaultScreen(supportFragmentManager, session)
 
-                val result = if (isApproved) {
-                    session.confirm(publicUserId, payload)
-                } else {
-                    session.deny(publicUserId, payload)
-                }
-
-                result.onSuccess {
-                    _uiState.value = AuthWithScannerState.Authenticated(it)
-                }.onFailure {
-                    processError(it)
-                }
-            } catch (e: Throwable) {
-                processError(e)
+            if (isApproved) {
+                session.confirm(publicUserId, payload)
+            } else {
+                session.deny(publicUserId, payload)
+            }.onSuccess {
+                _uiState.value = AuthWithScannerState.Authenticated(it)
+            }.onFailure {
+                processError(it)
             }
         }
     }
