@@ -8,7 +8,7 @@ data class BrowserData(
     val publicKey: String,
 
     @SerializedName("ciphertext")
-    val cipherText: String,
+    val ciphertext: String,
 
     @SerializedName("salt")
     val salt: String,

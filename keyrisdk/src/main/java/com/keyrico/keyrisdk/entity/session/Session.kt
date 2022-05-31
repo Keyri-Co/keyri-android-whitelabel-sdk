@@ -62,7 +62,7 @@ data class Session(
 
             val browserData = BrowserData(
                 publicKey = cipher.publicKey,
-                cipherText = cipher.cipherText,
+                ciphertext = cipher.cipherText,
                 salt = cipher.salt,
                 iv = cipher.iv
             )
