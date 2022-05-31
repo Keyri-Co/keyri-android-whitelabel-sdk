@@ -38,6 +38,15 @@ app, follow the instructions in the [Usage](#usage).
 See the [integration documentation](https://docs.keyri.com/android)
 in the Keyri Docs.
 
+## Permissions
+
+Open your app's `AndroidManifest.xml` file and add the following permission:
+
+```xml
+
+<uses-permission android:name="android.permission.INTERNET" />
+```
+
 ### Dependencies
 
 * Add the JitPack repository to your root build.gradle file:
