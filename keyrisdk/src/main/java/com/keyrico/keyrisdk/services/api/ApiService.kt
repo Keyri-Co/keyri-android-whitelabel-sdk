@@ -1,6 +1,7 @@
 package com.keyrico.keyrisdk.services.api
 
 import com.keyrico.keyrisdk.entity.SessionConfirmationResponse
+import com.keyrico.keyrisdk.entity.session.InternalSession
 import com.keyrico.keyrisdk.entity.session.Session
 import com.keyrico.keyrisdk.services.api.data.SessionConfirmationRequest
 import retrofit2.Response
@@ -16,7 +17,7 @@ internal interface ApiService {
     suspend fun getSession(
         @Path("sessionId") sessionId: String,
         @Query("appKey") appKey: String
-    ): Response<Session>
+    ): Response<InternalSession>
 
     @POST("api/session/{sessionId}")
     suspend fun approveSession(

@@ -156,16 +156,7 @@ class AuthWithScannerActivity : AppCompatActivity() {
     }
 
     private fun processConfirmationMessage(uiState: AuthWithScannerState.Confirmation): Boolean {
-        val publicUserId = intent.getStringExtra(PUBLIC_USER_ID)
-        val payload = intent.getStringExtra(PAYLOAD) ?: ""
-
-        viewModel.showConfirmationScreen(
-            supportFragmentManager,
-            uiState.session,
-            publicUserId,
-            payload,
-            keyriSdk
-        )
+        viewModel.showConfirmationScreen(supportFragmentManager, uiState.session, keyriSdk)
 
         return true
     }
@@ -275,12 +266,16 @@ class AuthWithScannerActivity : AppCompatActivity() {
     }
 
     private fun processLink(uri: Uri?) {
-        val appKey = intent.getStringExtra(APP_KEY)
-
         uri?.getQueryParameters("sessionId")?.firstOrNull()?.let { sessionId ->
+            val appKey = intent.getStringExtra(APP_KEY)
+            val publicUserId = intent.getStringExtra(PUBLIC_USER_ID)
+            val payload = intent.getStringExtra(PAYLOAD)
+
             viewModel.initiateSession(
-                sessionId,
-                requireNotNull(appKey),
+                appKey = requireNotNull(appKey),
+                sessionId = sessionId,
+                payload = requireNotNull(payload),
+                publicUserId = publicUserId,
                 keyriSdk
             )
         } ?: Log.e("Keyri", "Failed to process link")

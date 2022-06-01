@@ -1,7 +1,6 @@
 package com.keyrico.keyrisdk.entity.session
 
 import android.os.Parcelable
-import com.google.gson.annotations.SerializedName
 import com.keyrico.keyrisdk.exception.AuthorizationException
 import com.keyrico.keyrisdk.services.CryptoService
 import com.keyrico.keyrisdk.services.api.data.ApiData
@@ -11,47 +10,27 @@ import com.keyrico.keyrisdk.utils.makeApiCall
 import com.keyrico.keyrisdk.utils.provideApiService
 import kotlinx.parcelize.Parcelize
 
-@Suppress("unused")
 @Parcelize
 data class Session(
-    @SerializedName("WidgetOrigin")
     val widgetOrigin: String,
-
-    @SerializedName("sessionId")
     val sessionId: String,
-
-    @SerializedName("WidgetUserAgent")
     val widgetUserAgent: WidgetUserAgent?,
-
-    @SerializedName("userParameters")
     val userParameters: UserParameters?,
-
-    @SerializedName("IPAddressMobile")
     val iPAddressMobile: String,
-
-    @SerializedName("IPAddressWidget")
     val iPAddressWidget: String,
-
-    @SerializedName("riskAnalytics")
     val riskAnalytics: RiskAnalytics?,
-
-    @SerializedName("browserPublicKey")
     internal val browserPublicKey: String,
-
-    @SerializedName("__salt")
     internal val salt: String,
-
-    @SerializedName("__hash")
-    internal val hash: String
+    internal val hash: String,
+    internal val payload: String,
+    internal val publicUserId: String?
 ) : Parcelable {
 
-    suspend fun confirm(publicUserId: String?, payload: String): Result<Boolean> =
-        finishSession(publicUserId, payload)
+    suspend fun confirm(): Result<Boolean> = finishSession(isConfirmed = true)
 
-    suspend fun deny(publicUserId: String?, payload: String): Result<Boolean> =
-        finishSession(publicUserId, payload)
+    suspend fun deny(): Result<Boolean> = finishSession(isConfirmed = false)
 
-    private suspend fun finishSession(publicUserId: String?, payload: String): Result<Boolean> {
+    private suspend fun finishSession(isConfirmed: Boolean): Result<Boolean> {
         return try {
             val cryptoService = CryptoService()
 
@@ -70,7 +49,7 @@ data class Session(
             val request = SessionConfirmationRequest(
                 salt = salt,
                 hash = hash,
-                errors = false,
+                errors = isConfirmed,
                 errorMsg = "",
                 apiData = apiData,
                 browserData = browserData
