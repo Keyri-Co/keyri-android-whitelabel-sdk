@@ -15,9 +15,9 @@ class WebViewViewModel : ViewModel() {
 
     val authenticated: StateFlow<Session?> = _authenticated.asStateFlow()
 
-    fun newSession(sessionId: String, publicUserId: String, appKey: String, keyriSdk: KeyriSdk) {
+    fun newSession(sessionId: String, publicUserId: String, appKey: String, keyri: Keyri) {
         viewModelScope.launch(Dispatchers.IO) {
-            keyriSdk.initiateQrSession(
+            keyri.initiateQrSession(
                 appKey = appKey,
                 sessionId = sessionId,
                 payload = "Some payload",

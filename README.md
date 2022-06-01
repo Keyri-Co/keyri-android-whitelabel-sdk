@@ -135,7 +135,7 @@ Payload can be anything (session token or a stringified JSON containing multiple
 things like publicUserId, timestamp, customSignedData and ECDSA signature).
 
 ```kotlin
-keyriSdk.initiateQrSession(BuildConfig.APP_KEY, sessionId, payload, publicUserId)
+keyri.initiateQrSession(BuildConfig.APP_KEY, sessionId, payload, publicUserId)
     .onSuccess { session ->
         // Show confirmation screen and if positive do next:
         val confirmationResult = initializeDefaultScreenn(supportFragmentManager, session)
@@ -185,22 +185,38 @@ override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_auth)
 
-    intent.data?.let(::processLink)
-
-    initializeUi()
+    intent.data?.let(::process)
 }
 
 override fun onNewIntent(intent: Intent) {
     super.onNewIntent(intent)
-    processLink(intent.data)
+    process(intent.data)
 }
 
-private fun processLink(uri: Uri?) {
+private fun process(uri: Uri?) {
     uri?.getQueryParameters("sessionId")?.firstOrNull()?.let { sessionId ->
-        // Process sessionId
-        val keyriSdk = KeyriSdk()
+        launch {
+            try {
+                val appKey = "[Your appKey]" // Get this value from the Keyri Developer Portal
+                val publicUserId = "example@dot.com" // publicUserId is optional
+                val payload = "Custom payload here"
 
-        keyriSdk.initiateQrSession(appKey, sessionId, payload, publicUserId)
+                val keyri = Keyri() // Be sure to import the SDK at the top of the file
+
+                keyri.initiateQrSession(appKey, sessionId, payload, publicUserId)
+                    .onSuccess { session ->
+                        // You can optionally create a custom screen and pass the session ID there. We recommend this approach for large enterprises
+                        keyri.initializeDefaultScreen(supportFragmentManager, session)
+
+                        // In a real world example you’d wait for user confirmation first
+                        session.confirm() // or session.deny()
+                    }
+
+                // Process result
+            } catch (e: Throwable) {
+                Log.e("Keyri", "Authentication exception $e")
+            }
+        }
     } ?: Log.e("Keyri", "Failed to process link")
 }
 ```

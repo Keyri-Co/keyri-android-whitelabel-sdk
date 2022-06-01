@@ -3,7 +3,7 @@ package com.keyrico.keyrisdk.ui.auth
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.keyrico.keyrisdk.KeyriSdk
+import com.keyrico.keyrisdk.Keyri
 import com.keyrico.keyrisdk.entity.session.Session
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -23,12 +23,12 @@ internal class AuthWithScannerVM : ViewModel() {
         sessionId: String,
         payload: String,
         publicUserId: String?,
-        keyriSdk: KeyriSdk
+        keyri: Keyri
     ) {
         _uiState.value = AuthWithScannerState.Loading
 
         viewModelScope.launch(Dispatchers.IO) {
-            keyriSdk.initiateQrSession(
+            keyri.initiateQrSession(
                 appKey = appKey,
                 sessionId = sessionId,
                 payload = payload,
@@ -42,12 +42,12 @@ internal class AuthWithScannerVM : ViewModel() {
     fun showConfirmationScreen(
         supportFragmentManager: FragmentManager,
         session: Session,
-        keyriSdk: KeyriSdk
+        keyri: Keyri
     ) {
         _uiState.value = AuthWithScannerState.Loading
 
         viewModelScope.launch(Dispatchers.IO) {
-            val isApproved = keyriSdk.initializeDefaultScreen(supportFragmentManager, session)
+            val isApproved = keyri.initializeDefaultScreen(supportFragmentManager, session)
 
             if (isApproved) {
                 session.confirm()

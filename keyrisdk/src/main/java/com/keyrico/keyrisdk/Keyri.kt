@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.first
 
 @Suppress("unused")
-class KeyriSdk {
+class Keyri {
 
     private val cryptoService by lazy(::CryptoService)
 

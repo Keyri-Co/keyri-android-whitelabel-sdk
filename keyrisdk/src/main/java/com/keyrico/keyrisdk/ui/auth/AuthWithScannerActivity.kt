@@ -36,7 +36,7 @@ import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
-import com.keyrico.keyrisdk.KeyriSdk
+import com.keyrico.keyrisdk.Keyri
 import com.keyrico.keyrisdk.databinding.ActivityAuthWithScannerBinding
 import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
@@ -80,7 +80,7 @@ class AuthWithScannerActivity : AppCompatActivity() {
 
     private val viewModel by viewModels<AuthWithScannerVM>()
 
-    private val keyriSdk by lazy(::KeyriSdk)
+    private val keyri by lazy(::Keyri)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -156,7 +156,7 @@ class AuthWithScannerActivity : AppCompatActivity() {
     }
 
     private fun processConfirmationMessage(uiState: AuthWithScannerState.Confirmation): Boolean {
-        viewModel.showConfirmationScreen(supportFragmentManager, uiState.session, keyriSdk)
+        viewModel.showConfirmationScreen(supportFragmentManager, uiState.session, keyri)
 
         return true
     }
@@ -276,7 +276,7 @@ class AuthWithScannerActivity : AppCompatActivity() {
                 sessionId = sessionId,
                 payload = requireNotNull(payload),
                 publicUserId = publicUserId,
-                keyriSdk
+                keyri
             )
         } ?: Log.e("Keyri", "Failed to process link")
     }

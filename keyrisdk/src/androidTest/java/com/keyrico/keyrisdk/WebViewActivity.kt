@@ -36,7 +36,7 @@ class WebViewActivity : AppCompatActivity() {
 
     private val viewModel by viewModels<WebViewViewModel>()
 
-    private val keyriSdk by lazy(::KeyriSdk)
+    private val keyri by lazy(::Keyri)
 
     private val webView by lazy { WebView(this) }
 
@@ -89,7 +89,7 @@ class WebViewActivity : AppCompatActivity() {
                             requireNotNull(sessionId),
                             "public-user-id",
                             requireNotNull(appKey),
-                            keyriSdk
+                            keyri
                         )
 
                         isLinkProcessed = true
