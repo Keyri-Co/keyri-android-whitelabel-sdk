@@ -19,11 +19,11 @@ data class Session(
     val iPAddressMobile: String,
     val iPAddressWidget: String,
     val riskAnalytics: RiskAnalytics?,
-    internal val browserPublicKey: String,
-    internal val salt: String,
-    internal val hash: String,
-    internal val payload: String,
-    internal val publicUserId: String?
+    private val browserPublicKey: String,
+    private val salt: String,
+    private val hash: String,
+    private val payload: String,
+    private val publicUserId: String?
 ) : Parcelable {
 
     suspend fun confirm(): Result<Boolean> = finishSession(isConfirmed = true)
