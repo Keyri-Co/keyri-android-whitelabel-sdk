@@ -1,0 +1,133 @@
+package com.keyrico.keyrisdk.ui.confirmation
+
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
+import com.keyrico.keyrisdk.R
+import com.keyrico.keyrisdk.databinding.DialogConfirmationBinding
+import com.keyrico.keyrisdk.entity.session.RiskAnalytics
+import com.keyrico.keyrisdk.entity.session.Session
+
+class ConfirmationBottomDialog(
+    override val session: Session,
+    override val onResult: ((isAccepted: Boolean) -> Unit)?
+) : BaseConfirmationBottomDialog(session, onResult) {
+
+    private lateinit var binding: DialogConfirmationBinding
+
+    private val riskAnalytics by lazy { session.riskAnalytics }
+    private val authenticationDenied by lazy { riskAnalytics?.getRiskStatusType() == RiskAnalytics.RiskMessageTypes.DANGER }
+    private val authenticationWarning by lazy { riskAnalytics?.getRiskStatusType() == RiskAnalytics.RiskMessageTypes.WARNING }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        binding = DialogConfirmationBinding.inflate(inflater, container, false)
+
+        return binding.root
+    }
+
+    override fun initUI() {
+        val colorRes = if (authenticationWarning) {
+            R.color.orange.getColor() to R.color.light_orange.getColor()
+        } else if (authenticationDenied) {
+            R.color.red.getColor() to R.color.vpn_red.getColor()
+        } else null
+
+        initWidgetLocation(colorRes)
+        initMobileLocation(colorRes)
+        initWidgetAgent()
+        initButtons()
+    }
+
+    private fun initWidgetLocation(colorRes: Pair<Int, Int>?) {
+        with(binding) {
+            val iPDataBrowser = riskAnalytics?.geoData?.browser
+            val city = iPDataBrowser?.city
+            val countryCode = iPDataBrowser?.countryCode
+
+            llWidgetLocation.isVisible =
+                riskAnalytics != null && (city != null || countryCode != null)
+            tvWidgetLocation.isVisible = true
+            tvVPNDetected.isVisible = riskAnalytics?.riskAttributes?.isAnonymous ?: false
+
+            tvWidgetLocation.text =
+                getString(
+                    R.string.keyri_confirmation_screen_near,
+                    listOf(city, countryCode).joinToString()
+                )
+
+            colorRes?.let {
+                tvWidgetLocation.setTextColor(it.first)
+                ivWidgetLocation.setColorFilter(it.first)
+                tvVPNDetected.setTextColor(it.second)
+                tvVPNDetected.setDrawableColor(it.second)
+            }
+        }
+    }
+
+    private fun initMobileLocation(colorRes: Pair<Int, Int>?) {
+        with(binding) {
+            val iPDataMobile = riskAnalytics?.geoData?.mobile
+            val city = iPDataMobile?.city
+            val countryCode = iPDataMobile?.countryCode
+
+            llMobileLocation.isVisible =
+                riskAnalytics != null && (city != null || countryCode != null)
+            tvMobileLocation.isVisible = true
+
+            tvMobileLocation.text =
+                getString(
+                    R.string.keyri_confirmation_screen_near,
+                    listOf(city, countryCode).joinToString()
+                )
+
+            colorRes?.let {
+                tvMobileLocation.setTextColor(it.first)
+                ivMobileLocation.setColorFilter(it.first)
+            }
+        }
+    }
+
+    private fun initWidgetAgent() {
+        with(binding) {
+            val widgetUserAgent = session.widgetUserAgent
+
+            llWidgetAgent.isVisible = riskAnalytics != null && widgetUserAgent != null
+            tvWidgetAgent.text =
+                listOf(widgetUserAgent?.os, widgetUserAgent?.browser).joinToString()
+        }
+    }
+
+    private fun initButtons() {
+        with(binding) {
+            tvErrorMessage.isVisible = authenticationDenied
+            llButtons.isVisible = !authenticationDenied
+
+            bNo.setOnClickListener { dismiss() }
+
+            bYes.setOnClickListener {
+                accepted = true
+                dismiss()
+            }
+        }
+    }
+
+    private fun TextView.setDrawableColor(color: Int) {
+        this.compoundDrawables.filterNotNull().forEach {
+            it.colorFilter = PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN)
+        }
+    }
+
+    private fun Int.getColor(): Int {
+        return ContextCompat.getColor(requireContext(), this)
+    }
+}

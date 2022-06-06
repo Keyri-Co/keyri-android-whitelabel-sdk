@@ -1,38 +1,26 @@
 package com.keyrico.keyrisdk.services.api
 
-import com.keyrico.keyrisdk.entity.session.Session
+import com.keyrico.keyrisdk.entity.SessionConfirmationResponse
+import com.keyrico.keyrisdk.entity.session.InternalSession
+import com.keyrico.keyrisdk.services.api.data.SessionConfirmationRequest
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
-import retrofit2.http.HeaderMap
 import retrofit2.http.POST
 import retrofit2.http.Path
-import retrofit2.http.Url
+import retrofit2.http.Query
 
-/**
- * Keyri SDK REST API
- */
-interface ApiService {
+internal interface ApiService {
 
-    /**
-     * @GET Method for retrieving session by id
-     */
     @GET("api/session/{sessionId}")
-    suspend fun getSession(@Path("sessionId") sessionId: String): Response<Session>
+    suspend fun getSession(
+        @Path("sessionId") sessionId: String,
+        @Query("appKey") appKey: String
+    ): Response<InternalSession>
 
-    /**
-     * @POST Method for mobile auth
-     */
-    @POST
-    suspend fun authMobile(
-        @HeaderMap headers: Map<String, String>?,
-        @Url url: String,
-        @Body request: AuthMobileRequest
-    ): Response<AuthMobileResponse>
-
-    /**
-     * @POST Method for init SDK
-     */
-    @POST("api/sdk/whitelabel-init")
-    suspend fun init(@Body request: InitRequest): Response<InitResponse>
+    @POST("api/session/{sessionId}")
+    suspend fun approveSession(
+        @Path("sessionId") sessionId: String,
+        @Body request: SessionConfirmationRequest
+    ): Response<SessionConfirmationResponse>
 }

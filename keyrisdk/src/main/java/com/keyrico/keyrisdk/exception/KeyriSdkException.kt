@@ -1,31 +1,9 @@
 package com.keyrico.keyrisdk.exception
 
-import com.keyrico.keyrisdk.R
+sealed class KeyriSdkException(override val message: String) : Throwable(message)
 
-sealed class KeyriSdkException(open val errorMessage: Int = R.string.keyri_empty) : Throwable()
+data class NetworkException(override val message: String) : KeyriSdkException(message)
 
-object NotInitializedException : KeyriSdkException(R.string.keyri_err_not_initialized)
+data class AuthorizationException(override val message: String) : KeyriSdkException(message)
 
-object NetworkException : KeyriSdkException(R.string.keyri_err_network)
-
-object AuthorizationException : KeyriSdkException(R.string.keyri_err_authorization)
-
-data class InternalServerException(val httpCode: Int? = null) :
-    KeyriSdkException(R.string.keyri_err_internal_server)
-
-data class ServerErrorException(val httpCode: Int? = null, val errorResponse: String?) :
-    KeyriSdkException()
-
-object WrongConfigException : KeyriSdkException(R.string.keyri_err_wrong_config)
-
-object AccountNotFoundException : KeyriSdkException(R.string.keyri_err_account_not_found)
-
-object MultipleAccountsNotAllowedException :
-    KeyriSdkException(R.string.keyri_multiple_accounts_not_allowed)
-
-object CameraPermissionNotGrantedException : KeyriSdkException(R.string.keyri_camera_not_granted)
-
-object KeyriScannerViewInitializationException :
-    KeyriSdkException(R.string.keyri_view_initialization_error)
-
-data class RiskErrorsException(val riskErrors: List<String> = emptyList()) : KeyriSdkException(R.string.keyri_err_risk_errors)
+data class InternalServerException(override val message: String) : KeyriSdkException(message)
