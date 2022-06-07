@@ -9,7 +9,7 @@ android {
     defaultConfig {
         minSdk = 23
         targetSdk = 32
-        compileSdk = 31
+        compileSdk = 32
 
         consumerProguardFiles("consumer-rules.pro")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -50,11 +50,11 @@ dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
     // Core
-    implementation("androidx.core:core-ktx:1.7.0")
+    implementation("androidx.core:core-ktx:1.8.0")
 
     // UI
-    implementation("androidx.appcompat:appcompat:1.4.1")
-    implementation("com.google.android.material:material:1.6.0")
+    implementation("androidx.appcompat:appcompat:1.4.2")
+    implementation("com.google.android.material:material:1.6.1")
     implementation("androidx.activity:activity-ktx:1.4.0")
 
     // Lifecycle
@@ -68,10 +68,10 @@ dependencies {
 
     // Camera and analytics
     implementation("com.google.mlkit:barcode-scanning:17.0.2")
-    implementation("androidx.camera:camera-core:1.2.0-alpha01")
-    implementation("androidx.camera:camera-camera2:1.2.0-alpha01")
-    implementation("androidx.camera:camera-lifecycle:1.2.0-alpha01")
-    implementation("androidx.camera:camera-view:1.2.0-alpha01")
+    implementation("androidx.camera:camera-core:1.2.0-alpha02")
+    implementation("androidx.camera:camera-camera2:1.2.0-alpha02")
+    implementation("androidx.camera:camera-lifecycle:1.2.0-alpha02")
+    implementation("androidx.camera:camera-view:1.2.0-alpha02")
 
     // Tink crypto
     implementation("com.google.crypto.tink:tink-android:1.6.1")
