@@ -24,8 +24,7 @@ This repository contains the open source code for [Keyri](https://keyri.com) And
 * [License](#license)
 
 The latest source code of the Keyri Android SDK can be found
-here:  <https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/releases>
-
+here: [Releases](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/releases)
 
 ### **System Requirements**
 
@@ -38,12 +37,10 @@ here:  <https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/releases>
 Note: Your app does not have to be written in Kotlin to integrate this SDK, but it must be able to
 depend on Kotlin functionality.
 
-
 ## Demo
 
 This repository contains a demonstration app for the Keyri SDK product. To build and run the demo
 app, follow the instructions below.
-
 
 ### **Integration**
 
@@ -66,7 +63,6 @@ dependencies {
     implementation("com.github.Keyri-Co:keyri-android-whitelabel-sdk:$latestKeyriVersion")
 }
 ```
-
 
 ### **Option 1 - App Links**
 
@@ -144,8 +140,7 @@ private fun process(uri: Uri?) {
 **Note:** Keyri will set up the required `/.well-known/assetlinks.json` JSON at
 your `https://{yourSubdomain}.onekey.to` page as required by Android App Links handling. Details on
 this mechanism are described
-here: <https://developer.android.com/training/app-links/verify-site-associations>
-
+here: [Verify Android App Links](https://developer.android.com/training/app-links/verify-site-associations)
 
 ### **Option 2 - In-App Scanner**
 
@@ -219,15 +214,13 @@ private fun process(uri: Uri?) {
 }
 ```
 
-
 ### **Interacting with the API**
 
 The following methods are available to interact with the Keyri SDK API, which can be used to craft
 your own custom flows and leverage the SDK in different ways:
 
-* `suspend fun initializeQrSession(appKey: String, sessionId: String, payload: String, publicUserId: String?): Result<Session>`
-  - call it after obtaining the sessionId from QR code or deep link. Returns Session object with
-  Risk attributes (needed to show confirmation screen) or Exception
+* `suspend fun initializeQrSession(appKey: String, sessionId: String, payload: String, publicUserId: String?): Result<Session>` - call it after obtaining the sessionId from QR code or deep link. Returns Session object with
+Risk attributes (needed to show confirmation screen) or Exception
 
 * `suspend fun initializeDefaultScreen(fm: FragmentManager, session: Session): Boolean` - to show
   Confirmation with default UI. Returns Boolean result. Also you can implement your custom
@@ -254,7 +247,6 @@ your own custom flows and leverage the SDK in different ways:
 
 Payload can be anything (session token or a stringified JSON containing multiple items. Can include
 things like publicUserId, timestamp, customSignedData and ECDSA signature)
-
 
 ### **Session Object**
 
@@ -288,7 +280,6 @@ built-in views, you are only responsible for calling the confirm/deny methods ab
 
 * `Session.confirm()` and `Session.deny()` - see descriptions in **Interacting with the API**.
 
-
 ### Disclaimer
 
 We care deeply about the quality of our product and rigorously test every piece of functionality we
@@ -298,8 +289,7 @@ it's impossible for us to cover all of those bases, so we strongly recommend tho
 your integration before shipping to production. Please feel free to file a bug or issue if you
 notice anything that seems wrong or strange on GitHub 🙂
 
-<https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/issues>
-
+[Issues](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/issues)
 
 ## License
 
@@ -309,7 +299,6 @@ full license text.
 * Details of licensing (pricing, etc) are available
   at [https://keyri.com/pricing](https://keyri.com/pricing), or you can contact us
   at [Sales@keyri.com](mailto:Sales@keyri.com).
-
 
 ### Details
 
