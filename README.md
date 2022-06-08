@@ -3,7 +3,7 @@
 This repository contains the open source code for [Keyri](https://keyri.com) Android SDK.
 
 ![Lint](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/workflows/Lint/badge.svg)
-![Instrumentation Tests](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/workflows/Instrumented%20Tests/badge.svg)
+![Firebase Instrumentation Tests](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/workflows/Firebase%20Instrumentation%20Tests/badge.svg)
 ![Unit Tests](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/workflows/Unit%20Tests/badge.svg)
 ![Release](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/workflows/Release/badge.svg)
 
@@ -13,256 +13,283 @@ This repository contains the open source code for [Keyri](https://keyri.com) And
 
 ## Contents
 
-* [Requirements](#requirements)
+* [System Requirements](#system-requirements)
 * [Demo](#demo)
 * [Integration](#integration)
-* [Usage](#usage)
+* [Option 1 - App Links](#option-1---app-links)
+* [Option 2 - In-App Scanner](#option-2---in-app-scanner)
+* [Interacting with the API](#interacting-with-the-api)
+* [Session Object](#session-object)
+* [Disclaimer](#Disclaimer)
 * [License](#license)
 
-## Requirements
+The latest source code of the Keyri Android SDK can be found
+here: [Releases](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/releases)
+
+### **System Requirements**
 
 * Android API level 23 or higher
+
 * AndroidX compatibility
+
 * Kotlin coroutines compatibility
 
-Note: Your app does not have to be written in kotlin to integrate this SDK, but must be able to
-depend on kotlin functionality.
+Note: Your app does not have to be written in Kotlin to integrate this SDK, but it must be able to
+depend on Kotlin functionality.
 
 ## Demo
 
 This repository contains a demonstration app for the Keyri SDK product. To build and run the demo
-app, follow the instructions in the [Usage](#usage).
+app, follow the instructions below.
 
-## Integration
+### **Integration**
 
-See the [integration documentation](https://docs.keyri.com/android)
-in the Keyri Docs.
+* Add the JitPack repository to your root **build.gradle** file:
 
-### Dependencies
-
-* Add the JitPack repository to your root build.gradle file:
-
-```groovy
+```kotlin
 allprojects {
     repositories {
         // ...
-        maven { url "https://jitpack.io" }
+        maven { url("https://jitpack.io") }
     }
 }
 ```
 
-* Add SDK dependency to your build.gradle file and sync project:
+* Add SDK dependency to your **build.gradle** file and sync project:
 
-```groovy
+```kotlin
 dependencies {
     // ...
-    implementation 'com.github.Keyri-Co.keyri-android-whitelabel-sdk:keyrisdk:1.0.2'
+    implementation("com.github.Keyri-Co:keyri-android-whitelabel-sdk:$latestKeyriVersion")
 }
 ```
 
-### Provisioning Keyri config parameters
+### **Option 1 - App Links**
 
-Supply these three parameters to your app:
-
-* App Key
-* Public Key
-* Callback URL
-
-For example:
-
-```groovy
-android {
-    defaultConfig {
-        // ...
-        buildConfigField "String", "APP_KEY", "\"raB7SFWt27VoKqkPhaUrmWAsCJIO8Moj\""
-        buildConfigField "String", "PUBLIC_KEY", "\"BOenio0DXyG31mAgUCwhdslelckmxzM7nNOyWAjkuo7skr1FhP7m2L8PaSRgIEH5ja9p+CwEIIKGqR4Hx5Ezam4=\""
-        buildConfigField "String", "KEYRI_CALLBACK_URL", "\"http://18.234.222.59:5000/users/session-mobile\""
-    }
-    // ...
-}
-```
-
-And then use them to initialize the SDK:
-
-```kotlin
-val keyriSdk = KeyriSdk(
-    requireContext(),
-    KeyriConfig(
-        appKey = BuildConfig.APP_KEY,
-        publicKey = BuildConfig.PUBLIC_KEY,
-        callbackUrl = BuildConfig.KEYRI_CALLBACK_URL,
-        allowMultipleAccounts = true
-    )
-) 
-```
-
-Or with koin DI:
-
-```kotlin
-val keyriModule = module {
-    single {
-        KeyriConfig(
-            appKey = BuildConfig.APP_KEY,
-            publicKey = BuildConfig.PUBLIC_KEY,
-            callbackUrl = BuildConfig.KEYRI_CALLBACK_URL,
-            allowMultipleAccounts = true
-        )
-    }
-    single { KeyriSdk(get(), get()) }
-}
-```
-
-## Usage
-
-Note that the SDK object must not be destroyed between calling **handleSessionId()** and retrieving
-the result of authorization methods.
-
-### Option 1: Use the built-in QR login UI/UX
-
-* Add KeyriScannerView in your layout:
-
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent"
-    android:orientation="vertical">
-
-    <com.keyrico.keyrisdk.view.KeyriScannerView android:id="@+id/vKeyriScanner"
-        android:layout_width="match_parent" android:layout_height="match_parent" />
-
-</LinearLayout>
-```
-
-* Init with:
-
-```kotlin
-val customArg: String = intent.getStringExtra(KEY_CUSTOM_ARG)
-
-val params = KeyriScannerViewParams(
-    activity = this,
-    keyriSdk = keyriSdk,
-    customArgument = customArg,
-    onChooseAccount = { accounts, sessionId, service ->
-        // Here init accounts list and call vKeyriScanner.continueAuth(publicAccount, sessionId, service) after item click
-        // ... 
-    },
-    onCompleted = { showToast("Auth completed!") }
-)
-
-binding.vKeyriScanner.initView(params)
-```
-
-You could check full code
-in [AuthWithScannerActivity](app/src/main/java/com/keyri/auth_with_scanner/AuthWithScannerActivity.kt)
-.
-
-### Option 2: Build a custom authentication/authorization UI/UX
-
-Alternatively, if you want to provide a custom authentication/authorization UI/UX, use the following
-methods:
-
-* **handleSessionId()** - Call it after retrieving the sessionId from QR-code or deep link.
-* **sessionSignup()** - Must be called after **handleSessionId()**. This method is needed to create
-  a user for Desktop agent (i.e., if the user does not already have an account and is trying to
-  register). Pass username, sessionId, service, and any custom param needed to work with your
-  identity management system.
-* **sessionLogin()** - This method needed to login user for Desktop agent. Must be called after
-  **handleSessionId()**. Pass public account identifies (e.g., username), sessionId, service and
-  custom param:
-
-```kotlin
-val session = keyriSdk.handleSessionId(sessionId)
-
-if (session.isNewUser) {
-    keyriSdk.sessionSignup(
-        session.username,
-        sessionId,
-        session.service,
-        CUSTOM_DATA_SIGNUP
-    )
-} else {
-    val account = keyriSdk.getAccounts().firstOrNull() ?: throw AccountNotFoundException
-    keyriSdk.sessionLogin(account, sessionId, session.service, CUSTOM_DATA_LOGIN)
-}
-```
-
-* **directSignup()** - method to create user on mobile device:
-
-```kotlin
-val authResponse = keyriSdk.directSignup(username, CUSTOM_DATA_SIGNUP, CUSTOM_HEADERS)
-
-val user = authResponse.user
-val refreshToken = authResponse.refreshToken
-```
-
-* **directLogin()** - method to login user on mobile device:
-
-```kotlin
-val authResponse = keyriSdk.directLogin(account, CUSTOM_HEADERS)
-
-val user = authResponse.user
-val refreshToken = authResponse.refreshToken
-```
-
-### Manage Accounts
-
-To manage accounts use the following methods:
-
-* **getAccounts()** - retrieve all public accounts from storage.
-* **removeAccount()** - remove public account from storage.
-
-```kotlin
-keyriSdk.getAccounts().firstOrNull { it.username == "User" && it.custom == "SOME CUSTOM ARG" }
-    ?.let { account -> keyriSdk.removeAccount(account) }
-```
-
-### Deep Link Handling
-
-To handle deep links (e.g., for QR login straight from the user's built-in camera app) you need to
-define in your AndroidManifest.xml following intent-filter block:
+To handle Android App Links (e.g., for QR login straight from the user's built-in camera app) you
+need to define the following intent-filter block in your **AndroidManifest.xml**:
 
 ```xml
 
-<intent-filter android:autoVerify="true">
-    <action android:name="android.intent.action.VIEW" />
+<application...>
+    <!-- ...  -->
+    <activity...>
+        <!-- ...  -->
+        <intent-filter android:autoVerify="true">
+            <action android:name="android.intent.action.VIEW" />
 
-    <category android:name="android.intent.category.DEFAULT" />
-    <category android:name="android.intent.category.BROWSABLE" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="android.intent.category.BROWSABLE" />
 
-    <data android:host="www.keyri.co" android:pathPrefix="/application" android:scheme="https" />
-
-</intent-filter>
+            <data android:host="${domainName}" android:scheme="https" />
+        </intent-filter>
+    </activity>
+</application>
 ```
 
-This will handle all links with such scheme: [https://www.keyri.co/application?sessionId=324e23]. In
-the activity where the processing of links is declared, you need to add handlers in the
-**onNewIntent()** and **onCreate()** methods:
+This will handle all links with the following
+scheme: `https://{yourCompany}.onekey.to?sessionId={sessionId}`
+
+**Note:** Keyri will create your `https://{yourCompany}.onekey.to` page automatically once you
+configure it in the [dashboard](https://app.keyri.com)
+
+In the activity where the processing of links is declared, you need to add handlers in
+the `onNewIntent()` and `onCreate()` methods:
 
 ```kotlin
 override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContentView(R.layout.activity_auth)
+    setContentView(R.layout.activity_main)
 
-    intent.data?.let(::processLink)
-
-    initializeUi()
+    intent.data?.let(::process)
 }
 
 override fun onNewIntent(intent: Intent) {
     super.onNewIntent(intent)
-    processLink(intent.data)
+    process(intent.data)
 }
 
-private fun processLink(uri: Uri?) {
+private fun process(uri: Uri?) {
     uri?.getQueryParameters("sessionId")?.firstOrNull()?.let { sessionId ->
-        // Do auth with sessionId
+        launch {
+            try {
+                val appKey = "[Your appKey]" // Get this value from the Keyri Developer Portal
+                val publicUserId = "example@dot.com" // publicUserId is optional
+                val payload = "Custom payload here"
+
+                val keyri = Keyri() // Be sure to import the SDK at the top of the file
+
+                keyri.initiateQrSession(appKey, sessionId, payload, publicUserId)
+                    .onSuccess { session ->
+                        // You can optionally create a custom screen and pass the session ID there. We recommend this approach for large enterprises
+                        keyri.initializeDefaultScreen(supportFragmentManager, session)
+
+                        // In a real world example you’d wait for user confirmation first
+                        session.confirm() // or session.deny()
+                    }
+
+                // Process result
+            } catch (e: Throwable) {
+                Log.e("Keyri", "Authentication exception $e")
+            }
+        }
     } ?: Log.e("Keyri", "Failed to process link")
 }
 ```
 
-The last thing you need to do in order for your deep links to be processed is to create the
-associations for each of the declared hosts for handling in JSON file as described
-here: [https://developer.android.com/training/app-links/verify-site-associations].
+**Note:** Keyri will set up the required `/.well-known/assetlinks.json` JSON at
+your `https://{yourSubdomain}.onekey.to` page as required by Android App Links handling. Details on
+this mechanism are described
+here: [Verify Android App Links](https://developer.android.com/training/app-links/verify-site-associations)
+
+### **Option 2 - In-App Scanner**
+
+Use `AuthWithScannerActivity` built-in functionality to delegate authentication to SDK. You can
+use `ActivityResult API` or `onActivityResult`. Create Intent for `AuthWithScannerActivity` and
+pass `App Key` with `AuthWithScannerActivity.APP_KEY`, optional public user ID
+with `AuthWithScannerActivity.PUBLIC_USER_ID` and payload with `AuthWithScannerActivity.PAYLOAD` :
+
+```kotlin
+private val easyKeyriAuthLauncher =
+    registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
+        val isSuccess = activityResult.resultCode == Activity.RESULT_OK
+        // Handle authentication result
+        // ...
+    }
+
+override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    // ...
+    binding.bAuthWithScanner.setOnClickListener {
+        val intent = Intent(this, AuthWithScannerActivity::class.java).apply {
+            putExtra(AuthWithScannerActivity.APP_KEY, BuildConfig.APP_KEY)
+            putExtra(AuthWithScannerActivity.PUBLIC_USER_ID, "public-User-ID") // Optional
+            putExtra(
+                AuthWithScannerActivity.PAYLOAD,
+                "{ \"token\" : \"jWwajc88y32kndsf-9a234sdfdhfyr5y\""
+            )
+        }
+
+        easyKeyriAuthLauncher.launch(intent)
+    }
+}
+```
+
+Or define custom scanner UI/UX. You can use Firebase ML Kit, ZXing, your own scanner, or any other
+equivalent. All you need to do is convert to URI, and then you're free to process the response the
+same way we did above (notice the `process(uri)` function is exactly the same in both cases)
+
+```kotlin
+private fun scanQr() {
+    // Your scanner realization
+    // Get link from QR and process it:
+    process(uri)
+}
+
+private fun process(uri: Uri?) {
+    uri?.getQueryParameters("sessionId")?.firstOrNull()?.let { sessionId ->
+        launch {
+            try {
+                val appKey = "[Your appKey]" // Get this value from the Keyri Developer Portal
+                val publicUserId = "example@dot.com" // publicUserId is optional
+                val payload = "Custom payload here"
+
+                val keyri = Keyri() // Be sure to import the SDK at the top of the file
+
+                keyri.initiateQrSession(appKey, sessionId, payload, publicUserId)
+                    .onSuccess { session ->
+                        // You can optionally create a custom screen and pass the session ID there. We recommend this approach for large enterprises
+                        keyri.initializeDefaultScreen(supportFragmentManager, session)
+
+                        // In a real world example you’d wait for user confirmation first
+                        session.confirm() // or session.deny()
+                    }
+
+                // Process result
+            } catch (e: Throwable) {
+                Log.e("Keyri", "Authentication exception $e")
+            }
+        }
+    } ?: Log.e("Keyri", "Failed to process link")
+}
+```
+
+### **Interacting with the API**
+
+The following methods are available to interact with the Keyri SDK API, which can be used to craft
+your own custom flows and leverage the SDK in different ways:
+
+* `suspend fun initializeQrSession(appKey: String, sessionId: String, payload: String, publicUserId: String?): Result<Session>` - call it after obtaining the sessionId from QR code or deep link. Returns Session object with
+Risk attributes (needed to show confirmation screen) or Exception
+
+* `suspend fun initializeDefaultScreen(fm: FragmentManager, session: Session): Boolean` - to show
+  Confirmation with default UI. Returns Boolean result. Also you can implement your custom
+  Confirmation Screen, just inherit from BaseConfirmationDialog.kt
+
+* `suspend fun Session.confirm(): Result` - call this function if user confirmed the dialog. Returns
+  Boolean authentication result
+
+* `suspend fun Session.deny(): Result<Boolean>` - call if the user denied the dialog. Returns
+  Boolean authentication result
+
+* `fun generateAssociationKey(publicUserId: String): String` - creates a persistent ECDSA keypair
+  for the given public user ID (example: email address) and return public key
+
+* `fun getUserSignature(publicUserId: String?, customSignedData: String?): String` - returns an
+  ECDSA signature of the timestamp and optional customSignedData with the publicUserId's
+  privateKey (or, if not provided, anonymous privateKey), customSignedData can be anything
+
+* `fun listAssociationKey(): List<String>` - returns a list of names (publicUserIds) of "association
+  keys" (public keys)
+
+* `fun getAssociationKey(publicUserId: String): String` - returns Base64 public key for the
+  specified publicUserId
+
+Payload can be anything (session token or a stringified JSON containing multiple items. Can include
+things like publicUserId, timestamp, customSignedData and ECDSA signature)
+
+### **Session Object**
+
+The session object is returned on successful `initializeQrSession` calls, and is used to handle
+presenting the situation to the end user and getting their confirmation to complete authentication.
+Below are some of the key properties and methods that can be triggered. If you are utilizing the
+built-in views, you are only responsible for calling the confirm/deny methods above
+
+* `IPAddressMobile/Widget` - The IP Address of both mobile device and web browser&#x20;
+
+* `RiskAnalytics` - if applicable
+
+    - `RiskStatus` - clear, warn or deny
+
+    - `RiskFlagString* - if RiskStatus is warn or deny, this string alerts the user to what is triggering
+  the risk situation
+
+    - `GeoData` - Location data for both mobile and widget
+
+        * `Mobile`
+
+            - `city`
+
+            - `country\_code`
+
+        * `Browser`
+
+            - `city`
+
+            - `country\_code`
+
+* `Session.confirm()` and `Session.deny()` - see descriptions in [Interacting with the API](#interacting-with-the-api).
+
+### Disclaimer
+
+We care deeply about the quality of our product and rigorously test every piece of functionality we
+offer. That said, every integration is different. Every app on the App Store has a different
+permutation of build settings, compiler flags, processor requirements, compatibility issues etc and
+it's impossible for us to cover all of those bases, so we strongly recommend thorough testing of
+your integration before shipping to production. Please feel free to file a bug or issue if you
+notice anything that seems wrong or strange on GitHub 🙂
+
+[Issues](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/issues)
 
 ## License
 

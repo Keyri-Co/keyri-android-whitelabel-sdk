@@ -1,62 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
-    <com.keyrico.keyrisdk.view.KeyriScannerView
-        android:id="@+id/vKeyriScanner"
+    <androidx.camera.view.PreviewView
+        android:id="@+id/scannerPreview"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <RelativeLayout
-        android:id="@+id/rlChooseAccount"
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabClose"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_margin="16dp"
+        android:backgroundTint="@android:color/white"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_close"
+        android:tint="@color/close_background"
+        app:backgroundTint="@color/close_border"
+        app:borderWidth="1dp"
+        app:elevation="1dp"
+        app:fabCustomSize="40dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/vPlaceholder"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone">
+        android:layout_height="0dp"
+        android:background="@drawable/bg_scanner_gradient"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/vInsetPlaceholder"
+        app:layout_constraintHeight_percent="0.28" />
 
-        <androidx.appcompat.widget.AppCompatTextView
-            android:id="@+id/tvChooseAccount"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginTop="32dp"
-            android:gravity="center"
-            android:text="@string/keyri_choose_your_account"
-            android:textColor="@android:color/black"
-            android:textSize="20sp" />
+    <View
+        android:id="@+id/vInsetPlaceholder"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/white"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
-        <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/ivIcon"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_below="@id/tvChooseAccount"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="24dp"
-            android:background="@drawable/bg_list_item_grey"
-            android:padding="12dp"
-            android:tint="@android:color/black"
-            app:srcCompat="@drawable/ic_user" />
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/vProgress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:elevation="2dp"
+        android:indeterminate="true"
+        android:indeterminateTint="@color/text_color"
+        android:visibility="gone"
+        app:indicatorColor="@color/text_color"
+        app:layout_constraintBottom_toTopOf="@id/tvPoweredByKeyri"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:visibility="visible" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvAccounts"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_below="@id/ivIcon"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true"
-            android:layout_marginTop="32dp"
-            android:orientation="vertical"
-            android:paddingHorizontal="20dp"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:itemCount="10"
-            tools:listitem="@layout/item_choose_account" />
+    <TextView
+        android:id="@+id/tvPoweredByKeyri"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="36dp"
+        android:fontFamily="@font/rubik_light"
+        android:text="@string/powered_by_keyri"
+        android:textColor="@color/text_color"
+        app:layout_constraintBottom_toBottomOf="@id/vPlaceholder"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
-    </RelativeLayout>
-
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

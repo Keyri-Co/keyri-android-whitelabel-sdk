@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="keyriColorPrimary">#b10fbd</color>
-    <color name="grey_dot">#C4C4C4</color>
-    <color name="grey_divider">#EAEAEA</color>
-    <color name="account_text_color">#636363</color>
-    <color name="grey_70">#B3636363</color>
+    <color name="transparent">#00000000</color>
+    <color name="red">#DE5246</color>
+    <color name="vpn_red">#f79797</color>
+    <color name="faded_red">#FEECED</color>
+    <color name="orange">#F5704C</color>
+    <color name="light_orange">#ff9b74</color>
+    <color name="green">#1AA260</color>
+    <color name="faded_green">#E1F4ED</color>
+    <color name="text_color">#595959</color>
+    <color name="close_border">#D9D9D9</color>
+    <color name="close_background">#8C8C8C</color>
 </resources>

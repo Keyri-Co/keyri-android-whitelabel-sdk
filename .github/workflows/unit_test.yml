@@ -15,7 +15,7 @@ jobs:
         with:
           java-version: '11'
       - name: test
-        run: ./gradlew test
+        run: ./gradlew keyrisdk:test
       - name: upload-artifacts
         uses: actions/upload-artifact@v2
         if: failure()
