@@ -259,24 +259,24 @@ built-in views, you are only responsible for calling the confirm/deny methods ab
 
 * *RiskAnalytics* - if applicable
 
-** *RiskStatus* - clear, warn or deny
+    - *RiskStatus* - clear, warn or deny
 
-** *RiskFlagString* - if RiskStatus is warn or deny, this string alerts the user to what is triggering
+    - *RiskFlagString* - if RiskStatus is warn or deny, this string alerts the user to what is triggering
   the risk situation
 
-** *GeoData* - Location data for both mobile and widget
+    - *GeoData* - Location data for both mobile and widget
 
-*** *Mobile*
+        * *Mobile*
 
-**** *city*
+            - *city*
 
-**** *country\_code*
+            - *country\_code*
 
-*** *Browser*
+        * *Browser*
 
-**** *city*
+            - *city*
 
-**** *country\_code*
+            - *country\_code*
 
 * `Session.confirm()` and `Session.deny()` - see descriptions in [Interacting with the API](#interacting-with-the-api).
 
