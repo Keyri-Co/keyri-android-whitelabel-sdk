@@ -1,9 +1,8 @@
 name: Firebase Instrumentation Tests
 
 on:
-  push:
-    branches:
-      - 'feature/new_auth_flow'
+  pull_request:
+    branches: [ master, develop ]
 
 jobs:
   assemble_ui_test_artifacts:

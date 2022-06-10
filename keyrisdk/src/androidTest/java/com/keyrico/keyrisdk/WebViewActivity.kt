@@ -57,7 +57,7 @@ class WebViewActivity : AppCompatActivity() {
             settings.javaScriptEnabled = true
 
             loadUrl(webViewUrl)
-        }.afterDelay(10_000L) {
+        }.afterDelay(12_000L) {
             val picture: Picture = @Suppress("Deprecation") webView.capturePicture()
             val bitmap = Bitmap.createBitmap(picture.width, picture.height, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bitmap)

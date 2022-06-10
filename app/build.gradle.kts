@@ -8,7 +8,7 @@ android {
         applicationId = "com.keyri"
         minSdk = 23
         targetSdk = 32
-        compileSdk = 31
+        compileSdk = 32
 
         versionCode = 1
         versionName = "1.0"
@@ -50,9 +50,9 @@ dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
     implementation(project(":keyrisdk"))
 
-    implementation("androidx.appcompat:appcompat:1.4.1")
-    implementation("androidx.core:core-ktx:1.7.0")
+    implementation("androidx.appcompat:appcompat:1.4.2")
+    implementation("androidx.core:core-ktx:1.8.0")
     implementation("androidx.activity:activity-ktx:1.4.0")
     implementation("androidx.recyclerview:recyclerview:1.2.1")
-    implementation("com.google.android.material:material:1.6.0")
+    implementation("com.google.android.material:material:1.6.1")
 }
