@@ -261,7 +261,7 @@ built-in views, you are only responsible for calling the confirm/deny methods ab
 
     - `RiskStatus` - clear, warn or deny
 
-    - `RiskFlagString* - if RiskStatus is warn or deny, this string alerts the user to what is triggering
+    - `RiskFlagString` - if RiskStatus is warn or deny, this string alerts the user to what is triggering
   the risk situation
 
     - `GeoData` - Location data for both mobile and widget
