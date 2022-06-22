@@ -14,7 +14,7 @@ android {
         consumerProguardFiles("consumer-rules.pro")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "BASE_URL", "\"https://dev.api.keyri.com\"")
+        buildConfigField("String", "BASE_URL", "\"https://prod.api.keyri.com\"")
     }
 
     buildTypes {
@@ -58,7 +58,7 @@ dependencies {
     implementation("androidx.activity:activity-ktx:1.4.0")
 
     // Lifecycle
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.5.0-rc01")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.5.0-rc02")
 
     // Networking
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
