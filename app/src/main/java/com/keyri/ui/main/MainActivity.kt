@@ -5,7 +5,6 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import com.keyri.BuildConfig
 import com.keyri.databinding.ActivityAuthBinding
 import com.keyri.ui.auth_complete.AuthCompleteActivity
 import com.keyrico.keyrisdk.ui.auth.AuthWithScannerActivity
@@ -30,12 +29,9 @@ class MainActivity : AppCompatActivity() {
 
         binding.bAuthQr.setOnClickListener {
             val intent = Intent(this, AuthWithScannerActivity::class.java).apply {
-                putExtra(AuthWithScannerActivity.APP_KEY, BuildConfig.APP_KEY)
+                putExtra(AuthWithScannerActivity.APP_KEY, "App key here")
                 putExtra(AuthWithScannerActivity.PUBLIC_USER_ID, "public-User-ID")
-                putExtra(
-                    AuthWithScannerActivity.PAYLOAD,
-                    "{ \"token\" : \"jWwajc88y32kndsf-9a234sdfdhfyr5y\""
-                )
+                putExtra(AuthWithScannerActivity.PAYLOAD, "Custom payload here")
             }
 
             easyKeyriAuthLauncher.launch(intent)

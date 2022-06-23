@@ -113,7 +113,7 @@ private fun process(uri: Uri?) {
     uri?.getQueryParameters("sessionId")?.firstOrNull()?.let { sessionId ->
         launch {
             try {
-                val appKey = "[Your appKey]" // Get this value from the Keyri Developer Portal
+                val appKey = "App key here" // Get this value from the Keyri Developer Portal
                 val publicUserId = "example@dot.com" // publicUserId is optional
                 val payload = "Custom payload here"
 
@@ -190,7 +190,7 @@ private fun process(uri: Uri?) {
     uri?.getQueryParameters("sessionId")?.firstOrNull()?.let { sessionId ->
         launch {
             try {
-                val appKey = "[Your appKey]" // Get this value from the Keyri Developer Portal
+                val appKey = "App key here" // Get this value from the Keyri Developer Portal
                 val publicUserId = "example@dot.com" // publicUserId is optional
                 val payload = "Custom payload here"
 

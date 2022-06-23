@@ -12,8 +12,6 @@ android {
 
         versionCode = 1
         versionName = "1.0"
-
-        buildConfigField("String", "APP_KEY", "\"IT7VrTQ0r4InzsvCNJpRCRpi1qzfgpaj\"")
     }
 
     buildTypes {
@@ -47,12 +45,10 @@ android {
 }
 
 dependencies {
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
     implementation(project(":keyrisdk"))
 
     implementation("androidx.appcompat:appcompat:1.4.2")
     implementation("androidx.core:core-ktx:1.8.0")
     implementation("androidx.activity:activity-ktx:1.4.0")
-    implementation("androidx.recyclerview:recyclerview:1.2.1")
     implementation("com.google.android.material:material:1.6.1")
 }

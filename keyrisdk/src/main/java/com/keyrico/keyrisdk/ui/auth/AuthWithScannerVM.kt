@@ -50,13 +50,15 @@ internal class AuthWithScannerVM : ViewModel() {
             val isApproved = keyri.initializeDefaultScreen(supportFragmentManager, session)
 
             if (isApproved) {
-                session.confirm()
+                session.confirm().onSuccess {
+                    _uiState.value = AuthWithScannerState.Authenticated(it)
+                }.onFailure {
+                    processError(it)
+                }
             } else {
-                session.deny()
-            }.onSuccess {
-                _uiState.value = AuthWithScannerState.Authenticated(it)
-            }.onFailure {
-                processError(it)
+                session.deny().getOrNull()
+
+                _uiState.value = AuthWithScannerState.Authenticated(false)
             }
         }
     }

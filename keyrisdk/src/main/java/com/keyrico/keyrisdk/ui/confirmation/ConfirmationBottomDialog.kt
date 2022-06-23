@@ -21,9 +21,9 @@ class ConfirmationBottomDialog(
 
     private lateinit var binding: DialogConfirmationBinding
 
-    private val riskAnalytics by lazy { session.riskAnalytics }
-    private val authenticationDenied by lazy { riskAnalytics?.getRiskStatusType() == RiskAnalytics.RiskMessageTypes.DANGER }
-    private val authenticationWarning by lazy { riskAnalytics?.getRiskStatusType() == RiskAnalytics.RiskMessageTypes.WARNING }
+    private val riskAnalytics by lazy(session::riskAnalytics)
+    private val authenticationWarning by lazy { riskAnalytics?.getRiskStatusType() == WARNING }
+    private val authenticationDenied by lazy { riskAnalytics != null && riskAnalytics?.getRiskStatusType() == DANGER }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -37,9 +37,9 @@ class ConfirmationBottomDialog(
 
     override fun initUI() {
         val colorRes = if (authenticationWarning) {
-            R.color.orange.getColor() to R.color.light_orange.getColor()
+            getColor(R.color.orange) to getColor(R.color.light_orange)
         } else if (authenticationDenied) {
-            R.color.red.getColor() to R.color.vpn_red.getColor()
+            getColor(R.color.red) to getColor(R.color.vpn_red)
         } else null
 
         initWidgetLocation(colorRes)
@@ -54,10 +54,10 @@ class ConfirmationBottomDialog(
             val city = iPDataBrowser?.city
             val countryCode = iPDataBrowser?.countryCode
 
-            llWidgetLocation.isVisible =
-                riskAnalytics != null && (city != null || countryCode != null)
+            llWidgetLocation.isVisible = city != null && countryCode != null
             tvWidgetLocation.isVisible = true
-            tvVPNDetected.isVisible = riskAnalytics?.riskAttributes?.isAnonymous ?: false
+            tvVPNDetected.isVisible =
+                riskAnalytics?.riskAttributes?.isAnonymous ?: authenticationDenied
 
             tvWidgetLocation.text =
                 getString(
@@ -80,8 +80,7 @@ class ConfirmationBottomDialog(
             val city = iPDataMobile?.city
             val countryCode = iPDataMobile?.countryCode
 
-            llMobileLocation.isVisible =
-                riskAnalytics != null && (city != null || countryCode != null)
+            llMobileLocation.isVisible = city != null && countryCode != null
             tvMobileLocation.isVisible = true
 
             tvMobileLocation.text =
@@ -101,7 +100,7 @@ class ConfirmationBottomDialog(
         with(binding) {
             val widgetUserAgent = session.widgetUserAgent
 
-            llWidgetAgent.isVisible = riskAnalytics != null && widgetUserAgent != null
+            llWidgetAgent.isVisible = widgetUserAgent != null
             tvWidgetAgent.text =
                 listOf(widgetUserAgent?.os, widgetUserAgent?.browser).joinToString()
         }
@@ -127,7 +126,12 @@ class ConfirmationBottomDialog(
         }
     }
 
-    private fun Int.getColor(): Int {
-        return ContextCompat.getColor(requireContext(), this)
+    private fun getColor(resId: Int): Int {
+        return ContextCompat.getColor(requireContext(), resId)
+    }
+
+    companion object {
+        private val WARNING = RiskAnalytics.RiskMessageTypes.WARNING
+        private val DANGER = RiskAnalytics.RiskMessageTypes.DANGER
     }
 }
