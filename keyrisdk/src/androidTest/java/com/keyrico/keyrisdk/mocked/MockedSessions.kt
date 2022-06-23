@@ -57,10 +57,10 @@ val sessionRegular = Session(
 val sessionDenied =
     sessionRegular.copy(
         riskAnalytics = RiskAnalytics(
-            riskAttributes = riskAttributes,
+            riskAttributes = riskAttributes.copy(isAnonymous = true),
             riskStatus = "danger",
             riskFlagString = EMPTY,
-            geoData = null
+            geoData = geoData
         )
     )
 
@@ -84,4 +84,4 @@ val sessionNoIpData =
         )
     )
 
-val sessionWithoutRiskPermission = sessionRegular.copy(riskAnalytics = null)
+val sessionWithoutRiskPermission = sessionRegular.copy(riskAnalytics = null, widgetUserAgent = null)
