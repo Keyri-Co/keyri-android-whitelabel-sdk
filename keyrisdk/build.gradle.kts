@@ -47,8 +47,6 @@ android {
 }
 
 dependencies {
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
-
     // Core
     implementation("androidx.core:core-ktx:1.8.0")
 
