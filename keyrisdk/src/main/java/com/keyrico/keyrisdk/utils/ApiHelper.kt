@@ -70,11 +70,9 @@ internal fun provideApiService(): ApiService {
     okHttpClientBuilder.connectTimeout(TIMEOUT, TimeUnit.SECONDS)
         .readTimeout(TIMEOUT, TimeUnit.SECONDS)
 
-    if (BuildConfig.DEBUG) {
-        HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
-        }.let(okHttpClientBuilder::addInterceptor)
-    }
+    HttpLoggingInterceptor().apply {
+        level = HttpLoggingInterceptor.Level.BODY
+    }.let(okHttpClientBuilder::addInterceptor)
 
     val type = object : TypeToken<RiskAttributes>() {}.type
     val gson = GsonBuilder().registerTypeAdapter(type, RiskAttributesDeserializer()).create()
@@ -96,6 +94,8 @@ internal class RiskAttributesDeserializer : JsonDeserializer<RiskAttributes> {
     ): RiskAttributes {
         val jsonArray = json?.asJsonArray
 
+        var distance = 0L
+        var isDifferentCountry = false
         var isKnownAbuser = false
         var isIcloudRelay = false
         var isKnownAttacker = false
@@ -111,6 +111,9 @@ internal class RiskAttributesDeserializer : JsonDeserializer<RiskAttributes> {
             val jsObject = jsonElement.asJsonObject
 
             when {
+                jsObject?.has("distance") == true -> distance = jsObject["distance"]?.asLong ?: 0L
+                jsObject?.has("is_different_country") == true ->
+                    isDifferentCountry = jsObject["is_different_country"]?.asBoolean ?: false
                 jsObject?.has("is_known_abuser") == true ->
                     isKnownAbuser =
                         jsObject["is_known_abuser"]?.asBoolean ?: false
@@ -143,6 +146,8 @@ internal class RiskAttributesDeserializer : JsonDeserializer<RiskAttributes> {
         }
 
         return RiskAttributes(
+            distance = distance,
+            isDifferentCountry = isDifferentCountry,
             isKnownAbuser = isKnownAbuser,
             isIcloudRelay = isIcloudRelay,
             isKnownAttacker = isKnownAttacker,

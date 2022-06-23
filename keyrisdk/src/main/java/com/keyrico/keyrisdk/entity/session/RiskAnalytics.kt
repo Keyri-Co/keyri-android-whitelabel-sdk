@@ -10,7 +10,7 @@ data class RiskAnalytics(
     val riskAttributes: RiskAttributes,
 
     @SerializedName("riskStatus")
-    val riskStatus: String,
+    val riskStatus: String?,
 
     @SerializedName("riskFlagString")
     val riskFlagString: String?,
