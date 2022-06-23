@@ -22,6 +22,8 @@ val ipData = IPData(
 val geoData = GeoData(mobile = ipData, browser = ipData)
 
 val riskAttributes = RiskAttributes(
+    distance = 0,
+    isDifferentCountry = false,
     isKnownAbuser = false,
     isIcloudRelay = false,
     isKnownAttacker = false,
@@ -58,7 +60,7 @@ val sessionDenied =
     sessionRegular.copy(
         riskAnalytics = RiskAnalytics(
             riskAttributes = riskAttributes.copy(isAnonymous = true),
-            riskStatus = "danger",
+            riskStatus = "deny",
             riskFlagString = EMPTY,
             geoData = geoData
         )
@@ -78,7 +80,7 @@ val sessionNoIpData =
     sessionRegular.copy(
         riskAnalytics = RiskAnalytics(
             riskAttributes,
-            "good",
+            "unknown",
             EMPTY,
             geoData = null
         )

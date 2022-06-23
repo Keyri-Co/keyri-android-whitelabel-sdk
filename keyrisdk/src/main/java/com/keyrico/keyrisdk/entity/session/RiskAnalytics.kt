@@ -21,15 +21,17 @@ data class RiskAnalytics(
 
     fun getRiskStatusType(): RiskMessageTypes {
         return when (riskStatus) {
+            "deny" -> RiskMessageTypes.DENY
             "good" -> RiskMessageTypes.GOOD
             "warn" -> RiskMessageTypes.WARNING
-            else -> RiskMessageTypes.DANGER
+            else -> RiskMessageTypes.UNKNOWN
         }
     }
 
     enum class RiskMessageTypes {
+        DENY,
         GOOD,
         WARNING,
-        DANGER;
+        UNKNOWN;
     }
 }
