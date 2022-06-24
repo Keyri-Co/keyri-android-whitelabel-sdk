@@ -27,11 +27,9 @@ class KeyriSdkModule(private val context: Context, private val appKey: String) {
         okHttpClientBuilder.connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
             .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
 
-        if (BuildConfig.DEBUG) {
-            val loggingInterceptor = HttpLoggingInterceptor()
-            loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
-            okHttpClientBuilder.addInterceptor(loggingInterceptor)
-        }
+        val loggingInterceptor = HttpLoggingInterceptor()
+        loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
+        okHttpClientBuilder.addInterceptor(loggingInterceptor)
 
         return Retrofit.Builder()
             .baseUrl(if (isDebug) DEV_API_URL else API_URL)
