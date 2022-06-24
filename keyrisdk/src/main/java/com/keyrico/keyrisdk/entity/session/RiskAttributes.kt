@@ -5,6 +5,8 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class RiskAttributes(
+    val distance: Long?,
+    val isDifferentCountry: Boolean?,
     val isKnownAbuser: Boolean?,
     val isIcloudRelay: Boolean?,
     val isKnownAttacker: Boolean?,

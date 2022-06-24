@@ -22,8 +22,10 @@ class ConfirmationBottomDialog(
     private lateinit var binding: DialogConfirmationBinding
 
     private val riskAnalytics by lazy(session::riskAnalytics)
-    private val authenticationWarning by lazy { riskAnalytics?.getRiskStatusType() == WARNING }
-    private val authenticationDenied by lazy { riskAnalytics != null && riskAnalytics?.getRiskStatusType() == DANGER }
+    private val authenticationDenied by lazy { riskAnalytics?.riskStatus != null && riskAnalytics?.getRiskStatusType() == DENY }
+    private val authenticationWarning by lazy {
+        riskAnalytics?.getRiskStatusType() == WARNING || riskAnalytics?.riskAttributes?.isAnonymous == true || riskAnalytics?.riskAttributes?.isProxy == true
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -132,6 +134,6 @@ class ConfirmationBottomDialog(
 
     companion object {
         private val WARNING = RiskAnalytics.RiskMessageTypes.WARNING
-        private val DANGER = RiskAnalytics.RiskMessageTypes.DANGER
+        private val DENY = RiskAnalytics.RiskMessageTypes.DENY
     }
 }
