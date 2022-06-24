@@ -22,7 +22,7 @@ data class Service(
     @SerializedName("originalDomain")
     val originalDomain: OriginalDomain?,
 
-    @SerializedName("_id")
+    @SerializedName("id")
     val id: String,
 
     @SerializedName("name")

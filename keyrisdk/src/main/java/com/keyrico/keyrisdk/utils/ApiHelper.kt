@@ -22,7 +22,7 @@ suspend fun <T : Any> makeApiCall(call: suspend () -> Response<T>): Response<T> 
 
         if (!response.isSuccessful) {
             throw when (response.code()) {
-                in 500..599 -> InternalServerException(response.code())
+                in 400..599 -> InternalServerException(response.code())
                 else -> try {
                     val errorBody = response.errorBody()
 
