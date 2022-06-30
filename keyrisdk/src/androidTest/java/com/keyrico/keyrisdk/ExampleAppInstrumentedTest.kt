@@ -123,6 +123,7 @@ class ExampleAppInstrumentedTest {
     fun `9_testCryptoServiceAssociationKeys`() {
         val cryptoService = CryptoService()
 
+        val anonymousAssociationKey = cryptoService.getAssociationKey(null)
         val associationKeyForUnknownUser = cryptoService.getAssociationKey("Unknown user ID")
         val associationKeyForUnknownUserTwice = cryptoService.getAssociationKey("Unknown user ID")
 
@@ -130,6 +131,7 @@ class ExampleAppInstrumentedTest {
 
         val newKeys = cryptoService.listAssociationKey()
 
+        Assert.assertNotNull(anonymousAssociationKey)
         Assert.assertNotNull(associationKeyForUnknownUser)
         Assert.assertEquals(associationKeyForUnknownUser, associationKeyForUnknownUserTwice)
         Assert.assertNotEquals(0, newKeys.size)
@@ -141,6 +143,20 @@ class ExampleAppInstrumentedTest {
 
         val keyFactory = KeyFactory.getInstance(KeyProperties.KEY_ALGORITHM_EC)
         val signature = Signature.getInstance("SHA256withECDSA")
+
+        val anonymousMessageToSign = "Anonymous message to sign"
+        val anonymousSignedMessage = cryptoService.signMessage(null, anonymousMessageToSign)
+        val anonymousAssociationKey = cryptoService.getAssociationKey(null)
+
+        val encodedAnonymousKey = anonymousAssociationKey.toByteArrayFromBase64String()
+        val anonymousPublic =
+            keyFactory.generatePublic(X509EncodedKeySpec(encodedAnonymousKey)) as ECPublicKey
+
+        signature.initVerify(anonymousPublic)
+        signature.update(anonymousMessageToSign.encodeToByteArray())
+
+        val anonymousVerified =
+            signature.verify(anonymousSignedMessage.toByteArrayFromBase64String())
 
         val userMessageToSign = "Message to sign"
         val userID = "Public-UID"
@@ -156,6 +172,7 @@ class ExampleAppInstrumentedTest {
 
         val userVerified = signature.verify(userSignedMessage.toByteArrayFromBase64String())
 
+        Assert.assertTrue(anonymousVerified)
         Assert.assertTrue(userVerified)
     }
 

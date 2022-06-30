@@ -23,7 +23,7 @@ data class Session(
     private val salt: String,
     private val hash: String,
     private val payload: String,
-    private val publicUserId: String
+    private val publicUserId: String?
 ) : Parcelable {
 
     suspend fun confirm(): Result<Boolean> = finishSession(isConfirmed = true)

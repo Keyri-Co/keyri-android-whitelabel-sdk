@@ -18,20 +18,19 @@ class Keyri {
     fun generateAssociationKey(publicUserId: String): String =
         cryptoService.generateAssociationKey(publicUserId)
 
-    fun getUserSignature(publicUserId: String, data: String): String =
+    fun getUserSignature(publicUserId: String?, data: String): String =
         cryptoService.signMessage(publicUserId, data)
 
-    fun listAssociationKey(): List<String> =
-        cryptoService.listAssociationKey()
+    fun listAssociationKey(): List<String> = cryptoService.listAssociationKey()
 
-    fun getAssociationKey(publicUserId: String): String =
+    fun getAssociationKey(publicUserId: String?): String =
         cryptoService.getAssociationKey(publicUserId)
 
     suspend fun initiateQrSession(
         appKey: String,
         sessionId: String,
         payload: String,
-        publicUserId: String
+        publicUserId: String?
     ): Result<Session> {
         return makeApiCall { provideApiService().getSession(sessionId, appKey) }.map {
             it.toSession(payload, publicUserId)

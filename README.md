@@ -235,14 +235,14 @@ Risk attributes (needed to show confirmation screen) or Exception
 * `fun generateAssociationKey(publicUserId: String): String` - creates a persistent ECDSA keypair
   for the given public user ID (example: email address) and return public key
 
-* `fun getUserSignature(publicUserId: String?, customSignedData: String?): String` - returns an
+* `fun getUserSignature(publicUserId: String?, data: String): String` - returns an
   ECDSA signature of the timestamp and optional customSignedData with the publicUserId's
   privateKey (or, if not provided, anonymous privateKey), customSignedData can be anything
 
 * `fun listAssociationKey(): List<String>` - returns a list of names (publicUserIds) of "association
   keys" (public keys)
 
-* `fun getAssociationKey(publicUserId: String): String` - returns Base64 public key for the
+* `fun getAssociationKey(publicUserId: String?): String` - returns Base64 public key for the
   specified publicUserId
 
 Payload can be anything (session token or a stringified JSON containing multiple items. Can include

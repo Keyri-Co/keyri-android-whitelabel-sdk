@@ -22,7 +22,7 @@ internal class AuthWithScannerVM : ViewModel() {
         appKey: String,
         sessionId: String,
         payload: String,
-        publicUserId: String,
+        publicUserId: String?,
         keyri: Keyri
     ) {
         _uiState.value = AuthWithScannerState.Loading

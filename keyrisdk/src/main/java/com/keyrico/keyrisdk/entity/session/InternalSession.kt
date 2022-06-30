@@ -33,7 +33,7 @@ internal data class InternalSession(
     @SerializedName("__hash")
     val hash: String
 ) {
-    fun toSession(payload: String, publicUserId: String): Session {
+    fun toSession(payload: String, publicUserId: String?): Session {
         return Session(
             widgetOrigin = widgetOrigin,
             sessionId = sessionId,
