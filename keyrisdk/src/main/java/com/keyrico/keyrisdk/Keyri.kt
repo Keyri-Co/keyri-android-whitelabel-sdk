@@ -1,7 +1,6 @@
 package com.keyrico.keyrisdk
 
 import androidx.fragment.app.FragmentManager
-import com.google.gson.JsonObject
 import com.keyrico.keyrisdk.entity.session.Session
 import com.keyrico.keyrisdk.services.CryptoService
 import com.keyrico.keyrisdk.ui.confirmation.ConfirmationBottomDialog
@@ -19,14 +18,8 @@ class Keyri {
     fun generateAssociationKey(publicUserId: String): String =
         cryptoService.generateAssociationKey(publicUserId)
 
-    fun getUserSignature(publicUserId: String?, customSignedData: String?): String {
-        val messageForSign = JsonObject().also { jsonObject ->
-            customSignedData?.let { jsonObject.addProperty("customSignedData", it) }
-            jsonObject.addProperty("timestamp", System.currentTimeMillis())
-        }.toString()
-
-        return cryptoService.signMessage(publicUserId, messageForSign)
-    }
+    fun getUserSignature(publicUserId: String?, data: String): String =
+        cryptoService.signMessage(publicUserId, data)
 
     fun listAssociationKey(): List<String> = cryptoService.listAssociationKey()
 
