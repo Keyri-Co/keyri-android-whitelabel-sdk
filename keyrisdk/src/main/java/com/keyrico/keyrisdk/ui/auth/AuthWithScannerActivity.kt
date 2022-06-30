@@ -275,7 +275,7 @@ class AuthWithScannerActivity : AppCompatActivity() {
                 appKey = requireNotNull(appKey),
                 sessionId = sessionId,
                 payload = requireNotNull(payload),
-                publicUserId = publicUserId,
+                publicUserId = requireNotNull(publicUserId),
                 keyri
             )
         } ?: Log.e("Keyri", "Failed to process link")

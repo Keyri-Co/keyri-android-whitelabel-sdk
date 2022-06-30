@@ -26,10 +26,6 @@ import javax.crypto.spec.SecretKeySpec
 
 internal class CryptoService {
 
-    init {
-        createAnonymousECDSAKeypair()
-    }
-
     fun generateAssociationKey(publicUserId: String): String {
         return createECDSAKeypair(ECDSA_KEYPAIR + publicUserId)
     }
@@ -37,8 +33,8 @@ internal class CryptoService {
     fun listAssociationKey(): List<String> = getKeyStore().aliases().toList()
         .filter { it.contains(ECDSA_KEYPAIR) && it != ECDSA_KEYPAIR }
 
-    fun getAssociationKey(publicUserId: String?): String {
-        val alias = publicUserId?.let { ECDSA_KEYPAIR + it } ?: ECDSA_KEYPAIR
+    fun getAssociationKey(publicUserId: String): String {
+        val alias = ECDSA_KEYPAIR + publicUserId
         val keyStore = getKeyStore()
 
         if (!keyStore.containsAlias(alias)) {
@@ -74,8 +70,8 @@ internal class CryptoService {
         return computeHkdf(data, keyPair.public.encoded, secretKey)
     }
 
-    fun signMessage(publicUserId: String?, message: String): String {
-        val alias = publicUserId?.let { ECDSA_KEYPAIR + it } ?: ECDSA_KEYPAIR
+    fun signMessage(publicUserId: String, message: String): String {
+        val alias = ECDSA_KEYPAIR + publicUserId
         val keyStore = getKeyStore()
 
         if (!keyStore.containsAlias(alias)) {
@@ -97,9 +93,7 @@ internal class CryptoService {
         val keyStore = getKeyStore()
 
         if (keyStore.containsAlias(alias)) {
-            val certificate = keyStore.getCertificate(alias)
-
-            return certificate.publicKey.encoded.toStringBase64()
+            return keyStore.getCertificate(alias).publicKey.encoded.toStringBase64()
         }
 
         val keyPairGenerator =
@@ -118,8 +112,6 @@ internal class CryptoService {
 
         return keyPairGenerator.generateKeyPair().public.encoded.toStringBase64()
     }
-
-    private fun createAnonymousECDSAKeypair(): String = createECDSAKeypair(ECDSA_KEYPAIR)
 
     private fun computeHkdf(
         data: String,
