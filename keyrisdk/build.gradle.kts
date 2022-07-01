@@ -1,8 +1,8 @@
 plugins {
     id("com.android.library")
-    id("maven-publish")
-    id("kotlin-android")
     id("kotlin-parcelize")
+    id("kotlin-android")
+    id("maven-publish")
 }
 
 android {
@@ -56,7 +56,7 @@ dependencies {
     implementation("androidx.activity:activity-ktx:1.4.0")
 
     // Lifecycle
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.5.0-rc02")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.5.0")
 
     // Networking
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
@@ -66,10 +66,10 @@ dependencies {
 
     // Camera and analytics
     implementation("com.google.mlkit:barcode-scanning:17.0.2")
-    implementation("androidx.camera:camera-core:1.2.0-alpha02")
-    implementation("androidx.camera:camera-camera2:1.2.0-alpha02")
-    implementation("androidx.camera:camera-lifecycle:1.2.0-alpha02")
-    implementation("androidx.camera:camera-view:1.2.0-alpha02")
+    implementation("androidx.camera:camera-core:1.1.0")
+    implementation("androidx.camera:camera-camera2:1.1.0")
+    implementation("androidx.camera:camera-lifecycle:1.1.0")
+    implementation("androidx.camera:camera-view:1.1.0")
 
     // Tink crypto
     implementation("com.google.crypto.tink:tink-android:1.6.1")
@@ -84,6 +84,23 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit-ktx:1.1.3")
 }
 
+// Maven Central
+publishing {
+    repositories {
+        maven {
+            name = "OSSRH"
+
+            setUrl("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+
+            credentials {
+                username = System.getenv("MAVEN_USERNAME")
+                password = System.getenv("MAVEN_PASSWORD")
+            }
+        }
+    }
+}
+
+// Jitpack
 afterEvaluate {
     publishing {
         publications {
