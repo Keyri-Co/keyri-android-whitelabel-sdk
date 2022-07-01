@@ -1,5 +1,7 @@
 plugins {
     checkstyle
+    `maven-publish`
+    id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
 }
 
 buildscript {
@@ -58,6 +60,16 @@ allprojects {
     }
 }
 
-tasks.create<Delete>("clean") {
+tasks.register("clean", Delete::class) {
     delete(rootProject.buildDir)
+}
+
+nexusPublishing {
+    repositories {
+        sonatype {
+            username.set(System.getenv("MAVEN_USERNAME"))
+            password.set(System.getenv("MAVEN_PASSWORD"))
+            stagingProfileId.set(System.getenv("STAGING_PROFILE_ID"))
+        }
+    }
 }

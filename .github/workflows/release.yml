@@ -2,7 +2,7 @@ name: Publish package to the Maven Central Repository
 
 on:
   release:
-    types: [ created ]
+    types: [ published ]
 
 jobs:
   publish:
@@ -22,5 +22,7 @@ jobs:
         with:
           arguments: publish
         env:
-          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
+          OSS_SIGNING_KEY_ID: ${{ secrets.OSS_SIGNING_KEY_ID }}
+          OSS_SIGNING_PASSWORD: ${{ secrets.OSS_SIGNING_PASSWORD }}
+          OSS_SIGNING_KEY: ${{ secrets.OSS_SIGNING_KEY }}
+          RELEASE_VERSION: ${{ github.event.release.tag_name }}

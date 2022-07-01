@@ -2,8 +2,19 @@ plugins {
     id("com.android.library")
     id("kotlin-parcelize")
     id("kotlin-android")
-    id("maven-publish")
 }
+
+val groupId = "com.keyrico.keyrisdk"
+val artifactId = "keyrisdk"
+val libVersion: String? = System.getenv("RELEASE_VERSION")
+
+ext {
+    set("GROUP_ID", groupId)
+    set("ARTIFACT_ID", artifactId)
+    set("VERSION", libVersion)
+}
+
+apply(from = "publish.gradle")
 
 android {
     defaultConfig {
@@ -82,34 +93,4 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
     androidTestImplementation("androidx.test:core-ktx:1.4.0")
     androidTestImplementation("androidx.test.ext:junit-ktx:1.1.3")
-}
-
-// Maven Central
-publishing {
-    repositories {
-        maven {
-            name = "OSSRH"
-
-            setUrl("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
-
-            credentials {
-                username = System.getenv("MAVEN_USERNAME")
-                password = System.getenv("MAVEN_PASSWORD")
-            }
-        }
-    }
-}
-
-// Jitpack
-afterEvaluate {
-    publishing {
-        publications {
-            register("release", MavenPublication::class) {
-                from(components["release"])
-
-                groupId = "com.keyrico.keyrisdk"
-                artifactId = "keyrisdk"
-            }
-        }
-    }
 }
