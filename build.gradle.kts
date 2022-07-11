@@ -18,7 +18,7 @@ allprojects {
     val kotlinLint by configurations.creating
 
     dependencies {
-        kotlinLint("com.pinterest:ktlint:0.45.2") {
+        kotlinLint("com.pinterest:ktlint:0.46.1") {
             attributes {
                 attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL))
             }

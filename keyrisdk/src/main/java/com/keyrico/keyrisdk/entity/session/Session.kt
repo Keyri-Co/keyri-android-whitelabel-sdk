@@ -28,6 +28,7 @@ data class Session(
 
     suspend fun confirm(): Result<Boolean> = finishSession(isConfirmed = true)
 
+    // TODO Fix this method
     suspend fun deny(): Result<Boolean> = finishSession(isConfirmed = false)
 
     private suspend fun finishSession(isConfirmed: Boolean): Result<Boolean> {

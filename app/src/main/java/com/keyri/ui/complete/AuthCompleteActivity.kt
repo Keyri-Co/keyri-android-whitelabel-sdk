@@ -1,4 +1,4 @@
-package com.keyri.ui.auth_complete
+package com.keyri.ui.complete
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
