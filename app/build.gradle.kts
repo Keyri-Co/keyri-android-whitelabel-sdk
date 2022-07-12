@@ -15,12 +15,12 @@ android {
     }
 
     buildTypes {
-        named("debug").configure {
+        debug {
             isMinifyEnabled = false
             isDebuggable = true
         }
 
-        named("release").configure {
+        release {
             isMinifyEnabled = false
             isDebuggable = false
             proguardFiles(
@@ -49,6 +49,6 @@ dependencies {
 
     implementation("androidx.appcompat:appcompat:1.4.2")
     implementation("androidx.core:core-ktx:1.8.0")
-    implementation("androidx.activity:activity-ktx:1.4.0")
+    implementation("androidx.activity:activity-ktx:1.5.0")
     implementation("com.google.android.material:material:1.6.1")
 }
