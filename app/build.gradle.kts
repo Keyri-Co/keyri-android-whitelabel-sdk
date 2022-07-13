@@ -15,12 +15,12 @@ android {
     }
 
     buildTypes {
-        named("debug").configure {
+        debug {
             isMinifyEnabled = false
             isDebuggable = true
         }
 
-        named("release").configure {
+        release {
             isMinifyEnabled = false
             isDebuggable = false
             proguardFiles(

@@ -29,7 +29,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.bAuthQr.setOnClickListener {
             val intent = Intent(this, AuthWithScannerActivity::class.java).apply {
-                putExtra(AuthWithScannerActivity.APP_KEY, "App key here")
+                putExtra(AuthWithScannerActivity.APP_KEY, "IT7VrTQ0r4InzsvCNJpRCRpi1qzfgpaj")
                 putExtra(AuthWithScannerActivity.PUBLIC_USER_ID, "public-User-ID")
                 putExtra(AuthWithScannerActivity.PAYLOAD, "Custom payload here")
             }
