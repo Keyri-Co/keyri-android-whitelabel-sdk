@@ -18,20 +18,7 @@ data class RiskAnalytics(
     @SerializedName("geoData")
     val geoData: GeoData?
 ) : Parcelable {
+    fun isWarning(): Boolean = riskStatus == "warn"
 
-    fun getRiskStatusType(): RiskMessageTypes {
-        return when (riskStatus) {
-            "deny" -> RiskMessageTypes.DENY
-            "good" -> RiskMessageTypes.GOOD
-            "warn" -> RiskMessageTypes.WARNING
-            else -> RiskMessageTypes.UNKNOWN
-        }
-    }
-
-    enum class RiskMessageTypes {
-        DENY,
-        GOOD,
-        WARNING,
-        UNKNOWN;
-    }
+    fun isDeny(): Boolean = riskStatus == "deny"
 }
