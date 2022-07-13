@@ -20,10 +20,9 @@ class WebViewViewModel : ViewModel() {
             keyri.initiateQrSession(
                 appKey = appKey,
                 sessionId = sessionId,
-                payload = "Some payload",
                 publicUserId = publicUserId
             ).onSuccess { session ->
-                session.confirm()
+                session.confirm("Some payload")
 
                 _authenticated.value = session
             }.onFailure { throw it }

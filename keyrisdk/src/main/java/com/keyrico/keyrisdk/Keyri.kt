@@ -29,19 +29,21 @@ class Keyri {
     suspend fun initiateQrSession(
         appKey: String,
         sessionId: String,
-        payload: String,
         publicUserId: String?
     ): Result<Session> {
-        return makeApiCall { provideApiService().getSession(sessionId, appKey) }.map {
-            it.toSession(payload, publicUserId)
-        }
+        return makeApiCall { provideApiService().getSession(sessionId, appKey) }
+            .map { it.toSession(publicUserId) }
     }
 
-    suspend fun initializeDefaultScreen(fm: FragmentManager, session: Session): Boolean {
+    suspend fun initializeDefaultScreen(
+        fm: FragmentManager,
+        session: Session,
+        payload: String
+    ): Result<Boolean> {
         return callbackFlow {
-            var callback: ((Boolean) -> Unit)? = { trySend(it) }
+            var callback: ((Result<Boolean>) -> Unit)? = { trySend(it) }
 
-            ConfirmationBottomDialog(session, callback)
+            ConfirmationBottomDialog(session, payload, callback)
                 .show(fm, ConfirmationBottomDialog::class.java.name)
 
             awaitClose { callback = null }
