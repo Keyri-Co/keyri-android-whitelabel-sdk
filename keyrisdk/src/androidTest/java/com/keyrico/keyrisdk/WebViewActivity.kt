@@ -152,9 +152,9 @@ class WebViewActivity : AppCompatActivity() {
     private fun showDialog(
         session: Session,
         onDelay: (Map<String, Boolean>) -> Unit,
-        onDialogResult: (Boolean) -> Unit
+        onDialogResult: (Result<Boolean>) -> Unit
     ) {
-        val dialog = ConfirmationBottomDialog(session, onDialogResult)
+        val dialog = ConfirmationBottomDialog(session, "Some payload", onDialogResult)
 
         dialog.show(supportFragmentManager, ConfirmationBottomDialog::class.java.name)
 

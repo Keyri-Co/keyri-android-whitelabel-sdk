@@ -156,7 +156,9 @@ class AuthWithScannerActivity : AppCompatActivity() {
     }
 
     private fun processConfirmationMessage(uiState: AuthWithScannerState.Confirmation): Boolean {
-        viewModel.showConfirmationScreen(supportFragmentManager, uiState.session, keyri)
+        val payload = requireNotNull(intent.getStringExtra(PAYLOAD))
+
+        viewModel.showConfirmationScreen(supportFragmentManager, uiState.session, payload, keyri)
 
         return true
     }
@@ -269,12 +271,10 @@ class AuthWithScannerActivity : AppCompatActivity() {
         uri?.getQueryParameters("sessionId")?.firstOrNull()?.let { sessionId ->
             val appKey = intent.getStringExtra(APP_KEY)
             val publicUserId = intent.getStringExtra(PUBLIC_USER_ID)
-            val payload = intent.getStringExtra(PAYLOAD)
 
             viewModel.initiateSession(
                 appKey = requireNotNull(appKey),
                 sessionId = sessionId,
-                payload = requireNotNull(payload),
                 publicUserId = publicUserId,
                 keyri
             )

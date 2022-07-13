@@ -7,7 +7,7 @@ import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
 import com.google.gson.reflect.TypeToken
 import com.keyrico.keyrisdk.BuildConfig
-import com.keyrico.keyrisdk.entity.SessionConfirmationResponse
+import com.keyrico.keyrisdk.entity.ErrorResponse
 import com.keyrico.keyrisdk.entity.session.RiskAttributes
 import com.keyrico.keyrisdk.exception.AuthorizationException
 import com.keyrico.keyrisdk.exception.InternalServerException
@@ -32,17 +32,13 @@ internal suspend fun <T : Any> makeApiCall(call: suspend () -> Response<T>): Res
         val response = call.invoke()
 
         if (!response.isSuccessful) {
-            val errorBody = response.errorBody()
-            val type = object : TypeToken<SessionConfirmationResponse>() {}.type
+            val type = object : TypeToken<ErrorResponse>() {}.type
+            val errorResponse: ErrorResponse? =
+                Gson().fromJson(response.errorBody()?.charStream(), type)
 
-            val errorResponse: SessionConfirmationResponse? =
-                Gson().fromJson(errorBody?.charStream(), type)
+            val exception = InternalServerException(errorResponse?.message ?: "Unable to authorize")
 
-            errorBody?.close()
-
-            val error = InternalServerException(errorResponse?.status ?: "Unable to authorize")
-
-            return Result.failure(error)
+            return Result.failure(exception)
         }
 
         return response.body()?.let { Result.success(it) }

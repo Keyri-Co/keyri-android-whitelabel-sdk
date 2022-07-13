@@ -19,22 +19,17 @@ data class Session(
     val iPAddressMobile: String,
     val iPAddressWidget: String,
     val riskAnalytics: RiskAnalytics?,
+    val publicUserId: String?,
     private val browserPublicKey: String,
     private val salt: String,
     private val hash: String
 ) : Parcelable {
 
-    suspend fun confirm(payload: String, publicUserId: String?): Result<Boolean> =
-        finishSession(isConfirmed = true, payload, publicUserId)
+    suspend fun confirm(payload: String): Result<Boolean> = finishSession(payload, true)
 
-    suspend fun deny(payload: String, publicUserId: String?): Result<Boolean> =
-        finishSession(isConfirmed = false, payload, publicUserId)
+    suspend fun deny(payload: String): Result<Boolean> = finishSession(payload, false)
 
-    private suspend fun finishSession(
-        isConfirmed: Boolean,
-        payload: String,
-        publicUserId: String?
-    ): Result<Boolean> {
+    private suspend fun finishSession(payload: String, isConfirmed: Boolean): Result<Boolean> {
         return try {
             val cryptoService = CryptoService()
 
