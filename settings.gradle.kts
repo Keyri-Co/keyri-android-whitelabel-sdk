@@ -1,6 +1,6 @@
 rootProject.name = "Keyri"
 
-include(":app")
+include(":example")
 include(":keyrisdk")
 include(":compose")
-include(":appcompose")
+include(":example-compose")

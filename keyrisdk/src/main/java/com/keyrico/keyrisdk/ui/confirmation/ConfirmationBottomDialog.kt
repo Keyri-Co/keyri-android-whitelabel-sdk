@@ -58,7 +58,6 @@ class ConfirmationBottomDialog(
             val countryCode = iPDataBrowser?.countryCode
 
             llWidgetLocation.isVisible = city != null && countryCode != null
-            tvWidgetLocation.isVisible = true
             tvVPNDetected.isVisible =
                 riskAnalytics?.riskAttributes?.isAnonymous ?: authenticationDenied
 
@@ -84,7 +83,6 @@ class ConfirmationBottomDialog(
             val countryCode = iPDataMobile?.countryCode
 
             llMobileLocation.isVisible = city != null && countryCode != null
-            tvMobileLocation.isVisible = true
 
             tvMobileLocation.text =
                 getString(

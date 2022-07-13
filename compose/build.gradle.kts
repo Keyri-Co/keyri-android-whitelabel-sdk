@@ -50,10 +50,13 @@ android {
 }
 
 dependencies {
+    api(project(":keyrisdk"))
+
     implementation("androidx.core:core-ktx:1.8.0")
     implementation("androidx.appcompat:appcompat:1.4.2")
     implementation("com.google.android.material:material:1.6.1")
 
+    // TODO Cleanup here, maybe remove after moving camerax to separate module
     // Camera and analytics
     implementation("com.google.mlkit:barcode-scanning:17.0.2")
     implementation("androidx.camera:camera-core:1.1.0")
@@ -64,10 +67,11 @@ dependencies {
     // Compose
     implementation("androidx.compose.runtime:runtime:1.1.1")
     implementation("androidx.compose.ui:ui:1.1.1")
+    implementation("androidx.compose.ui:ui-tooling:1.1.1")
     implementation("androidx.compose.foundation:foundation:1.1.1")
     implementation("androidx.compose.foundation:foundation-layout:1.1.1")
     implementation("androidx.compose.material:material:1.1.1")
-    implementation("androidx.compose.ui:ui-tooling:1.1.1")
+    implementation("androidx.compose.material3:material3:1.0.0-alpha14")
     implementation("com.google.android.material:compose-theme-adapter:1.1.14")
 }
 
