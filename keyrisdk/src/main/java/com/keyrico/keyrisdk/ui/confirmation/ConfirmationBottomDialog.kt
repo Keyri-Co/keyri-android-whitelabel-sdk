@@ -16,8 +16,9 @@ import com.keyrico.keyrisdk.entity.session.Session
 
 class ConfirmationBottomDialog(
     override val session: Session,
-    override val onResult: ((isAccepted: Boolean) -> Unit)?
-) : BaseConfirmationBottomDialog(session, onResult) {
+    override val payload: String,
+    override val onResult: ((Result<Boolean>) -> Unit)?
+) : BaseConfirmationBottomDialog(session, payload, onResult) {
 
     private lateinit var binding: DialogConfirmationBinding
 
@@ -113,10 +114,13 @@ class ConfirmationBottomDialog(
             tvErrorMessage.isVisible = authenticationDenied
             llButtons.isVisible = !authenticationDenied
 
-            bNo.setOnClickListener { dismiss() }
+            bNo.setOnClickListener {
+                isAccepted = false
+                dismiss()
+            }
 
             bYes.setOnClickListener {
-                accepted = true
+                isAccepted = true
                 dismiss()
             }
         }
