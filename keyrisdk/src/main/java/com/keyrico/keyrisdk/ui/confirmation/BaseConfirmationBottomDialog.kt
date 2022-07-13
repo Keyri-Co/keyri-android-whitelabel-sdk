@@ -30,7 +30,6 @@ abstract class BaseConfirmationBottomDialog(
     override fun onDismiss(dialog: DialogInterface) {
         activity?.lifecycleScope?.launch(Dispatchers.IO) {
             val result = if (isAccepted) {
-
                 session.confirm(payload)
             } else {
                 session.deny(payload)
