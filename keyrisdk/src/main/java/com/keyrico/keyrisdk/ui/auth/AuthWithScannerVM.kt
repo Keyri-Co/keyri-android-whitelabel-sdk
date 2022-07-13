@@ -18,20 +18,13 @@ internal class AuthWithScannerVM : ViewModel() {
 
     val uiState: StateFlow<AuthWithScannerState> = _uiState.asStateFlow()
 
-    fun initiateSession(
-        appKey: String,
-        sessionId: String,
-        payload: String,
-        publicUserId: String?,
-        keyri: Keyri
-    ) {
+    fun initiateSession(appKey: String, sessionId: String, publicUserId: String?, keyri: Keyri) {
         _uiState.value = AuthWithScannerState.Loading
 
         viewModelScope.launch(Dispatchers.IO) {
             keyri.initiateQrSession(
                 appKey = appKey,
                 sessionId = sessionId,
-                payload = payload,
                 publicUserId = publicUserId
             ).onSuccess { session ->
                 _uiState.value = AuthWithScannerState.Confirmation(session)
@@ -42,24 +35,18 @@ internal class AuthWithScannerVM : ViewModel() {
     fun showConfirmationScreen(
         supportFragmentManager: FragmentManager,
         session: Session,
+        payload: String,
         keyri: Keyri
     ) {
         _uiState.value = AuthWithScannerState.Loading
 
         viewModelScope.launch(Dispatchers.IO) {
-            val isApproved = keyri.initializeDefaultScreen(supportFragmentManager, session)
-
-            if (isApproved) {
-                session.confirm().onSuccess {
-                    _uiState.value = AuthWithScannerState.Authenticated(it)
+            keyri.initializeDefaultScreen(supportFragmentManager, session, payload)
+                .onSuccess { isAuthenticated ->
+                    _uiState.value = AuthWithScannerState.Authenticated(isAuthenticated)
                 }.onFailure {
                     processError(it)
                 }
-            } else {
-                session.deny().getOrNull()
-
-                _uiState.value = AuthWithScannerState.Authenticated(false)
-            }
         }
     }
 

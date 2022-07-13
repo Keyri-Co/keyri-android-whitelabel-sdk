@@ -18,11 +18,11 @@ android {
     }
 
     buildTypes {
-        named("debug").configure {
+        debug {
             isMinifyEnabled = false
         }
 
-        named("release").configure {
+        release {
             isMinifyEnabled = false
 
             proguardFiles(
@@ -53,10 +53,10 @@ dependencies {
     // UI
     implementation("androidx.appcompat:appcompat:1.4.2")
     implementation("com.google.android.material:material:1.6.1")
-    implementation("androidx.activity:activity-ktx:1.4.0")
+    implementation("androidx.activity:activity-ktx:1.5.0")
 
     // Lifecycle
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.5.0-rc02")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.5.0")
 
     // Networking
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
@@ -66,10 +66,10 @@ dependencies {
 
     // Camera and analytics
     implementation("com.google.mlkit:barcode-scanning:17.0.2")
-    implementation("androidx.camera:camera-core:1.2.0-alpha02")
-    implementation("androidx.camera:camera-camera2:1.2.0-alpha02")
-    implementation("androidx.camera:camera-lifecycle:1.2.0-alpha02")
-    implementation("androidx.camera:camera-view:1.2.0-alpha02")
+    implementation("androidx.camera:camera-core:1.1.0")
+    implementation("androidx.camera:camera-camera2:1.1.0")
+    implementation("androidx.camera:camera-lifecycle:1.1.0")
+    implementation("androidx.camera:camera-view:1.1.0")
 
     // Tink crypto
     implementation("com.google.crypto.tink:tink-android:1.6.1")
