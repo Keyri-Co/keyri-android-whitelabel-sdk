@@ -119,13 +119,13 @@ private fun process(uri: Uri?) {
 
                 val keyri = Keyri() // Be sure to import the SDK at the top of the file
 
-                keyri.initiateQrSession(appKey, sessionId, payload, publicUserId)
+                keyri.initiateQrSession(appKey, sessionId, publicUserId)
                     .onSuccess { session ->
                         // You can optionally create a custom screen and pass the session ID there. We recommend this approach for large enterprises
-                        keyri.initializeDefaultScreen(supportFragmentManager, session)
+                        keyri.initializeDefaultScreen(supportFragmentManager, session, payload)
 
                         // In a real world example you’d wait for user confirmation first
-                        session.confirm() // or session.deny()
+                        session.confirm(payload) // or session.deny(payload)
                     }
 
                 // Process result
@@ -196,13 +196,13 @@ private fun process(uri: Uri?) {
 
                 val keyri = Keyri() // Be sure to import the SDK at the top of the file
 
-                keyri.initiateQrSession(appKey, sessionId, payload, publicUserId)
+                keyri.initiateQrSession(appKey, sessionId, publicUserId)
                     .onSuccess { session ->
                         // You can optionally create a custom screen and pass the session ID there. We recommend this approach for large enterprises
-                        keyri.initializeDefaultScreen(supportFragmentManager, session)
+                        keyri.initializeDefaultScreen(supportFragmentManager, session, payload)
 
                         // In a real world example you’d wait for user confirmation first
-                        session.confirm() // or session.deny()
+                        session.confirm(payload) // or session.deny(payload)
                     }
 
                 // Process result
@@ -219,25 +219,26 @@ private fun process(uri: Uri?) {
 The following methods are available to interact with the Keyri SDK API, which can be used to craft
 your own custom flows and leverage the SDK in different ways:
 
-* `suspend fun initializeQrSession(appKey: String, sessionId: String, payload: String, publicUserId: String?): Result<Session>` - call it after obtaining the sessionId from QR code or deep link. Returns Session object with
-Risk attributes (needed to show confirmation screen) or Exception
+* `suspend fun initializeQrSession(appKey: String, sessionId: String, publicUserId: String?): Result<Session>`
+  - call it after obtaining the sessionId from QR code or deep link. Returns Session object with
+  Risk attributes (needed to show confirmation screen) or Exception
 
-* `suspend fun initializeDefaultScreen(fm: FragmentManager, session: Session): Boolean` - to show
-  Confirmation with default UI. Returns Boolean result. Also you can implement your custom
+* `suspend fun initializeDefaultScreen(fm: FragmentManager, session: Session, payload: String): Boolean`
+  - to show Confirmation with default UI. Returns Boolean result. Also you can implement your custom
   Confirmation Screen, just inherit from BaseConfirmationDialog.kt
 
-* `suspend fun Session.confirm(): Result` - call this function if user confirmed the dialog. Returns
-  Boolean authentication result
+* `suspend fun Session.confirm(payload: String): Result` - call this function if user confirmed the
+  dialog. Returns Boolean authentication result
 
-* `suspend fun Session.deny(): Result<Boolean>` - call if the user denied the dialog. Returns
-  Boolean authentication result
+* `suspend fun Session.deny(payload: String): Result<Boolean>` - call if the user denied the dialog.
+  Returns Boolean authentication result
 
 * `fun generateAssociationKey(publicUserId: String): String` - creates a persistent ECDSA keypair
   for the given public user ID (example: email address) and return public key
 
-* `fun getUserSignature(publicUserId: String?, data: String): String` - returns an
-  ECDSA signature of the timestamp and optional customSignedData with the publicUserId's
-  privateKey (or, if not provided, anonymous privateKey), customSignedData can be anything
+* `fun getUserSignature(publicUserId: String?, data: String): String` - returns an ECDSA signature
+  of the timestamp and optional customSignedData with the publicUserId's privateKey (or, if not
+  provided, anonymous privateKey), customSignedData can be anything
 
 * `fun listAssociationKey(): List<String>` - returns a list of names (publicUserIds) of "association
   keys" (public keys)
@@ -261,8 +262,8 @@ built-in views, you are only responsible for calling the confirm/deny methods ab
 
     - `RiskStatus` - clear, warn or deny
 
-    - `RiskFlagString` - if RiskStatus is warn or deny, this string alerts the user to what is triggering
-  the risk situation
+    - `RiskFlagString` - if RiskStatus is warn or deny, this string alerts the user to what is
+      triggering the risk situation
 
     - `GeoData` - Location data for both mobile and widget
 
@@ -278,7 +279,8 @@ built-in views, you are only responsible for calling the confirm/deny methods ab
 
             - `country\_code`
 
-* `Session.confirm()` and `Session.deny()` - see descriptions in [Interacting with the API](#interacting-with-the-api).
+* `Session.confirm(payload: String)` and `Session.deny(payload: String)` - see descriptions
+  in [Interacting with the API](#interacting-with-the-api).
 
 ### Disclaimer
 
