@@ -56,7 +56,6 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.4.2")
     implementation("com.google.android.material:material:1.6.1")
 
-    // TODO Cleanup here, maybe remove after moving camerax to separate module
     // Camera and analytics
     implementation("com.google.mlkit:barcode-scanning:17.0.2")
     implementation("androidx.camera:camera-core:1.1.0")
