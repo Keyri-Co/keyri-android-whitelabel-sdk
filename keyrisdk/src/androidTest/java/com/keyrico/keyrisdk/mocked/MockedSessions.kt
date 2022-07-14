@@ -40,7 +40,7 @@ val sessionRegular = Session(
     widgetOrigin = EMPTY,
     sessionId = EMPTY,
     widgetUserAgent = WidgetUserAgent(isDesktop = true, os = "Windows", browser = "Chrome"),
-    userParameters = UserParameters(EMPTY, EMPTY, EMPTY),
+    userParameters = UserParameters(EMPTY),
     iPAddressMobile = EMPTY,
     iPAddressWidget = EMPTY,
     riskAnalytics = RiskAnalytics(
