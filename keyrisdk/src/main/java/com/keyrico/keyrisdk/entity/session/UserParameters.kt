@@ -6,12 +6,6 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class UserParameters(
-    @SerializedName("Origin")
-    val origin: String,
-
-    @SerializedName("method")
-    val method: String,
-
-    @SerializedName("Environment")
-    val environment: String
+    @SerializedName("Custom")
+    val custom: String?
 ) : Parcelable
