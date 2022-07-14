@@ -6,4 +6,5 @@
     <string name="keyri_confirmation_screen_yes">Yes</string>
     <string name="keyri_confirmation_screen_no">No</string>
     <string name="keyri_confirmation_screen_near">Near %s</string>
+    <string name="keyri_confirmation_screen_agent">%1$s on %2$s</string>
 </resources>
