@@ -11,7 +11,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import com.keyrico.keyrisdk.R
 import com.keyrico.keyrisdk.databinding.DialogConfirmationBinding
-import com.keyrico.keyrisdk.entity.session.RiskAnalytics
 import com.keyrico.keyrisdk.entity.session.Session
 
 class ConfirmationBottomDialog(
@@ -23,9 +22,9 @@ class ConfirmationBottomDialog(
     private lateinit var binding: DialogConfirmationBinding
 
     private val riskAnalytics by lazy(session::riskAnalytics)
-    private val authenticationDenied by lazy { riskAnalytics?.riskStatus != null && riskAnalytics?.getRiskStatusType() == DENY }
+    private val authenticationDenied by lazy { riskAnalytics?.isDeny() == true }
     private val authenticationWarning by lazy {
-        riskAnalytics?.getRiskStatusType() == WARNING || riskAnalytics?.riskAttributes?.isAnonymous == true || riskAnalytics?.riskAttributes?.isProxy == true
+        riskAnalytics?.isWarning() == true || riskAnalytics?.riskAttributes?.isAnonymous == true || riskAnalytics?.riskAttributes?.isProxy == true
     }
 
     override fun onCreateView(
@@ -58,7 +57,6 @@ class ConfirmationBottomDialog(
             val countryCode = iPDataBrowser?.countryCode
 
             llWidgetLocation.isVisible = city != null && countryCode != null
-            tvWidgetLocation.isVisible = true
             tvVPNDetected.isVisible =
                 riskAnalytics?.riskAttributes?.isAnonymous ?: authenticationDenied
 
@@ -84,7 +82,6 @@ class ConfirmationBottomDialog(
             val countryCode = iPDataMobile?.countryCode
 
             llMobileLocation.isVisible = city != null && countryCode != null
-            tvMobileLocation.isVisible = true
 
             tvMobileLocation.text =
                 getString(
@@ -104,8 +101,11 @@ class ConfirmationBottomDialog(
             val widgetUserAgent = session.widgetUserAgent
 
             llWidgetAgent.isVisible = widgetUserAgent != null
-            tvWidgetAgent.text =
-                listOf(widgetUserAgent?.os, widgetUserAgent?.browser).joinToString()
+            tvWidgetAgent.text = getString(
+                R.string.keyri_confirmation_screen_agent,
+                widgetUserAgent?.browser,
+                widgetUserAgent?.os
+            )
         }
     }
 
@@ -134,10 +134,5 @@ class ConfirmationBottomDialog(
 
     private fun getColor(resId: Int): Int {
         return ContextCompat.getColor(requireContext(), resId)
-    }
-
-    companion object {
-        private val WARNING = RiskAnalytics.RiskMessageTypes.WARNING
-        private val DENY = RiskAnalytics.RiskMessageTypes.DENY
     }
 }
