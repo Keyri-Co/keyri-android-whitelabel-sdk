@@ -1,4 +1,4 @@
-package com.keyrico.keyrisdk.ui.auth
+package com.keyrico.scanner
 
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModel

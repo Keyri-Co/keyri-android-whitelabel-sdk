@@ -7,7 +7,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.keyri.databinding.ActivityAuthBinding
 import com.keyri.ui.complete.AuthCompleteActivity
-import com.keyrico.keyrisdk.ui.auth.AuthWithScannerActivity
+import com.keyrico.scanner.AuthWithScannerActivity
 
 class MainActivity : AppCompatActivity() {
 
@@ -29,7 +29,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.bAuthQr.setOnClickListener {
             val intent = Intent(this, AuthWithScannerActivity::class.java).apply {
-                putExtra(AuthWithScannerActivity.APP_KEY, "IT7VrTQ0r4InzsvCNJpRCRpi1qzfgpaj")
+                putExtra(AuthWithScannerActivity.APP_KEY, "App key here")
                 putExtra(AuthWithScannerActivity.PUBLIC_USER_ID, "public-User-ID")
                 putExtra(AuthWithScannerActivity.PAYLOAD, "Custom payload here")
             }

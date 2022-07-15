@@ -63,13 +63,6 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 
-    // Camera and analytics
-    implementation("com.google.mlkit:barcode-scanning:17.0.2")
-    implementation("androidx.camera:camera-core:1.1.0")
-    implementation("androidx.camera:camera-camera2:1.1.0")
-    implementation("androidx.camera:camera-lifecycle:1.1.0")
-    implementation("androidx.camera:camera-view:1.1.0")
-
     // Tink crypto
     implementation("com.google.crypto.tink:tink-android:1.6.1")
 

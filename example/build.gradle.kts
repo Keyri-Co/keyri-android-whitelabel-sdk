@@ -46,6 +46,7 @@ android {
 
 dependencies {
     implementation(project(":keyrisdk"))
+    implementation(project(":scanner"))
 
     implementation("androidx.appcompat:appcompat:1.4.2")
     implementation("androidx.core:core-ktx:1.8.0")

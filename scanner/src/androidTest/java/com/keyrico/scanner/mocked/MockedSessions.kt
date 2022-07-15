@@ -1,4 +1,4 @@
-package com.keyrico.keyrisdk.mocked
+package com.keyrico.scanner.mocked
 
 import com.keyrico.keyrisdk.entity.session.GeoData
 import com.keyrico.keyrisdk.entity.session.IPData

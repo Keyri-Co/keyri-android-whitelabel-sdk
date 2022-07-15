@@ -1,4 +1,4 @@
-package com.keyrico.keyrisdk.ui.auth
+package com.keyrico.scanner
 
 import android.os.Parcelable
 import com.keyrico.keyrisdk.entity.session.Session

@@ -1,4 +1,4 @@
-package com.keyrico.keyrisdk
+package com.keyrico.scanner
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize

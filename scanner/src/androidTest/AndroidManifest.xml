@@ -1,12 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.keyrico.keyrisdk">
+    package="com.keyrico.scanner">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application>
 
         <activity
-            android:name="com.keyrico.keyrisdk.WebViewActivity"
+            android:name="com.keyrico.scanner.WebViewActivity"
             android:allowClearUserData="true"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.DayNight.NoActionBar" />

@@ -24,7 +24,7 @@ jobs:
         run: ./gradlew assembleDebug
 
       - name: Build APK for UI test
-        run: ./gradlew keyrisdk:assembleDebugAndroidTest
+        run: ./gradlew scanner:assembleDebugAndroidTest
 
       - name: Upload app-debug APK
         uses: actions/upload-artifact@v3
@@ -32,11 +32,11 @@ jobs:
           name: app-debug
           path: app/build/outputs/apk/debug/app-debug.apk
 
-      - name: Upload keyrisdk-debug-androidTest APK
+      - name: Upload scanner-debug-androidTest APK
         uses: actions/upload-artifact@v3
         with:
-          name: keyrisdk-debug-androidTest
-          path: keyrisdk/build/outputs/apk/androidTest/debug/keyrisdk-debug-androidTest.apk
+          name: scanner-debug-androidTest
+          path: scanner/build/outputs/apk/androidTest/debug/scanner-debug-androidTest.apk
 
   run_ui_tests_on_firebase:
     runs-on: ubuntu-20.04
@@ -49,10 +49,10 @@ jobs:
           name: app-debug
           path: artifacts
 
-      - name: Download keyrisdk-debug-androidTest APK
+      - name: Download scanner-debug-androidTest APK
         uses: actions/download-artifact@v3
         with:
-          name: keyrisdk-debug-androidTest
+          name: scanner-debug-androidTest
           path: artifacts
 
       - name: Display structure of downloaded files
@@ -73,4 +73,4 @@ jobs:
       - name: Run Instrumentation Tests in Firebase Test Lab
         run: |
           gcloud firebase test android models list
-          gcloud firebase test android run --type instrumentation --app "artifacts/app-debug.apk" --test "artifacts/keyrisdk-debug-androidTest.apk" --device model=oriole,version=31,locale=en,orientation=portrait --timeout 210s
+          gcloud firebase test android run --type instrumentation --app "artifacts/app-debug.apk" --test "artifacts/scanner-debug-androidTest.apk" --device model=oriole,version=31,locale=en,orientation=portrait --timeout 210s

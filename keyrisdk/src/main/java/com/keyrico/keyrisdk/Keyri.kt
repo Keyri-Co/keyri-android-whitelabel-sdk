@@ -3,7 +3,7 @@ package com.keyrico.keyrisdk
 import androidx.fragment.app.FragmentManager
 import com.keyrico.keyrisdk.entity.session.Session
 import com.keyrico.keyrisdk.services.CryptoService
-import com.keyrico.keyrisdk.ui.confirmation.ConfirmationBottomDialog
+import com.keyrico.keyrisdk.confirmation.ConfirmationBottomDialog
 import com.keyrico.keyrisdk.utils.makeApiCall
 import com.keyrico.keyrisdk.utils.provideApiService
 import kotlinx.coroutines.channels.awaitClose

@@ -1,4 +1,4 @@
-package com.keyrico.appcompose.ui.theme
+package com.keyrico.examplecompose.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

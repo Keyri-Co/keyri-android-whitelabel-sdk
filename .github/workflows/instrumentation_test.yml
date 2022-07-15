@@ -1,12 +1,12 @@
-name: Lint
+name: Instrumentation Tests
 
 on:
   pull_request:
     branches: [ master, develop ]
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
+  test:
+    runs-on: macos-latest
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -14,7 +14,8 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: '11'
-      - name: lint
-        run: ./gradlew ktlint
-      - name: CheckStyle
-        run: ./gradlew checkJavaStyle
+      - name: run tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 31
+          script: ./gradlew keyrisdk:connectedCheck

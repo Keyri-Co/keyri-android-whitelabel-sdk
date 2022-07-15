@@ -1,7 +1,8 @@
-package com.keyrico.keyrisdk
+package com.keyrico.scanner
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.keyrico.keyrisdk.Keyri
 import com.keyrico.keyrisdk.entity.session.Session
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow

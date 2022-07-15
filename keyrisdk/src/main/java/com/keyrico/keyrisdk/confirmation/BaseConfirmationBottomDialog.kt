@@ -1,4 +1,4 @@
-package com.keyrico.keyrisdk.ui.confirmation
+package com.keyrico.keyrisdk.confirmation
 
 import android.content.DialogInterface
 import android.os.Bundle

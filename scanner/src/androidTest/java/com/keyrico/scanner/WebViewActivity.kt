@@ -1,4 +1,4 @@
-package com.keyrico.keyrisdk
+package com.keyrico.scanner
 
 import android.app.Activity
 import android.content.Intent
@@ -21,15 +21,16 @@ import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
-import com.keyrico.keyrisdk.ExampleAppInstrumentedTest.Companion.APP_KEY
-import com.keyrico.keyrisdk.ExampleAppInstrumentedTest.Companion.WEB_VIEW_URL
+import com.keyrico.keyrisdk.Keyri
 import com.keyrico.keyrisdk.entity.session.Session
-import com.keyrico.keyrisdk.mocked.sessionDenied
-import com.keyrico.keyrisdk.mocked.sessionNoIpData
-import com.keyrico.keyrisdk.mocked.sessionRegular
-import com.keyrico.keyrisdk.mocked.sessionWarning
-import com.keyrico.keyrisdk.mocked.sessionWithoutRiskPermission
-import com.keyrico.keyrisdk.ui.confirmation.ConfirmationBottomDialog
+import com.keyrico.keyrisdk.confirmation.ConfirmationBottomDialog
+import com.keyrico.scanner.ExampleAppInstrumentedTest.Companion.APP_KEY
+import com.keyrico.scanner.ExampleAppInstrumentedTest.Companion.WEB_VIEW_URL
+import com.keyrico.scanner.mocked.sessionDenied
+import com.keyrico.scanner.mocked.sessionNoIpData
+import com.keyrico.scanner.mocked.sessionRegular
+import com.keyrico.scanner.mocked.sessionWarning
+import com.keyrico.scanner.mocked.sessionWithoutRiskPermission
 import kotlinx.coroutines.launch
 
 class WebViewActivity : AppCompatActivity() {

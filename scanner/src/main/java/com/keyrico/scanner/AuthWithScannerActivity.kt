@@ -1,4 +1,4 @@
-package com.keyrico.keyrisdk.ui.auth
+package com.keyrico.scanner
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -37,7 +37,7 @@ import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import com.keyrico.keyrisdk.Keyri
-import com.keyrico.keyrisdk.databinding.ActivityAuthWithScannerBinding
+import com.keyrico.scanner.databinding.ActivityAuthWithScannerBinding
 import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
 import kotlin.math.abs
