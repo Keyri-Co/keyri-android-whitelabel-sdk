@@ -32,6 +32,8 @@ data class Session(
 
     private suspend fun finishSession(payload: String, isConfirmed: Boolean): Result<Boolean> {
         return try {
+            // TODO 1. Change model according Justin's changes
+            // TODO 2. Test it
             if (riskAnalytics?.isDeny() == true) {
                 throw RiskException("User Denied. Excessive Risk")
             }
