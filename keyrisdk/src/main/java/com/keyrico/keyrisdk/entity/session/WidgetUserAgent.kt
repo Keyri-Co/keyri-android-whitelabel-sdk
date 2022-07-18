@@ -6,12 +6,6 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class WidgetUserAgent(
-    @SerializedName("isDesktop")
-    val isDesktop: Boolean,
-
-    @SerializedName("os")
-    val os: String,
-
-    @SerializedName("browser")
-    val browser: String
+    @SerializedName("Custom")
+    val custom: String?
 ) : Parcelable
