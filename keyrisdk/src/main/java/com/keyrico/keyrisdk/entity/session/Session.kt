@@ -2,6 +2,7 @@ package com.keyrico.keyrisdk.entity.session
 
 import android.os.Parcelable
 import com.keyrico.keyrisdk.exception.AuthorizationException
+import com.keyrico.keyrisdk.exception.RiskException
 import com.keyrico.keyrisdk.services.CryptoService
 import com.keyrico.keyrisdk.services.api.data.ApiData
 import com.keyrico.keyrisdk.services.api.data.BrowserData
@@ -20,6 +21,7 @@ data class Session(
     val iPAddressWidget: String,
     val riskAnalytics: RiskAnalytics?,
     val publicUserId: String?,
+    private val message: String?,
     private val browserPublicKey: String,
     private val salt: String,
     private val hash: String
@@ -31,6 +33,10 @@ data class Session(
 
     private suspend fun finishSession(payload: String, isConfirmed: Boolean): Result<Boolean> {
         return try {
+            if (riskAnalytics?.isDeny() == true) {
+                throw RiskException(message ?: "User Denied. Excessive Risk")
+            }
+
             val cryptoService = CryptoService()
 
             val cipher = cryptoService.encryptHkdf(browserPublicKey, payload)
