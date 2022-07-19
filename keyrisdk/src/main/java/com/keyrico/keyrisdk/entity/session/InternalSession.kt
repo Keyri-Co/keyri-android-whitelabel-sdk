@@ -24,6 +24,9 @@ internal data class InternalSession(
     @SerializedName("riskAnalytics")
     val riskAnalytics: RiskAnalytics?,
 
+    @SerializedName("message")
+    val message: String?,
+
     @SerializedName("browserPublicKey")
     val browserPublicKey: String,
 
@@ -43,6 +46,7 @@ internal data class InternalSession(
             iPAddressWidget = iPAddressWidget,
             riskAnalytics = riskAnalytics,
             publicUserId = publicUserId,
+            message = message,
             browserPublicKey = browserPublicKey,
             salt = salt,
             hash = hash
