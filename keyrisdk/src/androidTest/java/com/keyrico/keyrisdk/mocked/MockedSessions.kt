@@ -52,6 +52,7 @@ val sessionRegular = Session(
     EMPTY,
     EMPTY,
     EMPTY,
+    EMPTY,
     EMPTY
 )
 

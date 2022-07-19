@@ -23,9 +23,7 @@ class ConfirmationBottomDialog(
 
     private val riskAnalytics by lazy(session::riskAnalytics)
     private val authenticationDenied by lazy { riskAnalytics?.isDeny() == true }
-    private val authenticationWarning by lazy {
-        riskAnalytics?.isWarning() == true || riskAnalytics?.riskAttributes?.isAnonymous == true || riskAnalytics?.riskAttributes?.isProxy == true
-    }
+    private val authenticationWarning by lazy { riskAnalytics?.isWarning() == true }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -57,8 +55,7 @@ class ConfirmationBottomDialog(
             val countryCode = iPDataBrowser?.countryCode
 
             llWidgetLocation.isVisible = city != null && countryCode != null
-            tvVPNDetected.isVisible =
-                riskAnalytics?.riskAttributes?.isAnonymous ?: authenticationDenied
+            tvVPNDetected.isVisible = authenticationDenied or authenticationWarning
 
             tvWidgetLocation.text =
                 getString(

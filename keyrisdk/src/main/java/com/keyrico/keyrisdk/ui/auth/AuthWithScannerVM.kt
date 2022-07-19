@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.keyrico.keyrisdk.Keyri
 import com.keyrico.keyrisdk.entity.session.Session
+import com.keyrico.keyrisdk.exception.RiskException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,7 +46,9 @@ internal class AuthWithScannerVM : ViewModel() {
                 .onSuccess { isAuthenticated ->
                     _uiState.value = AuthWithScannerState.Authenticated(isAuthenticated)
                 }.onFailure {
-                    processError(it)
+                    if (it !is RiskException) {
+                        processError(it)
+                    }
                 }
         }
     }
