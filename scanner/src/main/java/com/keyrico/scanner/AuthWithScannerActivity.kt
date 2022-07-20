@@ -216,7 +216,7 @@ class AuthWithScannerActivity : AppCompatActivity() {
             camera = cameraProvider?.bindToLifecycle(this, cameraSelector, preview, imageAnalyzer)
 
             preview?.setSurfaceProvider(binding.scannerPreview.surfaceProvider)
-        } catch (exc: Exception) {
+        } catch (exception: Exception) {
             Log.d("Keyri", "Failed to init Camera")
         }
     }
