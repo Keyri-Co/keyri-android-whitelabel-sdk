@@ -1,4 +1,4 @@
-package com.keyrico.composeapp
+package com.keyrico.examplecompose
 
 import org.junit.Test
 

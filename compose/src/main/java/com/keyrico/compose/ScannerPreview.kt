@@ -47,7 +47,7 @@ fun ScannerPreview(
     modifier: Modifier = Modifier,
     onScanResult: (Result<String>) -> Unit = {},
     onClose: () -> Unit = {},
-    loading: Boolean = false
+    isLoading: Boolean = false
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
@@ -56,8 +56,11 @@ fun ScannerPreview(
     remember {
         ProcessCameraProvider.getInstance(context)
             .configureCamera(
-                previewView, lifecycleOwner, context,
-                onScanResult = onScanResult
+                previewView = previewView,
+                lifecycleOwner = lifecycleOwner,
+                context = context,
+                onScanResult = onScanResult,
+                isLoading = isLoading
             )
     }
 
@@ -97,7 +100,7 @@ fun ScannerPreview(
                 .fillMaxHeight(0.28F)
                 .fillMaxWidth()
         ) {
-            if (loading) {
+            if (isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center),
                     color = colorResource(id = R.color.text_color)
@@ -140,7 +143,8 @@ private fun ListenableFuture<ProcessCameraProvider>.configureCamera(
     previewView: PreviewView,
     lifecycleOwner: LifecycleOwner,
     context: Context,
-    onScanResult: (Result<String>) -> Unit = {}
+    onScanResult: (Result<String>) -> Unit = {},
+    isLoading: Boolean
 ): ListenableFuture<ProcessCameraProvider> {
     addListener({
         val cameraSelector = CameraSelector.Builder().build()
@@ -149,13 +153,18 @@ private fun ListenableFuture<ProcessCameraProvider>.configureCamera(
             .build()
             .apply { setSurfaceProvider(previewView.surfaceProvider) }
 
-        val analysis = bindAnalysisUseCase(onScanResult)
-
         try {
             get().apply {
                 unbindAll()
-                bindToLifecycle(lifecycleOwner, cameraSelector, preview)
-                bindToLifecycle(lifecycleOwner, cameraSelector, analysis)
+
+                if (isLoading) {
+                    bindToLifecycle(lifecycleOwner, cameraSelector, preview)
+                } else {
+                    val analysis = bindAnalysisUseCase(onScanResult)
+
+                    bindToLifecycle(lifecycleOwner, cameraSelector, preview)
+                    bindToLifecycle(lifecycleOwner, cameraSelector, analysis)
+                }
             }
         } catch (exception: Exception) {
             Log.d("Keyri", "Failed to init Camera")
