@@ -12,8 +12,11 @@ jobs:
     permissions:
       contents: write
   steps:
-    - uses: actions/checkout@v3
-    - uses: ncipollo/release-action@v1
+    - name: checkout
+      uses: actions/checkout@v3
+    - name: Create release
+      uses: ncipollo/release-action@v1
+
       with:
 # TODO Add release notes
 #        bodyFile: "body.md"
