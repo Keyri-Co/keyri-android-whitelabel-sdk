@@ -14,7 +14,7 @@ This repository contains the open source code for [Keyri](https://keyri.com) And
 ![Firebase Instrumentation Tests](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk-source/workflows/Firebase%20Instrumentation%20Tests/badge.svg)
 ![Release](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk-source/workflows/Release/badge.svg)
 
-[![GitHub release](https://img.shields.io/github/release/Keyri-Co/keyri-android-whitelabel-sdk-source.svg?maxAge=10)](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk-source/releases)
+[![GitHub release](https://img.shields.io/github/release/Keyri-Co/keyri-android-whitelabel-sdk.svg?maxAge=10)](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/releases)
 
 ![demo](images/demo.gif)
 
@@ -32,7 +32,7 @@ This repository contains the open source code for [Keyri](https://keyri.com) And
 * [License](#license)
 
 The latest source code of the Keyri Android SDK can be found
-here: [Releases](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk-source/releases)
+here: [Releases](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/releases)
 
 ### **System Requirements**
 
@@ -403,7 +403,7 @@ built-in views, you are only responsible for calling the confirm/deny methods ab
 
 If you do not want to lose the list of Keyri accounts after deleting the application, you can
 configure Backup. You can learn more about this in
-the [BACKUP](keyrisdk/src/main/java/com/keyrico/keyrisdk/backup/BACKUP.md) section.
+the [BACKUP](BACKUP.md) section.
 
 ### Disclaimer
 
