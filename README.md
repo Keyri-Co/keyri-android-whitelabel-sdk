@@ -4,11 +4,11 @@
     </a>
 </p>
 
-<p align="center">Gradle Android plugin for creating and check checksums with Keyri SDK</p>
+<p align="center">Keyri QR login Android SDK written in Kotlin</p>
 
 # Overview
 
-This repository contains the open source code for [Keyri](https://keyri.com) Android SDK.
+This repository contains the open-source code for [Keyri](https://keyri.com) Android SDK.
 
 ![Lint](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk-source/workflows/Lint/badge.svg)
 ![Firebase Instrumentation Tests](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk-source/workflows/Firebase%20Instrumentation%20Tests/badge.svg)
