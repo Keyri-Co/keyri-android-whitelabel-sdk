@@ -10,11 +10,11 @@
 
 This repository contains the open source code for [Keyri](https://keyri.com) Android SDK.
 
-![Lint](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/workflows/Lint/badge.svg)
-![Firebase Instrumentation Tests](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/workflows/Firebase%20Instrumentation%20Tests/badge.svg)
-![Release](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/workflows/Release/badge.svg)
+![Lint](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk-source/workflows/Lint/badge.svg)
+![Firebase Instrumentation Tests](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk-source/workflows/Firebase%20Instrumentation%20Tests/badge.svg)
+![Release](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk-source/workflows/Release/badge.svg)
 
-[![GitHub release](https://img.shields.io/github/release/Keyri-Co/keyri-android-whitelabel-sdk.svg?maxAge=10)](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/releases)
+[![GitHub release](https://img.shields.io/github/release/Keyri-Co/keyri-android-whitelabel-sdk-source.svg?maxAge=10)](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk-source/releases)
 
 ![demo](images/demo.gif)
 
@@ -32,7 +32,7 @@ This repository contains the open source code for [Keyri](https://keyri.com) And
 * [License](#license)
 
 The latest source code of the Keyri Android SDK can be found
-here: [Releases](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/releases)
+here: [Releases](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk-source/releases)
 
 ### **System Requirements**
 
