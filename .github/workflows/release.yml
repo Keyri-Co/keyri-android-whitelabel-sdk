@@ -11,15 +11,12 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-  steps:
-    - name: checkout
-      uses: actions/checkout@v3
-    - name: Create release
-      uses: ncipollo/release-action@v1
-
-      with:
-# TODO Add release notes
-#        bodyFile: "body.md"
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: Create release
+        uses: ncipollo/release-action@v1.12.0
         env:
           BRANCH: ${{ github.ref_name }}
-        tag: "::set-output name=fragment::${BRANCH##*/}"
+        with:
+          tag: "::set-output name=fragment::${BRANCH##*/}"
