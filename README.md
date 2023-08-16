@@ -338,7 +338,7 @@ your own custom flows and leverage the SDK in different ways:
   ECDSA signature of custom data for sign with the custom publicUserId's privateKey (or, if not
   provided, anonymous privateKey), customSignedData can be anything
 
-* `suspend fun Keyri.listAssociationKey(): Result<Map<String, String>>`: returns a map of "
+* `suspend fun Keyri.listAssociationKeys(): Result<Map<String, String>>`: returns a map of "
   association keys"
   and
   ECDSA Base64 public keys.
