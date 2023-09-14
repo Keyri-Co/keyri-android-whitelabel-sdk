@@ -306,23 +306,23 @@ your own custom flows and leverage the SDK in different ways:
 
 * `suspend fun Keyri.initializeQrSession(sessionId: String, publicUserId: String?): Result<Session>`:
   call it after obtaining the sessionId from QR code or deep link. Returns result of Session object
-  with Risk attributes (needed to show confirmation screen) or Throwable error
+  with Risk attributes (needed to show confirmation screen) or Throwable error.
 
-* `suspend fun Keyri.initializeDefaultConfirmationScreen(fm: FragmentManager, session: Session, payload: String, publicUserId: String?): Result<Unit>`:
+* `suspend fun Keyri.initializeDefaultConfirmationScreen(fragmentManager: FragmentManager, session: Session, payload: String, publicUserId: String?): Result<Unit>`:
   to show Confirmation with default UI. Returns Boolean result or Throwable error. Also you can
-  implement your custom Confirmation Screen, just inherit from BaseConfirmationDialog.kt
+  implement your custom Confirmation Screen, just inherit from BaseConfirmationDialog.kt.
 
 * `suspend fun Session.confirm(payload: String, context: Context, trustNewBrowser: Boolean, publicUserId: String?): Result<Unit>`:
   call this function if user
-  confirmed the dialog. Returns Boolean authentication result or Throwable error
+  confirmed the dialog. Returns Boolean authentication result or Throwable error.
 
 * `suspend fun Session.deny(payload: String, context: Context, trustNewBrowser: Boolean): Result<Unit>`:
   call if the user denied the dialog.
-  Returns Boolean denial result or Throwable error
+  Returns Boolean denial result or Throwable error.
 
 * `suspend fun Keyri.processLink(fragmentManager: FragmentManager, url: Uri, payload: String, publicUserId: String?): Result<Unit>`:
   process flow with passed uri with showing default confirmation screen. Easiest way to process
-  session from deeplink. Returns Boolean result of authentication or Throwable error
+  session from deeplink. Returns Boolean result of authentication or Throwable error.
 
 * `suspend fun Keyri.sendEvent(publicUserId: String = ANON_USER, eventType: EventType, success: Boolean): Result<FingerprintEventResponse> `:
   send fingerprint event and event result for specified publicUserId's.
@@ -331,12 +331,12 @@ your own custom flows and leverage the SDK in different ways:
   a
   persistent
   ECDSA keypair for the given publicUserId (example: email address) or default without arguments and
-  return Base64 string public key
+  return Base64 string public key.
 
 * `suspend fun Keyri.generateUserSignature(publicUserId: String = "ANON", data: String): Result<String>`:
   returns an
   ECDSA signature of custom data for sign with the custom publicUserId's privateKey (or, if not
-  provided, anonymous privateKey), customSignedData can be anything
+  provided, anonymous privateKey), data can be anything.
 
 * `suspend fun Keyri.listAssociationKeys(): Result<Map<String, String>>`: returns a map of "
   association keys"
@@ -350,30 +350,31 @@ your own custom flows and leverage the SDK in different ways:
 * `suspend fun Keyri.getAssociationKey(publicUserId: String = "ANON"): Result<String>`: returns
   association
   Base64
-  public key for the specified publicUserId (or, if not provided, for anonymous)
+  public key for the specified publicUserId (or, if not provided, for anonymous). If key not
+  present - returns null.
 
 * `suspend fun Keyri.removeAssociationKey(publicUserId: String): Result<Unit>`: removes association
-  public key for the specified publicUserId
+  public key for the specified publicUserId.
 
-* `fun easyKeyriAuth(content: Context, easyKeyriAuthLauncher: ActivityResultLauncher<Intent>, appKey: String, publicApiKey: String?, serviceEncryptionKey: String?, payload: String, publicUserId: String?)`:
-  launches scanner activity with default confirmation screen for ActivityResultLauncher
+* `fun easyKeyriAuth(context: Context, easyKeyriAuthLauncher: ActivityResultLauncher<Intent>, appKey: String, publicApiKey: String?, serviceEncryptionKey: String?, payload: String, publicUserId: String?)`:
+  launches scanner activity with default confirmation screen for ActivityResultLauncher.
 
 * `fun easyKeyriAuth(activity: Activity, requestCode: Int, appKey: String, publicApiKey: String?, serviceEncryptionKey: String?, payload: String, publicUserId: String?)`:
-  launches scanner activity for result with default confirmation screen for onActivityResult
+  launches scanner activity for result with default confirmation screen for onActivityResult.
 
-* `@Composable fun EasyKeyriAuth(sheetState: ModalBottomSheetState, coroutineScope: CoroutineScope, keyri: Keyri, url: Uri, payload: String, publicUserId: String?, result: (Result<Unit>) -> Unit)`:
+* `@Composable fun EasyKeyriAuth(sheetState: ModalBottomSheetState, coroutineScope: CoroutineScope, keyri: Keyri, sessionId: String, payload: String, result: (Result<Unit>) -> Unit)`:
   handle process flow with passed scanned url and showing default confirmation screen. Easiest way
-  to process session from deeplink
+  to process session from deeplink.
 
 * `@Composable fun ConfirmationModalBottomSheet(modalBottomSheetState: ModalBottomSheetState, coroutineScope: CoroutineScope, session: Session? = null, publicUserId: String?, payload: String, onResult: (Result<Unit>) -> Unit)`:
-  to show Confirmation with default UI. Returns Boolean result or Throwable error
+  to show Confirmation with default UI. Returns Boolean result or Throwable error.
 
 * `@Composable fun ScannerPreview(modifier: Modifier = Modifier, onScanResult: (Result<String>) -> Unit = {}, onClose: () -> Unit = {}, isLoading: Boolean = false)`:
   default QR scanner implementation based on ML Kit. Returns result of scanning (string sessionId or
-  error)
+  error).
 
 Payload can be anything (session token or a stringified JSON containing multiple items. Can include
-things like publicUserId, timestamp, customSignedData and ECDSA signature)
+things like publicUserId, timestamp, customSignedData and ECDSA signature).
 
 ### **Session Object**
 
@@ -416,7 +417,7 @@ notice anything that seems wrong or strange on GitHub 🙂
 
 [Issues](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/issues)
 
-## License
+### License
 
 This library is available under paid and free licenses. See the [LICENSE](LICENSE) file for the full
 license text.
