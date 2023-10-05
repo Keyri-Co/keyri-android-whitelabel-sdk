@@ -274,7 +274,7 @@ default: `ConfirmationModalBottomSheet`. Provide next arguments:
 * `session: Session?` - session object to process (should not be null when modalBottomSheetState is
   shown).
 * `payload: String` - can be anything (session token or a stringified JSON containing multiple
-  items. Can include things like publicUserId, timestamp, customSignedData and ECDSA signature).
+  items. Can include things like publicUserId, timestamp, data and ECDSA signature).
 * `onResult: (Result<Boolean>)` - callback for handling result of user confirmation.
 
 To handle deeplink with default confirmation screen you can use `EasyKeyriAuth` composable:
@@ -374,7 +374,7 @@ your own custom flows and leverage the SDK in different ways:
   error).
 
 Payload can be anything (session token or a stringified JSON containing multiple items. Can include
-things like publicUserId, timestamp, customSignedData and ECDSA signature).
+things like publicUserId, timestamp, data and ECDSA signature).
 
 ### **Session Object**
 
