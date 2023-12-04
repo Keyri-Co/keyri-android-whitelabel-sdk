@@ -1,6 +1,6 @@
 <p align="center">
     <a href="">
-        <img src="https://keyri.com/wp-content/uploads/2022/09/Keyri-Grey-Logo-Website-300x147.png" width=200 />
+        <img src="https://keyri.com/wp-content/uploads/2022/09/Keyri-Grey-Logo-Website-300x147.png" width=200  alt=""/>
     </a>
 </p>
 
@@ -10,10 +10,9 @@
 
 This repository contains the open-source code for [Keyri](https://keyri.com) Android SDK.
 
-![Lint](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk-source/workflows/Lint/badge.svg)
-![Firebase Instrumentation Tests](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk-source/workflows/Firebase%20Instrumentation%20Tests/badge.svg)
-![Release](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk-source/workflows/Release/badge.svg)
-
+[![Lint](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk-source/actions/workflows/lint.yml/badge.svg)](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk-source/actions/workflows/lint.yml)
+[![Firebase Instrumentation Tests](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk-source/actions/workflows/firebase_instrumentation_test.yml/badge.svg)](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk-source/actions/workflows/firebase_instrumentation_test.yml)
+[![Instrumentation Tests](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk-source/actions/workflows/instrumentation_test.yml/badge.svg)](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk-source/actions/workflows/instrumentation_test.yml)
 [![GitHub release](https://img.shields.io/github/release/Keyri-Co/keyri-android-whitelabel-sdk.svg?maxAge=10)](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/releases)
 
 ![demo](images/demo.gif)
@@ -179,6 +178,7 @@ override fun onCreate(savedInstanceState: Bundle?) {
             "[Your appKey]", // Get this value from the Keyri Developer Portal
             "[Your publicApiKey]", // Get this optional value from the Keyri Developer Portal for Fraud Prevention
             "[Your serviceEncryptionKey]", // Get this optional value from the Keyri Developer Portal for Fraud Prevention
+            true, // Block emulator detection
             "Custom payload here",
             "public-User-Id", // publicUserId is optional
         )
@@ -194,6 +194,7 @@ override fun onCreate(savedInstanceState: Bundle?) {
             "[Your appKey]", // Get this value from the Keyri Developer Portal
             "[Your publicApiKey]", // Get this optional value from the Keyri Developer Portal for Fraud Prevention
             "[Your serviceEncryptionKey]", // Get this optional value from the Keyri Developer Portal for Fraud Prevention
+            true, // Block emulator detection
             "Custom payload here",
             "public-User-Id", // publicUserId is optional
         )
@@ -324,6 +325,16 @@ your own custom flows and leverage the SDK in different ways:
   process flow with passed uri with showing default confirmation screen. Easiest way to process
   session from deeplink. Returns Boolean result of authentication or Throwable error.
 
+* `suspend fun Keyri.login(publicUserId: String?): Result<LoginObject>`: Call it to create LoginObject for
+  login with timestamp_nonce, signature, publicKey, userId. Can return Result with
+  IllegalStateException if publicUserId does not exist on the device.
+
+* `suspend fun Keyri.register(publicUserId: String?): Result<RegisterObject>`:  Call it to create
+  RegisterObject
+  for
+  register with publicKey, userId. Can return Result with IllegalStateException if publicUserId
+  already exists.
+
 * `suspend fun Keyri.sendEvent(publicUserId: String = ANON_USER, eventType: EventType, success: Boolean): Result<FingerprintEventResponse> `:
   send fingerprint event and event result for specified publicUserId's.
 
@@ -404,7 +415,7 @@ built-in views, you are only responsible for calling the confirm/deny methods ab
 
 If you do not want to lose the list of Keyri accounts after deleting the application, you can
 configure Backup. You can learn more about this in
-the [BACKUP](BACKUP.md) section.
+the [BACKUP](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/blob/main/BACKUP.md) section.
 
 ### Disclaimer
 
