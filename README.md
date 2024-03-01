@@ -15,8 +15,6 @@ This repository contains the open-source code for [Keyri](https://keyri.com) And
 [![Instrumentation Tests](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk-source/actions/workflows/instrumentation_test.yml/badge.svg)](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk-source/actions/workflows/instrumentation_test.yml)
 [![GitHub release](https://img.shields.io/github/release/Keyri-Co/keyri-android-whitelabel-sdk.svg?maxAge=10)](https://github.com/Keyri-Co/keyri-android-whitelabel-sdk/releases)
 
-![demo](images/demo.gif)
-
 ## Contents
 
 * [System Requirements](#system-requirements)
@@ -92,51 +90,49 @@ the `onNewIntent()` and `onCreate()` methods, and pass `sessionId` to process th
 yourself:
 
 ```kotlin
-override fun onCreate(savedInstanceState: Bundle?) {
+override fun onCreate(savedInstanceState: Bundle?) { 
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_main)
 
-    intent.data?.let(::process)
+    intent.data?.let(::processLink)
 }
 
 override fun onNewIntent(intent: Intent) {
     super.onNewIntent(intent)
-    process(intent.data)
+    processLink(intent.data)
 }
 
-private fun process(uri: Uri?) {
-    uri?.getQueryParameters("sessionId")?.firstOrNull()?.let { sessionId ->
+private fun processLink(url: Uri?) {
+    val appKey = "[Your appKey]" // Get this value from the Keyri Dashboard
+    val publicApiKey = "[Your publicApiKey]" // Get this optional value from the Keyri Dashboard for Fraud Prevention
+    val serviceEncryptionKey = "[Your serviceEncryptionKey]" // Get this optional value from the Keyri Developer Portal for Fraud Prevention
+    val publicUserId = "public-User-Id" // publicUserId is optional
+    val payload = "Custom payload here"
+
+    // Be sure to import the SDK at the top of the file
+    val keyri = Keyri(this@MainActivity, appKey, publicApiKey, serviceEncryptionKey)
+
+    // Process link and call initiateQrSession
+    url?.getQueryParameters("sessionId")?.firstOrNull()?.let { sessionId ->
         lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val appKey = "[Your appKey]" // Get this value from the Keyri Developer Portal
-                val publicApiKey =
-                    "[Your publicApiKey]" // Get this optional value from the Keyri Developer Portal for Fraud Prevention
-                val serviceEncryptionKey =
-                    "[Your serviceEncryptionKey]" // Get this optional value from the Keyri Developer Portal for Fraud Prevention
-                val publicUserId = "public-User-Id" // publicUserId is optional
-                val payload = "Custom payload here"
+            keyri.initiateQrSession(sessionId, publicUserId).onSuccess { session ->
+                // You can optionally create a custom screen and pass the session ID there. We recommend this approach for large enterprises
+                val result = keyri.initializeDefaultConfirmationScreen(supportFragmentManager, session, payload).getOrThrow()
 
-                // Be sure to import the SDK at the top of the file
-                val keyri = Keyri(this@MainActivity, appKey, publicApiKey, serviceEncryptionKey)
-
-                keyri.initiateQrSession(sessionId, publicUserId)
-                    .onSuccess { session ->
-                        // You can optionally create a custom screen and pass the session ID there. We recommend this approach for large enterprises
-                        val session =
-                            keyri.initializeDefaultScreen(supportFragmentManager, session, payload)
-                                .getOrThrow()
-
-                        // In a real world example you’d wait for user confirmation first
-                        session.confirm(payload) // or session.deny(payload)
-                    }
-
-                // Process result
-            } catch (e: Throwable) {
-                Log.e("Keyri", "Authentication exception $e")
+                // In a real world example you’d wait for user confirmation first
+                session.confirm(payload = payload, context = this, trustNewBrowser = true) // or session.deny(payload, context)
             }
         }
     } ?: Log.e("Keyri", "Failed to process link")
+
+    // Or delegate link processing to Keyri SDK
+    url?.let {
+        keyri.processLink(supportFragmentManager, url, payload, publicUserId).onSuccess {
+            // Successfully authenticated
+        }
+    } ?: Log.e("Keyri", "Failed to process link")
 }
+
 ```
 
 **Note:** Keyri will set up the required `/.well-known/assetlinks.json` JSON at
@@ -168,85 +164,58 @@ private val easyKeyriAuthLauncher =
         // ...
     }
 
+override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    super.onActivityResult(requestCode, resultCode, data)
+    val isSuccess = resultCode == Activity.RESULT_OK
+    // Handle authentication result
+    // ...
+}
+
 override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    // Using ActivityResult API:
+    // ...
     binding.bAuthWithScanner.setOnClickListener {
-        easyKeyriAuth(
-            this,
-            easyKeyriAuthLauncher,
-            "[Your appKey]", // Get this value from the Keyri Developer Portal
-            "[Your publicApiKey]", // Get this optional value from the Keyri Developer Portal for Fraud Prevention
-            "[Your serviceEncryptionKey]", // Get this optional value from the Keyri Developer Portal for Fraud Prevention
-            true, // Block emulator detection
-            "Custom payload here",
-            "public-User-Id", // publicUserId is optional
-        )
-    }
+        // With ActivityResult API
 
-    // Or with on activityResult:
-    binding.bAuthWithScanner.setOnClickListener {
+        val appKey = "[Your appKey]" // Get this value from the Keyri Dashboard
+        val publicApiKey = "[Your publicApiKey]" // Get this optional value from the Keyri Dashboard for Fraud Prevention
+        val serviceEncryptionKey = "[Your serviceEncryptionKey]" // Get this optional value from the Keyri Developer Portal for Fraud Prevention
+        val publicUserId = "public-User-Id" // publicUserId is optional
+        val payload = "Custom payload here"
+
+        easyKeyriAuth(
+            this@MainActivity, // Context
+            easyKeyriAuthLauncher, // ActivityResult API
+            appKey,
+            publicApiKey,
+            serviceEncryptionKey,
+            true, // blockEmulatorDetection
+            payload,
+            publicUserId
+        )
+
+        // Or with on activityResult:
+
         // This will call an activity that will return a result
         // Handle this result in onActivityResult function
         easyKeyriAuth(
-            this,
-            REQUEST_CODE,
-            "[Your appKey]", // Get this value from the Keyri Developer Portal
-            "[Your publicApiKey]", // Get this optional value from the Keyri Developer Portal for Fraud Prevention
-            "[Your serviceEncryptionKey]", // Get this optional value from the Keyri Developer Portal for Fraud Prevention
-            true, // Block emulator detection
-            "Custom payload here",
-            "public-User-Id", // publicUserId is optional
+            this@MainActivity, // Activity
+            REQUEST_CODE, // To use onActivityResult
+            appKey,
+            publicApiKey,
+            serviceEncryptionKey,
+            true, // blockEmulatorDetection
+            payload,
+            publicUserId
         )
     }
 }
+
 ```
 
 Or define custom scanner UI/UX. You can use Firebase ML Kit, ZXing, your own scanner, or any other
 equivalent. All you need to do is convert to URI, and then you're free to process the response the
 same way we did above (notice the `process(uri)` function is exactly the same in both cases)
-
-```kotlin
-private fun scanQr() {
-    // Your scanner realization
-    // Get link from QR and process it:
-    process(uri)
-}
-
-private fun process(uri: Uri?) {
-    uri?.getQueryParameters("sessionId")?.firstOrNull()?.let { sessionId ->
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val appKey = "[Your appKey]" // Get this value from the Keyri Developer Portal
-                val publicApiKey =
-                    "[Your publicApiKey]" // Get this optional value from the Keyri Developer Portal for Fraud Prevention
-                val serviceEncryptionKey =
-                    "[Your serviceEncryptionKey]" // Get this optional value from the Keyri Developer Portal for Fraud Prevention
-                val publicUserId = "public-User-Id" // publicUserId is optional
-                val payload = "Custom payload here"
-
-                // Be sure to import the SDK at the top of the file
-                val keyri = Keyri(this@MainActivity, appKey, publicApiKey, serviceEncryptionKey)
-
-                keyri.initiateQrSession(sessionId, publicUserId)
-                    .onSuccess { session ->
-                        // You can optionally create a custom screen and pass the session ID there. We recommend this approach for large enterprises
-                        val session =
-                            keyri.initializeDefaultScreen(supportFragmentManager, session, payload)
-                                .getOrThrow()
-
-                        // In a real world example you’d wait for user confirmation first
-                        session.confirm(payload) // or session.deny(payload)
-                    }
-
-                // Process result
-            } catch (e: Throwable) {
-                Log.e("Keyri", "Authentication exception $e")
-            }
-        }
-    } ?: Log.e("Keyri", "Failed to process link")
-}
-```
 
 ### **Jetpack Compose support**
 
@@ -258,6 +227,7 @@ dependencies {
     implementation("com.keyri:keyrisdk:$latestKeyriVersion")
     implementation("com.keyri:compose:$latestKeyriVersion")
 }
+
 ```
 
 Use `ScannerPreview` for retrieving sessionId from scanned QR code. All you need here to provide is:
@@ -298,6 +268,7 @@ EasyKeyriAuth(
 ) { result ->
     // Process result
 }
+
 ```
 
 ### **Interacting with the API**
@@ -337,6 +308,8 @@ your own custom flows and leverage the SDK in different ways:
 
 * `suspend fun Keyri.sendEvent(publicUserId: String = ANON_USER, eventType: EventType, success: Boolean): Result<FingerprintEventResponse> `:
   send fingerprint event and event result for specified publicUserId's.
+
+* `suspend fun Keyri.createFingerprint(): Result<FingerprintEventRequest>`: creates and returns fingerprint event object
 
 * `suspend fun Keyri.generateAssociationKey(publicUserId: String = "ANON"): Result<String>`: creates
   a
