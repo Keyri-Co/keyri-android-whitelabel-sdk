@@ -189,7 +189,6 @@ override fun onCreate(savedInstanceState: Bundle?) {
             appKey,
             publicApiKey,
             serviceEncryptionKey,
-            true, // blockEmulatorDetection
             payload,
             publicUserId,
         )
@@ -204,7 +203,6 @@ override fun onCreate(savedInstanceState: Bundle?) {
             appKey,
             publicApiKey,
             serviceEncryptionKey,
-            true, // blockEmulatorDetection
             payload,
             publicUserId,
         )
@@ -340,10 +338,10 @@ your own custom flows and leverage the SDK in different ways:
 * `suspend fun Keyri.removeAssociationKey(publicUserId: String): Result<Unit>`: removes association
   public key for the specified publicUserId.
 
-* `fun easyKeyriAuth(context: Context, easyKeyriAuthLauncher: ActivityResultLauncher<Intent>, appKey: String, publicApiKey: String?, serviceEncryptionKey: String?, blockEmulatorDetection: Boolean = true, payload: String, publicUserId: String?, blockRootDetection: Boolean = false, blockDangerousAppsDetection: Boolean = false, blockTamperDetection: Boolean = false)`:
+* `fun easyKeyriAuth(context: Context, easyKeyriAuthLauncher: ActivityResultLauncher<Intent>, appKey: String, publicApiKey: String?, serviceEncryptionKey: String?, payload: String, publicUserId: String?, detectionsConfig: KeyriDetectionsConfig = KeyriDetectionsConfig())`:
   launches scanner activity with default confirmation screen for ActivityResultLauncher.
 
-* `fun easyKeyriAuth(activity: Activity, requestCode: Int, appKey: String, publicApiKey: String?, serviceEncryptionKey: String?, blockEmulatorDetection: Boolean = true, payload: String, publicUserId: String?, blockRootDetection: Boolean = false, blockDangerousAppsDetection: Boolean = false, blockTamperDetection: Boolean = false)`:
+* `fun easyKeyriAuth(activity: Activity, requestCode: Int, appKey: String, publicApiKey: String?, serviceEncryptionKey: String?, payload: String, publicUserId: String?, detectionsConfig: KeyriDetectionsConfig = KeyriDetectionsConfig())`:
   launches scanner activity for result with default confirmation screen for onActivityResult.
 
 * `@Composable fun EasyKeyriAuth(sheetState: ModalBottomSheetState, coroutineScope: CoroutineScope, keyri: Keyri, sessionId: String, payload: String, result: (Result<Unit>) -> Unit)`:
