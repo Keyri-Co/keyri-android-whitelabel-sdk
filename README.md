@@ -304,6 +304,8 @@ your own custom flows and leverage the SDK in different ways:
   register with publicKey, userId. Can return Result with IllegalStateException if publicUserId
   already exists.
 
+* `suspend fun Keyri.getCorrectedTimestampSeconds(): Long`:  Call it to get timestamp synchronized with NTP.
+
 * `suspend fun Keyri.sendEvent(publicUserId: String = ANON_USER, eventType: EventType, success: Boolean): Result<FingerprintEventResponse> `:
   send fingerprint event and event result for specified publicUserId's.
 
