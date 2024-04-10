@@ -191,6 +191,7 @@ override fun onCreate(savedInstanceState: Bundle?) {
             serviceEncryptionKey,
             payload,
             publicUserId,
+            KeyriDetectionsConfig(),
         )
 
         // Or with on activityResult:
@@ -205,6 +206,7 @@ override fun onCreate(savedInstanceState: Bundle?) {
             serviceEncryptionKey,
             payload,
             publicUserId,
+            KeyriDetectionsConfig(),
         )
     }
 }
